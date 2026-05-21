@@ -38,11 +38,58 @@
 4. **Multi-tenancy:** `company_id` en TODAS las consultas de negocio
 5. **i18n:** Nunca texto hardcoded, siempre claves de traducción
 
+## 🧠 Memoria Engram — Cuándo Guardar
+
+Los agentes deben guardar memoria en Engram de forma **proactiva y granular**. No esperar al final de la sesión.
+
+### ✅ GUARDAR SIEMPRE (auto-save obligatorio)
+
+| Evento | Tipo Engram | Ejemplo |
+|--------|-------------|---------|
+| **Decisión de arquitectura** | `architecture` | "Usar proxy.ts en vez de middleware.ts (Next.js 16)" |
+| **Decisión de diseño DB** | `decision` | "company_id indexado en todas las tablas de negocio" |
+| **Error encontrado + solución** | `bugfix` | "Drizzle pool timeout en producción → aumentar idleTimeoutMillis" |
+| **Nueva feature implementada** | `feature` | "Server Action createWorkOrder con validación Zod + filtro company_id" |
+| **Cambio de convención** | `convention` | "Todos los comentarios en inglés, docs del equipo en castellano" |
+| **Patrón reutilizable descubierto** | `pattern` | "Template de Server Action con auth + role check + company filter" |
+| **Dependencia añadida/eliminada** | `dependency` | "Añadido bcryptjs para hash de passwords" |
+| **Variable de entorno nueva** | `config` | "NEXT_PUBLIC_APP_MODE determina comportamiento cloud/self-hosted" |
+
+### ❌ NO GUARDAR (ruido innecesario)
+
+- Cambios de formato (prettier, orden de imports)
+- Renombrar variables siguiendo convención existente
+- Commits rutinarios sin impacto arquitectónico
+- Texto de documentación sin decisiones asociadas
+
+### 📝 Formato de Guardado
+
+```typescript
+engram save "<título conciso>" "<descripción: qué, por qué, dónde>" --type <tipo> --project ribotflow
+```
+
+### 🔄 Flujo de Sesión
+
+```
+[ Agente trabaja ] → [ Decisión/Error/Feature ] → [ mem_save inmediato ]
+                                                      ↓
+[ Sigue trabajando ] → [ Otra decisión ] → [ mem_save inmediato ]
+                                                      ↓
+[ Fin de tarea ] → [ mem_session_summary resumen global ]
+```
+
+> **Regla:** Si otro agente futuro necesitaría saber esto para no repetir el mismo error o tomar la misma decisión → **GUARDAR**.
+
 ## 🤖 SKILLS DISPONIBLES
 - `[SKILL:DEVOPS_HERMES]`: Aplica conocimientos de pipelines de GitHub Actions, optimización de hooks de Husky, monitorización asíncrona con Sentry, persistencia de contexto mediante MCP Engram y ciclos de generación y validación autónoma de código bajo la metodología Hermes.
 - `[SKILL:DB_ARCHITECT]`: Domina Drizzle ORM, PostgreSQL, diseño de esquemas multi-tenant con `company_id`, migraciones, índices y optimización de consultas.
 - `[SKILL:UI_UX]`: Especialista en Next.js App Router, Tailwind CSS, Radix UI, diseño Mobile-First, PWA offline, accesibilidad WCAG 2.1 AA e i18n (ca/es).
 - `[SKILL:AUTH_GUARD]`: Aplica control de acceso basado en roles (RBAC estrictos: OWNER, ADMIN, TECHNICIAN, OFFICE) a través de Auth.js. Domina la arquitectura de Multi-tenancy lógico mediante el filtrado obligatorio por `company_id` en Server Actions y rutas de API para el entorno Cloud, y el mapeo asíncrono de un único inquilino en entornos Self-Hosted. Garantizar la inmutabilidad de la sesión en el JWT.
+- `[SKILL:FRONTEND_DEV]`: Especialista en React 19, Server Components, Client Components, hooks personalizados, gestión de estado, formularios con React Hook Form + Zod, y patrones de composición de componentes.
+- `[SKILL:BACKEND_DEV]`: Domina Server Actions como controladores, rutas de API, capa de servicios framework-agnostic, colas asíncronas (BullMQ/pg-boss), y patrones de Clean Architecture.
+- `[SKILL:SECURITY]`: Experto en protección de rutas vía proxy.ts, validación de inputs con Zod, sanitización de datos, headers de seguridad, cookies seguras, y prevención de OWASP Top 10.
+- `[SKILL:ENGRAM_MCP]`: Gestiona la memoria persistente del proyecto. Sabe cuándo guardar (decisiones, errores, features), cómo estructurar memorias, y cómo recuperar contexto relevante sin consumir tokens de sesión.
+- `[SKILL:TESTING]`: Especialista en Vitest, factories de datos, mocks de servicios, tests de integración con DB, tests E2E, y cobertura mínima del 80% para servicios y acciones.
 
 ## 📐 Estructura de Cabeceras Obligatorias
 Todos los archivos `.ts` y `.tsx` deben comenzar con:
