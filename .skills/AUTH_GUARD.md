@@ -31,7 +31,7 @@ Aquesta skill es desperta quan es requereix: control d'accés, autenticació, au
 | **OFFICE** | Administratiu: facturació bàsica, clients, calendari. No accés a configuració avançada ni SAT de camp |
 
 ## 🛡️ Protecció de Rutes (Middleware)
-- **`/src/middleware.ts`:** Intercepta totes les rutes protegides
+- **`/src/proxy.ts`:** Intercepta totes les rutes protegides
 - **Flux:** Cookie → JWT → session → verifica rol → permet/bloqueja/redirigeix
 - **Rutes públiques:** `/login`, `/register`, `/setup` (self-hosted), `/api/health`
 - **Rutes protegides:** `/dashboard/**`, `/api/**` (excepte health)

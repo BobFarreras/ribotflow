@@ -1,7 +1,7 @@
 /**
  * Data de creació/modificació: 21/05/2026
- * Ruta: src/middleware.ts
- * Descripció: Middleware de seguretat i control de rols RBAC.
+ * Ruta: src/proxy.ts
+ * Descripció: Proxy de seguretat i control de rols RBAC.
  *             Intercepta totes les rutes protegides i verifica sessió + permisos.
  */
 
@@ -20,7 +20,7 @@ const ROLE_ROUTE_MATRIX: Record<string, string[]> = {
   TECHNICIAN: ["/dashboard/sat", "/dashboard/access"],
 };
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   if (PUBLIC_ROUTES.includes(pathname)) {

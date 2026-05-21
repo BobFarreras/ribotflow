@@ -36,7 +36,7 @@ RIBOTFLOW-MVP/
 │   └── factories/                    #   Factories de dades de test
 │
 ├── src/
-│   ├── middleware.ts                 # 🛡️ Middleware de seguretat + RBAC
+│   ├── proxy.ts                      # 🛡️ Proxy de seguretat + RBAC (Next.js 16)
 │   ├── instrumentation.ts            # 🎯 Sentry (condicional per mode)
 │   │
 │   ├── app/                          # 🌐 Rutes visuals (Next.js App Router)
@@ -153,7 +153,7 @@ RIBOTFLOW-MVP/
 
 ## 📦 Explicació de Capes Clau
 
-### 🛡️ `src/middleware.ts` - Seguretat i RBAC
+### 🛡️ `src/proxy.ts` - Proxy de Seguretat i RBAC (Next.js 16)
 | Responsabilitat | Detall |
 |-----------------|--------|
 | Intercepta rutes | Totes excepte `/login`, `/register`, `/setup`, `/api/health` |
@@ -161,6 +161,8 @@ RIBOTFLOW-MVP/
 | Filtra per rol | `TECHNICIAN` → només `/dashboard/sat` + `/dashboard/access` |
 | Injecta headers | `x-user-role` + `x-company-id` per a rutes descendents |
 | Redirigeix | A `/login` si no autenticat, `/unauthorized` si sense permís |
+
+> **Nota:** A Next.js 16, `middleware.ts` ha estat deprecated i renombrat a `proxy.ts`. La funció exportada també canvia de `middleware()` a `proxy()`.
 
 ### ⚡ `src/actions/` - Server Actions (Controladors)
 | Principi | Aplicació |
@@ -321,9 +323,10 @@ await queue.enqueue({
 **Motiu:** Cloud té Redis disponible; Self-Hosted pot no tenir-lo. pg-boss usa la mateixa DB Postgres.  
 **Benefici:** Canvi de provider sense modificar codi de negoci.
 
-### 3. Middleware: Headers de Request, No Response
-**Correcció:** Inicialment s'estaven afegint headers a la resposta. Corregit per afegir-los a la request.  
-**Motiu:** Els handlers descendents necessiten llegir `x-company-id` per filtrar consultes.
+### 3. Proxy: `proxy.ts` (Next.js 16)
+**Decisió:** Usar `proxy.ts` amb funció `proxy()` en lloc de `middleware.ts`.
+**Motiu:** Next.js 16 ha deprecated la convenció `middleware.ts` i l'ha renombrada a `proxy.ts`. El terme "proxy" reflecteix millor que és un límit de xarxa davant de l'app.
+**Correcció:** Canviat `export function middleware()` → `export function proxy()`.
 
 ### 4. Sentry: Condicional per Mode
 **Decisió:** `instrumentation.ts` verifica `NEXT_PUBLIC_APP_MODE` abans d'inicialitzar Sentry.  
