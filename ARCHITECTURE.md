@@ -1,200 +1,200 @@
-# 🏗️ RIBOTFLOW - Arquitectura Clean Architecture (Next.js 15+)
+# 🏗️ RIBOTFLOW - Arquitectura Clean Architecture (Next.js 16+)
 
-> **Data de creació:** 21/05/2026  
-> **Estat:** Plànols inicials completats  
-> **Metodologia:** Hermes + SDD + SOLID
+> **Fecha de creación:** 21/05/2026
+> **Estado:** Planos iniciales completados
+> **Metodología:** Hermes + SDD + SOLID
 
 ---
 
-## 📁 Mapa Complet d'Estructura de Directoris
+## 📁 Mapa Completo de Estructura de Directorios
 
 ```
 RIBOTFLOW-MVP/
-├── .skills/                          # 🧠 Context per a agents IA
+├── .skills/                          # 🧠 Contexto para agentes IA
 │   ├── DEVOPS_HERMES.md              #   CI/CD, Docker, Sentry, Husky
 │   ├── DB_ARCHITECT.md               #   Drizzle ORM, PostgreSQL, Multi-tenancy
 │   ├── UI_UX.md                      #   Next.js UI, Tailwind, Radix, i18n
-│   └── AUTH_GUARD.md                 #   Auth.js, RBAC, Sessions, JWT
+│   └── AUTH_GUARD.md                 #   Auth.js, RBAC, Sesiones, JWT
 │
 ├── .github/workflows/                # 🚀 GitHub Actions Pipelines
-│   ├── ci.yml                        #   Validació de qualitat (PR)
-│   └── cd.yml                        #   Desplegament + Docker build (main)
+│   ├── ci.yml                        #   Validación de calidad (PR)
+│   └── cd.yml                        #   Despliegue + Docker build (main)
 │
-├── docker/                           # 🐋 Configuració Docker
-│   ├── postgres/                     #   Scripts d'inicialització DB
-│   └── redis/                        #   Configuració Redis (Cloud)
+├── docker/                           # 🐋 Configuración Docker
+│   ├── postgres/                     #   Scripts de inicialización DB
+│   └── redis/                        #   Configuración Redis (Cloud)
 │
-├── public/                           # 📦 Assets estàtics
-│   ├── fonts/                        #   Tipografies
-│   └── icons/                        #   Icones PWA
+├── public/                           # 📦 Assets estáticos
+│   ├── fonts/                        #   Tipografías
+│   └── icons/                        #   Iconos PWA
 │
 ├── tests/                            # 🧪 Suite de Testing (Vitest)
-│   ├── unit/                         #   Tests unitaris
-│   ├── integration/                  #   Tests d'integració
+│   ├── unit/                         #   Tests unitarios
+│   ├── integration/                  #   Tests de integración
 │   ├── e2e/                          #   Tests end-to-end
-│   ├── mocks/                        #   Mocks de serveis externs
-│   └── factories/                    #   Factories de dades de test
+│   ├── mocks/                        #   Mocks de servicios externos
+│   └── factories/                    #   Factories de datos de test
 │
 ├── src/
-│   ├── proxy.ts                      # 🛡️ Proxy de seguretat + RBAC (Next.js 16)
-│   ├── instrumentation.ts            # 🎯 Sentry (condicional per mode)
+│   ├── proxy.ts                      # 🛡️ Proxy de seguridad + RBAC (Next.js 16)
+│   ├── instrumentation.ts            # 🎯 Sentry (condicional por modo)
 │   │
-│   ├── app/                          # 🌐 Rutes visuals (Next.js App Router)
-│   │   ├── layout.tsx                #   Layout arrel (idioma, metadades)
-│   │   ├── page.tsx                  #   Redirecció inicial
+│   ├── app/                          # 🌐 Rutas visuales (Next.js App Router)
+│   │   ├── layout.tsx                #   Layout raíz (idioma, metadatos)
+│   │   ├── page.tsx                  #   Redirección inicial
 │   │   │
-│   │   ├── (auth)/                   #   Route group: Autenticació
+│   │   ├── (auth)/                   #   Route group: Autenticación
 │   │   │   ├── login/                #     /login
 │   │   │   ├── register/             #     /register
 │   │   │   └── setup/                #     /setup (Self-Hosted wizard)
 │   │   │
 │   │   ├── (dashboard)/              #   Route group: App principal
 │   │   │   └── dashboard/
-│   │   │       ├── sat/              #     Mòdul SAT (ordres de treball)
-│   │   │       ├── erp/              #     Mòdul ERP (estocs, productes)
-│   │   │       ├── billing/          #     Mòdul Facturació + Veri*factu
-│   │   │       ├── crm/              #     Mòdul CRM (clients, vendes)
-│   │   │       ├── access/           #     Mòdul Control d'Accés (fitxatge)
-│   │   │       ├── settings/         #     Configuració d'empresa
-│   │   │       └── unauthorized/     #     Pàgina d'accés denegat
+│   │   │       ├── sat/              #     Módulo SAT (órdenes de trabajo)
+│   │   │       ├── erp/              #     Módulo ERP (stocks, productos)
+│   │   │       ├── billing/          #     Módulo Facturación + Veri*factu
+│   │   │       ├── crm/              #     Módulo CRM (clientes, ventas)
+│   │   │       ├── access/           #     Módulo Control de Acceso (fichaje)
+│   │   │       ├── settings/         #     Configuración de empresa
+│   │   │       └── unauthorized/     #     Página de acceso denegado
 │   │   │
-│   │   └── api/                      # 🔌 Rutes d'API
+│   │   └── api/                      # 🔌 Rutas de API
 │   │       ├── auth/[...nextauth]/   #   Handler Auth.js
 │   │       ├── health/               #   Health check endpoint
 │   │       └── webhooks/verifactu/   #   Webhook AEAT Veri*factu
 │   │
-│   ├── actions/                      # ⚡ Server Actions (Controladors)
-│   │   ├── sat/                      #   Accions del mòdul SAT
-│   │   ├── erp/                      #   Accions del mòdul ERP
-│   │   ├── billing/                  #   Accions de facturació
-│   │   ├── crm/                      #   Accions del CRM
-│   │   ├── access/                   #   Accions de control d'accés
-│   │   └── settings/                 #   Accions de configuració
+│   ├── actions/                      # ⚡ Server Actions (Controladores)
+│   │   ├── sat/                      #   Acciones del módulo SAT
+│   │   ├── erp/                      #   Acciones del módulo ERP
+│   │   ├── billing/                  #   Acciones de facturación
+│   │   ├── crm/                      #   Acciones del CRM
+│   │   ├── access/                   #   Acciones de control de acceso
+│   │   └── settings/                 #   Acciones de configuración
 │   │
-│   ├── services/                     # 💼 Capa de Negoci (Framework-agnostic)
-│   │   ├── sat/                      #   Lògica de negoci SAT
-│   │   ├── erp/                      #   Lògica de negoci ERP
-│   │   ├── billing/                  #   Lògica de facturació + Veri*factu
-│   │   ├── crm/                      #   Lògica de negoci CRM
-│   │   ├── access/                   #   Lògica de control d'accés
-│   │   ├── jobs/                     #   🔄 Cua asíncrona (Redis/Postgres)
-│   │   ├── integrations/             #   Integracions (Google, SMTP)
-│   │   └── i18n/                     #   Servei de traduccions
+│   ├── services/                     # 💼 Capa de Negocio (Framework-agnostic)
+│   │   ├── sat/                      #   Lógica de negocio SAT
+│   │   ├── erp/                      #   Lógica de negocio ERP
+│   │   ├── billing/                  #   Lógica de facturación + Veri*factu
+│   │   ├── crm/                      #   Lógica de negocio CRM
+│   │   ├── access/                   #   Lógica de control de acceso
+│   │   ├── jobs/                     #   🔄 Cola asíncrona (Redis/Postgres)
+│   │   ├── integrations/             #   Integraciones (Google, SMTP)
+│   │   └── i18n/                     #   Servicio de traducciones
 │   │
-│   ├── db/                           # 🗄️ Capa de Dades (Drizzle ORM)
-│   │   ├── index.ts                  #   Instància de connexió DB
-│   │   ├── schema/                   #   Esquemes de taules
+│   ├── db/                           # 🗄️ Capa de Datos (Drizzle ORM)
+│   │   ├── index.ts                  #   Instancia de conexión DB
+│   │   ├── schema/                   #   Esquemas de tablas
 │   │   │   └── auth.ts               #     companies, users, accounts, sessions
-│   │   ├── migrations/               #   Migracions generades
-│   │   ├── queries/                  #   Consultes reutilitzables
-│   │   └── seeds/                    #   Llavors de dades inicials
+│   │   ├── migrations/               #   Migraciones generadas
+│   │   ├── queries/                  #   Consultas reutilizables
+│   │   └── seeds/                    #   Seeds de datos iniciales
 │   │
-│   ├── components/                   # 🎨 Components React
-│   │   ├── ui/                       #   Components atòmics (Button, Input...)
-│   │   ├── layout/                   #   Estructures (Header, Sidebar, Shell)
-│   │   ├── modules/                  #   Components per mòdul
-│   │   │   ├── sat/                  #     Components SAT
-│   │   │   ├── erp/                  #     Components ERP
-│   │   │   ├── billing/              #     Components Facturació
-│   │   │   ├── crm/                  #     Components CRM
-│   │   │   └── access/               #     Components Control d'Accés
-│   │   ├── forms/                    #   Formularis amb validació Zod
-│   │   ├── charts/                   #   Visualitzacions de dades
-│   │   ├── pwa/                      #   Components PWA (offline, sync)
-│   │   └── auth/                     #   Components d'autenticació
+│   ├── components/                   # 🎨 Componentes React
+│   │   ├── ui/                       #   Componentes atómicos (Button, Input...)
+│   │   ├── layout/                   #   Estructuras (Header, Sidebar, Shell)
+│   │   ├── modules/                  #   Componentes por módulo
+│   │   │   ├── sat/                  #     Componentes SAT
+│   │   │   ├── erp/                  #     Componentes ERP
+│   │   │   ├── billing/              #     Componentes Facturación
+│   │   │   ├── crm/                  #     Componentes CRM
+│   │   │   └── access/               #     Componentes Control de Acceso
+│   │   ├── forms/                    #   Formularios con validación Zod
+│   │   ├── charts/                   #   Visualizaciones de datos
+│   │   ├── pwa/                      #   Componentes PWA (offline, sync)
+│   │   └── auth/                     #   Componentes de autenticación
 │   │
-│   ├── hooks/                        # 🪝 React Hooks personalitzats
-│   │   ├── sat/                      #   Hooks del mòdul SAT
-│   │   ├── erp/                      #   Hooks del mòdul ERP
-│   │   ├── billing/                  #   Hooks de facturació
+│   ├── hooks/                        # 🪝 React Hooks personalizados
+│   │   ├── sat/                      #   Hooks del módulo SAT
+│   │   ├── erp/                      #   Hooks del módulo ERP
+│   │   ├── billing/                  #   Hooks de facturación
 │   │   ├── crm/                      #   Hooks del CRM
-│   │   └── access/                   #   Hooks de control d'accés
+│   │   └── access/                   #   Hooks de control de acceso
 │   │
-│   ├── lib/                          # 📚 Utilitats i configuració
-│   │   ├── auth/                     #   Configuració Auth.js v5
-│   │   ├── utils/                    #   Funcions auxiliars (crypto, format...)
-│   │   ├── validators/               #   Esquemes Zod per validació
-│   │   ├── constants/                #   Constants globals (rutes, rols...)
-│   │   ├── errors/                   #   Classes d'error personalitzades
-│   │   └── logger/                   #   Logger estructurat
+│   ├── lib/                          # 📚 Utilidades y configuración
+│   │   ├── auth/                     #   Configuración Auth.js v5
+│   │   ├── utils/                    #   Funciones auxiliares (crypto, format...)
+│   │   ├── validators/               #   Esquemas Zod para validación
+│   │   ├── constants/                #   Constantes globales (rutas, roles...)
+│   │   ├── errors/                   #   Clases de error personalizadas
+│   │   └── logger/                   #   Logger estructurado
 │   │
-│   ├── config/                       # ⚙️ Configuració de l'aplicació
+│   ├── config/                       # ⚙️ Configuración de la aplicación
 │   │
-│   ├── types/                        # 📝 Definicions de tipus TypeScript
-│   │   ├── index.ts                  #   Tipus globals (Role, Plan, User...)
-│   │   ├── sat/                      #   Tipus del mòdul SAT
-│   │   ├── erp/                      #   Tipus del mòdul ERP
-│   │   ├── billing/                  #   Tipus de facturació
-│   │   ├── crm/                      #   Tipus del CRM
-│   │   └── access/                   #   Tipus de control d'accés
+│   ├── types/                        # 📝 Definiciones de tipos TypeScript
+│   │   ├── index.ts                  #   Tipos globales (Role, Plan, User...)
+│   │   ├── sat/                      #   Tipos del módulo SAT
+│   │   ├── erp/                      #   Tipos del módulo ERP
+│   │   ├── billing/                  #   Tipos de facturación
+│   │   ├── crm/                      #   Tipos del CRM
+│   │   └── access/                   #   Tipos de control de acceso
 │   │
-│   ├── locales/                      # 🌐 Traduccions (i18n)
-│   │   ├── ca/                       #   Català
-│   │   └── es/                       #   Castellà
+│   ├── locales/                      # 🌐 Traducciones (i18n)
+│   │   ├── ca/                       #   Catalán
+│   │   └── es/                       #   Castellano
 │   │
-│   └── styles/                       # 🎨 Estils globals
+│   └── styles/                       # 🎨 Estilos globales
 │       └── globals.css               #   Tailwind + variables CSS
 │
-├── .env.example                      # 🔑 Plantilla de variables d'entorn
-├── AGENTS.md                         # 🤖 Regles per a agents IA
-├── AUTH.md                           # 🔐 Documentació d'autenticació
-├── INFRASTRUCTURE.md                 # 🏗️ Matriu de comportament per mode
-├── PROJECT.md                        # 📋 Full de ruta de mòduls
-├── TOOLING_AND_WORKFLOW.md           # 🔧 Ecosistema de qualitat
-├── ARCHITECTURE.md                   # 📐 Aquest document
-├── package.json                      # 📦 Dependències (pnpm)
-├── tsconfig.json                     # ⚙️ Configuració TypeScript (strict)
-├── next.config.ts                    # ⚙️ Configuració Next.js (standalone)
+├── .env.example                      # 🔑 Plantilla de variables de entorno
+├── AGENTS.md                         # 🤖 Reglas para agentes IA
+├── AUTH.md                           # 🔐 Documentación de autenticación
+├── INFRASTRUCTURE.md                 # 🏗️ Matriz de comportamiento por modo
+├── PROJECT.md                        # 📋 Hoja de ruta de módulos
+├── TOOLING_AND_WORKFLOW.md           # 🔧 Ecosistema de calidad
+├── ARCHITECTURE.md                   # 📐 Este documento
+├── package.json                      # 📦 Dependencias (pnpm)
+├── tsconfig.json                     # ⚙️ Configuración TypeScript (strict)
+├── next.config.ts                    # ⚙️ Configuración Next.js (standalone)
 ├── docker-compose.yml                # 🐋 Docker Compose (Self-Hosted)
 └── Dockerfile                        # 🐋 Multi-stage build (<200MB)
 ```
 
 ---
 
-## 📦 Explicació de Capes Clau
+## 📦 Explicación de Capas Clave
 
-### 🛡️ `src/proxy.ts` - Proxy de Seguretat i RBAC (Next.js 16)
-| Responsabilitat | Detall |
-|-----------------|--------|
-| Intercepta rutes | Totes excepte `/login`, `/register`, `/setup`, `/api/health` |
-| Verifica sessió | JWT via Auth.js → valida `companyId` + `role` |
-| Filtra per rol | `TECHNICIAN` → només `/dashboard/sat` + `/dashboard/access` |
-| Injecta headers | `x-user-role` + `x-company-id` per a rutes descendents |
-| Redirigeix | A `/login` si no autenticat, `/unauthorized` si sense permís |
+### 🛡️ `src/proxy.ts` - Proxy de Seguridad y RBAC (Next.js 16)
+| Responsabilidad | Detalle |
+|-----------------|---------|
+| Intercepta rutas | Todas excepto `/login`, `/register`, `/setup`, `/api/health` |
+| Verifica sesión | JWT vía Auth.js → valida `companyId` + `role` |
+| Filtra por rol | `TECHNICIAN` → solo `/dashboard/sat` + `/dashboard/access` |
+| Inyecta headers | `x-user-role` + `x-company-id` para rutas descendientes |
+| Redirige | A `/login` si no autenticado, `/unauthorized` si sin permiso |
 
-> **Nota:** A Next.js 16, `middleware.ts` ha estat deprecated i renombrat a `proxy.ts`. La funció exportada també canvia de `middleware()` a `proxy()`.
+> **Nota:** Next.js 16 ha deprecado `middleware.ts` y lo ha renombrado a `proxy.ts`. La función exportada también cambia de `middleware()` a `proxy()`.
 
-### ⚡ `src/actions/` - Server Actions (Controladors)
-| Principi | Aplicació |
-|----------|-----------|
-| SoC | Cada mòdul té el seu directori d'accions |
-| Multi-tenancy | Totes les accions filtren per `session.user.companyId` |
-| Validació | Inputs validats amb Zod abans de cridar serveis |
-| Errors | Errors personalitzats (`UnauthorizedError`, `ValidationError`) |
+### ⚡ `src/actions/` - Server Actions (Controladores)
+| Principio | Aplicación |
+|-----------|------------|
+| SoC | Cada módulo tiene su directorio de acciones |
+| Multi-tenancy | Todas las acciones filtran por `session.user.companyId` |
+| Validación | Inputs validados con Zod antes de llamar a servicios |
+| Errores | Errores personalizados (`UnauthorizedError`, `ValidationError`) |
 
-### 💼 `src/services/` - Capa de Negoci
-| Característica | Detall |
-|----------------|--------|
-| Framework-agnostic | No depèn de Next.js ni React |
-| Testable | Fàcil de mockejar per a tests unitaris |
-| Reutilitzable | Cridada des de Server Actions, API routes, o jobs |
-| Async jobs | Interfície `JobQueue` abstracta (Redis/Postgres) |
+### 💼 `src/services/` - Capa de Negocio
+| Característica | Detalle |
+|----------------|---------|
+| Framework-agnostic | No depende de Next.js ni React |
+| Testable | Fácil de mockear para tests unitarios |
+| Reutilizable | Llamada desde Server Actions, API routes, o jobs |
+| Async jobs | Interfaz `JobQueue` abstracta (Redis/Postgres) |
 
-### 🗄️ `src/db/` - Capa de Dades
-| Component | Funció |
-|-----------|--------|
-| `schema/` | Definició de taules Drizzle ORM amb `company_id` |
-| `migrations/` | Migracions versionades generades per `drizzle-kit` |
-| `queries/` | Consultes reutilitzables amb filtre multi-tenant |
-| `index.ts` | Instància única de connexió amb pooling |
+### 🗄️ `src/db/` - Capa de Datos
+| Componente | Función |
+|------------|---------|
+| `schema/` | Definición de tablas Drizzle ORM con `company_id` |
+| `migrations/` | Migraciones versionadas generadas por `drizzle-kit` |
+| `queries/` | Consultas reutilizables con filtro multi-tenant |
+| `index.ts` | Instancia única de conexión con pooling |
 
 ---
 
-## 🔀 Flux de Dades (Clean Architecture)
+## 🔀 Flujo de Datos (Clean Architecture)
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                    CLIENT (Browser)                         │
+│                    CLIENTE (Browser)                        │
 │  ┌─────────────┐  ┌──────────────┐  ┌──────────────────┐   │
 │  │ Components  │→ │   Hooks      │→ │   Server Actions │   │
 │  │ (UI/UX)     │  │ (state, api) │  │   (controllers)  │   │
@@ -205,12 +205,12 @@ RIBOTFLOW-MVP/
 │                    SERVIDOR (Next.js)                       │
 │  ┌─────────────┐  ┌──────────────┐  ┌──────────────────┐   │
 │  │  Services   │← │  Validators  │← │   Server Actions │   │
-│  │  (negoci)   │→ │   (Zod)      │  │   (entrada)      │   │
+│  │  (negocio)  │→ │   (Zod)      │  │   (entrada)      │   │
 │  └──────┬──────┘  └──────────────┘  └──────────────────┘   │
 │         │                                                   │
 │  ┌──────▼──────┐  ┌──────────────┐  ┌──────────────────┐   │
 │  │   DB        │← │  Queries     │← │   Services       │   │
-│  │  (Drizzle)  │  │ (reutilitz.) │  │ (lògica negoci)  │   │
+│  │  (Drizzle)  │  │ (reutiliz.)  │  │ (lógica negocio) │   │
 │  └─────────────┘  └──────────────┘  └──────────────────┘   │
 └─────────────────────────────────────────────────────────────┘
 ```
@@ -231,20 +231,20 @@ RIBOTFLOW-MVP/
 │  ├──────────────────────────────────────┤    │
 │  │ companies                            │    │
 │  │ ├── id: uuid                         │    │
-│  │ ├── name: "Tècnics Girona"           │    │
-│  │ └── tenant_slug: "tecnics-girona"    │    │
+│  │ ├── name: "Técnicos Girona"          │    │
+│  │ └── tenant_slug: "tecnicos-girona"   │    │
 │  └──────────────────────────────────────┘    │
 │  ┌──────────────────────────────────────┐    │
-│  │ users (tots amb company_id)          │    │
+│  │ users (todos con company_id)         │    │
 │  │ ├── user1 → company_id: fusteria     │    │
 │  │ ├── user2 → company_id: fusteria     │    │
-│  │ ├── user3 → company_id: tecnics      │    │
-│  │ └── user4 → company_id: tecnics      │    │
+│  │ ├── user3 → company_id: tecnicos     │    │
+│  │ └── user4 → company_id: tecnicos     │    │
 │  └──────────────────────────────────────┘    │
 │  ┌──────────────────────────────────────┐    │
-│  │ work_orders (totes amb company_id)   │    │
+│  │ work_orders (todas con company_id)   │    │
 │  │ ├── wo1 → company_id: fusteria       │    │
-│  │ ├── wo2 → company_id: tecnics        │    │
+│  │ ├── wo2 → company_id: tecnicos       │    │
 │  │ └── ...                              │    │
 │  └──────────────────────────────────────┘    │
 └──────────────────────────────────────────────┘
@@ -253,27 +253,27 @@ RIBOTFLOW-MVP/
 ### Self-Hosted (Docker Single-tenant)
 ```
 ┌──────────────────────────────────────────────┐
-│        PostgreSQL Dedicat (VPS Client)       │
+│        PostgreSQL Dedicado (VPS Cliente)     │
 │  ┌──────────────────────────────────────┐    │
 │  │ companies                            │    │
 │  │ ├── id: uuid                         │    │
-│  │ ├── name: "La Meva Empresa"          │    │
-│  │ └── tenant_slug: "la-meva-empresa"   │    │
+│  │ ├── name: "Mi Empresa"               │    │
+│  │ └── tenant_slug: "mi-empresa"        │    │
 │  └──────────────────────────────────────┘    │
 │  ┌──────────────────────────────────────┐    │
-│  │ users (tots amb el mateix company_id)│    │
-│  │ ├── user1 → company_id: la-meva      │    │
-│  │ ├── user2 → company_id: la-meva      │    │
+│  │ users (todos con el mismo company_id)│    │
+│  │ ├── user1 → company_id: mi-empresa   │    │
+│  │ ├── user2 → company_id: mi-empresa   │    │
 │  │ └── ...                              │    │
 │  └──────────────────────────────────────┘    │
 └──────────────────────────────────────────────┘
 ```
 
-> **Nota:** El codi és **idèntic** en ambdós modes. La diferència és el nombre de files a `companies`.
+> **Nota:** El código es **idéntico** en ambos modos. La diferencia es el número de filas en `companies`.
 
 ---
 
-## 🔄 Async Jobs: Abstracció de Cua
+## 🔄 Async Jobs: Abstracción de Cola
 
 ```typescript
 // src/services/jobs/interface.ts
@@ -287,8 +287,8 @@ export interface JobQueue {
 // Cloud → RedisQueue (BullMQ)
 // Self-Hosted → PostgresQueue (pg-boss)
 
-// Ús:
-const queue = createJobQueue(); // Detecta mode automàticament
+// Uso:
+const queue = createJobQueue(); // Detecta modo automáticamente
 await queue.enqueue({
   type: "send-invoice-email",
   payload: { invoiceId: "abc123" },
@@ -298,7 +298,7 @@ await queue.enqueue({
 
 ---
 
-## 🔐 Matriu de Permisos RBAC
+## 🔐 Matriz de Permisos RBAC
 
 | Ruta | OWNER | ADMIN | TECHNICIAN | OFFICE |
 |------|:-----:|:-----:|:----------:|:------:|
@@ -311,43 +311,43 @@ await queue.enqueue({
 
 ---
 
-## ⚠️ Correccions i Decisions d'Arquitectura
+## ⚠️ Correcciones y Decisiones de Arquitectura
 
-### 1. Multi-tenancy: Mateix Codi, Diferent Context
-**Decisió:** No crear branques de codi per a Cloud vs Self-Hosted.  
-**Motiu:** El filtre `company_id` funciona igual en ambdós modes. En Self-Hosted, només hi ha 1 empresa, però el codi no canvia.  
-**Benefici:** Manteniment únic, menys bugs, actualitzacions simultànies.
+### 1. Multi-tenancy: Mismo Código, Diferente Contexto
+**Decisión:** No crear ramas de código para Cloud vs Self-Hosted.
+**Motivo:** El filtro `company_id` funciona igual en ambos modos. En Self-Hosted, solo hay 1 empresa, pero el código no cambia.
+**Beneficio:** Mantenimiento único, menos bugs, actualizaciones simultáneas.
 
-### 2. Async Jobs: Interfície Abstracta
-**Decisió:** Crear interfície `JobQueue` amb implementacions `RedisQueue` i `PostgresQueue`.  
-**Motiu:** Cloud té Redis disponible; Self-Hosted pot no tenir-lo. pg-boss usa la mateixa DB Postgres.  
-**Benefici:** Canvi de provider sense modificar codi de negoci.
+### 2. Async Jobs: Interfaz Abstracta
+**Decisión:** Crear interfaz `JobQueue` con implementaciones `RedisQueue` y `PostgresQueue`.
+**Motivo:** Cloud tiene Redis disponible; Self-Hosted puede no tenerlo. pg-boss usa la misma DB Postgres.
+**Beneficio:** Cambio de provider sin modificar código de negocio.
 
-### 3. Proxy: `proxy.ts` (Next.js 16)
-**Decisió:** Usar `proxy.ts` amb funció `proxy()` en lloc de `middleware.ts`.
-**Motiu:** Next.js 16 ha deprecated la convenció `middleware.ts` i l'ha renombrada a `proxy.ts`. El terme "proxy" reflecteix millor que és un límit de xarxa davant de l'app.
-**Correcció:** Canviat `export function middleware()` → `export function proxy()`.
+### 3. Proxy: `proxy.ts` en lugar de `middleware.ts` (Next.js 16)
+**Decisión:** Usar `proxy.ts` con función `proxy()` en lugar de `middleware.ts`.
+**Motivo:** Next.js 16 ha deprecado la convención `middleware.ts` y la ha renombrado a `proxy.ts`. El término "proxy" refleja mejor que es un límite de red frente a la app.
+**Corrección:** Cambiado `export function middleware()` → `export function proxy()`.
 
-### 4. Sentry: Condicional per Mode
-**Decisió:** `instrumentation.ts` verifica `NEXT_PUBLIC_APP_MODE` abans d'inicialitzar Sentry.  
-**Motiu:** Self-Hosted no ha d'enviar dades a serveis externs per privacitat.
+### 4. Sentry: Condicional por Modo
+**Decisión:** `instrumentation.ts` verifica `NEXT_PUBLIC_APP_MODE` antes de inicializar Sentry.
+**Motivo:** Self-Hosted no debe enviar datos a servicios externos por privacidad.
 
 ### 5. Docker: Multi-stage Build <200MB
-**Decisió:** 3 stages (deps → builder → runner) amb `node:20-alpine`.  
-**Motiu:** Imatge petita per a desplegaments ràpids i menor superfície d'atac.
+**Decisión:** 3 stages (deps → builder → runner) con `node:20-alpine`.
+**Motivo:** Imagen pequeña para despliegues rápidos y menor superficie de ataque.
 
 ---
 
-## 🚀 Pròxims Passos
+## 🚀 Próximos Pasos
 
-1. **Instal·lar dependències:** `pnpm install`
+1. **Instalar dependencias:** `pnpm install`
 2. **Configurar env:** Copiar `.env.example` → `.env.local`
-3. **Generar migracions:** `pnpm db:generate`
-4. **Aplicar migracions:** `pnpm db:migrate`
-5. **Iniciar desenvolupament:** `pnpm dev`
+3. **Generar migraciones:** `pnpm db:generate`
+4. **Aplicar migraciones:** `pnpm db:migrate`
+5. **Iniciar desarrollo:** `pnpm dev`
 
 ---
 
-> **Protocol Hermes completat.** Estructura Clean Architecture generada amb èxit.  
-> **Skills de context:** `.skills/` amb 4 fitxers per a agents IA.  
-> **Fitxers clau:** middleware, auth, db schema, env, Docker, CI/CD.
+> **Protocolo Hermes completado.** Estructura Clean Architecture generada con éxito.
+> **Skills de contexto:** `.skills/` con 4 archivos para agentes IA.
+> **Archivos clave:** proxy, auth, db schema, env, Docker, CI/CD.

@@ -1,29 +1,29 @@
-# AUTH.md - Autenticació, Multi-Tenancy i Control de Rols (RBAC)
+# AUTH.md - Autenticación, Multi-Tenancy y Control de Roles (RBAC)
 
-## 🏢 1. Com sap cada usuari a quina empresa entra al Cloud?
+## 🏢 1. ¿Cómo sabe cada usuario a qué empresa entra en el Cloud?
 
-Perquè sigui professional, eficient i fàcil de mantenir, utilitzarem l'estratègia de **Multi-tenancy per identificador de columna** (Logical Separation). Tot es guarda a la mateixa base de dades central, però les dades estan totalment blindades d'una empresa a una altra.
+Para que sea profesional, eficiente y fácil de mantener, utilizaremos la estrategia de **Multi-tenancy por identificador de columna** (Separación Lógica). Todo se guarda en la misma base de datos central, pero los datos están totalmente blindados de una empresa a otra.
 
-### Esquema de Taules Base (PostgreSQL via Drizzle ORM)
+### Esquema de Tablas Base (PostgreSQL vía Drizzle ORM)
 
 ```typescript
 /**
- * Data de creació/modificació: 21/05/2026
- * Ruta: src/db/schema/auth.ts
- * Descripció: Esquema de dades relacional per al control de Multi-tenancy i Rols (RBAC).
+ * Creation/modification date: 21/05/2026
+ * Path: src/db/schema/auth.ts
+ * Description: Relational data schema for Multi-tenancy and Roles (RBAC) control.
  */
 
 import { pgTable, uuid, text, timestamp } from "drizzle-orm/pg-core";
 
-// 1. La taula mestra d'empreses
+// 1. La tabla maestra de empresas
 export const companies = pgTable("companies", {
   id: uuid("id").defaultRandom().primaryKey(),
   name: text("name").notNull(),
-  tenantSlug: text("tenant_slug").notNull().unique(), // ex: "fusteria-marcel"
+  tenantSlug: text("tenant_slug").notNull().unique(), // ej: "fusteria-marcel"
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
-// 2. La taula d'usuaris (Treballadors, caps, admins)
+// 2. La tabla de usuarios (Trabajadores, jefes, admins)
 export const users = pgTable("users", {
   id: uuid("id").defaultRandom().primaryKey(),
   companyId: uuid("company_id")
@@ -37,46 +37,46 @@ export const users = pgTable("users", {
 });
 ```
 
-### Flux d'Entrada (Login)
+### Flujo de Entrada (Login)
 
-**Al Cloud:** Quan un usuari va a `app.ribotflow.com/login` i posa el seu correu i contrasenya, Auth.js valida les credencials al servidor. El sistema busca l'usuari a la base de dades i injecta el `companyId` i el `role` dins de la seva sessió encriptada (JWT).
+**En el Cloud:** Cuando un usuario va a `app.ribotflow.com/login` e introduce su correo y contraseña, Auth.js valida las credenciales en el servidor. El sistema busca al usuario en la base de datos e inyecta el `companyId` y el `role` dentro de su sesión encriptada (JWT).
 
-A partir d'aquell moment, cada vegada que l'usuari navega o demana dades, el servidor de Next.js llegeix la sessió i injecta automàticament un filtre invisible:
+A partir de ese momento, cada vez que el usuario navega o solicita datos, el servidor de Next.js lee la sesión e inyecta automáticamente un filtro invisible:
 
 ```typescript
 where(eq(tickets.companyId, session.user.companyId))
 ```
 
-> **Resultat:** L'usuari mai pot veure dades d'altres empreses perquè el codi del servidor impedeix físicament que es facin consultes sense el seu identificador d'empresa.
+> **Resultado:** El usuario nunca puede ver datos de otras empresas porque el código del servidor impide físicamente que se realicen consultas sin su identificador de empresa.
 
 ---
 
-## 🐋 2. Com es trasllada això al contenidor Docker (Self-Hosted)?
+## 🐋 2. ¿Cómo se traslada esto al contenedor Docker (Self-Hosted)?
 
-Aquí ve la màgia de la separació de responsabilitats. Quan el client instal·la el contenidor Docker a la seva pròpia VPS:
+Aquí viene la magia de la separación de responsabilidades. Cuando el cliente instala el contenedor Docker en su propia VPS:
 
-1. En arrancar l'ERP per primera vegada, el sistema detecta que `NEXT_PUBLIC_APP_MODE=self_hosted`
-2. L'aplicació mostra una **pantalla de configuració inicial** on el client escriu el nom de la seva empresa i el correu del super-administrador (Owner)
-3. El sistema crea una **única fila** a la taula `companies` i el primer usuari amb rol `OWNER`
-4. Com que el contenidor corre a la seva VPS, la seva base de dades només tindrà les seves dades
-5. La lògica de codi **no canvia**: filtra per `companyId`, però només hi ha un sol ID d'empresa
+1. Al arrancar el ERP por primera vez, el sistema detecta que `NEXT_PUBLIC_APP_MODE=self_hosted`
+2. La aplicación muestra una **pantalla de configuración inicial** donde el cliente escribe el nombre de su empresa y el correo del super-administrador (Owner)
+3. El sistema crea una **única fila** en la tabla `companies` y el primer usuario con rol `OWNER`
+4. Como el contenedor corre en su VPS, su base de datos solo tendrá sus datos
+5. La lógica de código **no cambia**: filtra por `companyId`, pero solo hay un único ID de empresa
 
 ---
 
-## 🔑 3. El Sistema de Rols (RBAC) a la Pràctica
+## 🔑 3. El Sistema de Roles (RBAC) en la Práctica
 
-Un cop l'usuari ha entrat a l'app (Cloud o VPS), Next.js utilitza el camp `role` de la sessió per activar o desactivar permisos.
+Una vez el usuario ha entrado en la app (Cloud o VPS), Next.js utiliza el campo `role` de la sesión para activar o desactivar permisos.
 
-### Matriu de Rols
+### Matriz de Roles
 
 | Rol | Permisos |
 |-----|----------|
-| 👑 **OWNER** | Accés absolut. Facturació, llicències, tots els mòduls, configuració d'agents IA |
-| 💼 **ADMIN** | Clients, ERP, CRM, Veri*factu, Calendari Command Center. No pot canviar subscripció ni esborrar empresa |
-| 🔧 **TECHNICIAN** | Només mòdul SAT (ordres assignades) + Control d'Accés (fitxar). No veu facturació, CRM ni estoc aliè |
-| 📋 **OFFICE** | Facturació bàsica, clients, calendari. No accés a configuració avançada ni SAT de camp |
+| 👑 **OWNER** | Acceso absoluto. Facturación, licencias, todos los módulos, configuración de agentes IA |
+| 💼 **ADMIN** | Clientes, ERP, CRM, Veri*factu, Calendario Command Center. No puede cambiar suscripción ni borrar empresa |
+| 🔧 **TECHNICIAN** | Solo módulo SAT (órdenes asignadas) + Control de Acceso (fichar). No ve facturación, CRM ni stock ajeno |
+| 📋 **OFFICE** | Administrativo: facturación básica, clientes, calendario. No acceso a configuración avanzada ni SAT de campo |
 
-### Exemple de Protecció de Pantalla (Next.js)
+### Ejemplo de Protección de Pantalla (Next.js)
 
 ```typescript
 import { auth } from "@/lib/auth";
@@ -85,15 +85,15 @@ import { redirect } from "next/navigation";
 export default async function BillingDashboard() {
   const session = await auth();
 
-  // Si el tècnic intenta entrar a facturació per URL, el fem fora
+  // Si el técnico intenta entrar a facturación por URL, lo echamos
   if (!session || (session.user.role !== "OWNER" && session.user.role !== "ADMIN")) {
     redirect("/dashboard/unauthorized");
   }
 
   return (
     <div>
-      <h1>Tauler de Facturació i Veri*factu</h1>
-      {/* Contingut protegit */}
+      <h1>Panel de Facturación y Veri*factu</h1>
+      {/* Contenido protegido */}
     </div>
   );
 }
@@ -101,13 +101,13 @@ export default async function BillingDashboard() {
 
 ---
 
-## 📝 Resum d'Arquitectura
+## 📝 Resumen de Arquitectura
 
-| Concepte | Implementació |
-|----------|---------------|
-| **Multi-tenancy Cloud** | Lògic via `company_id` a totes les taules |
-| **Multi-tenancy Self-Hosted** | Mateix codi, 1 sola empresa a la DB |
-| **Autenticació** | Auth.js v5 amb JWT signat |
-| **Sessions** | Cookie `httpOnly`, `secure`, `sameSite: "lax"` |
-| **Rols** | `OWNER`, `ADMIN`, `TECHNICIAN`, `OFFICE` |
-| **Filtre DB** | Obligatori `company_id` a totes les consultes |
+| Concepto | Implementación |
+|----------|----------------|
+| **Multi-tenancy Cloud** | Lógico vía `company_id` en todas las tablas |
+| **Multi-tenancy Self-Hosted** | Mismo código, 1 sola empresa en la DB |
+| **Autenticación** | Auth.js v5 con JWT firmado |
+| **Sesiones** | Cookie `httpOnly`, `secure`, `sameSite: "lax"` |
+| **Roles** | `OWNER`, `ADMIN`, `TECHNICIAN`, `OFFICE` |
+| **Filtro DB** | Obligatorio `company_id` en todas las consultas |

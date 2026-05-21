@@ -1,14 +1,14 @@
-# TOOLING_AND_WORKFLOW.md - Ecosistema de Qualitat, CI/CD i Metodologia Hermes
+# TOOLING_AND_WORKFLOW.md - Ecosistema de Calidad, CI/CD y Metodología Hermes
 
-## 🐕 1. Qualitat de Codi Local (Husky & Lint-Staged)
+## 🐕 1. Calidad de Código Local (Husky & Lint-Staged)
 
-Per evitar que codi amb errors de tipat, format o tests fallits arribi al repositori remot, s'executen obligatòriament hooks de Git abans de cada commit.
+Para evitar que código con errores de tipado, formato o tests fallidos llegue al repositorio remoto, se ejecutan obligatoriamente hooks de Git antes de cada commit.
 
 ### Pre-commit Hook
 
-Executa `npx lint-staged`.
+Ejecuta `npx lint-staged`.
 
-**Configuració de `.lintstagedrc.json`:**
+**Configuración de `.lintstagedrc.json`:**
 
 ```json
 {
@@ -22,69 +22,69 @@ Executa `npx lint-staged`.
 
 ### Pre-push Hook
 
-Executa `pnpm tsc --noEmit` per garantir que no hi hagi cap error de TypeScript a tot el projecte abans de pujar el codi.
+Ejecuta `pnpm tsc --noEmit` para garantizar que no haya ningún error de TypeScript en todo el proyecto antes de subir el código.
 
 ---
 
-## 🚀 2. Automatització Remota (GitHub Actions Pipelines)
+## 🚀 2. Automatización Remota (GitHub Actions Pipelines)
 
-El repositori disposa de dues pipelines automatitzades en l'entorn de CI/CD:
+El repositorio dispone de dos pipelines automatizadas en el entorno de CI/CD:
 
-### Pipeline A: Validació de Qualitat (`ci.yml`)
+### Pipeline A: Validación de Calidad (`ci.yml`)
 
-S'executa automàticament a cada Pull Request dirigida a `main` o `develop`.
+Se ejecuta automáticamente en cada Pull Request dirigida a `main` o `develop`.
 
-1. Checkout del codi i instal·lació de `pnpm`
-2. Auditoria de seguretat de dependències (`pnpm audit`)
-3. Validació del linter i tipat rígid (`pnpm lint` + `pnpm tsc`)
-4. Execució de la suite de tests unitaris i d'integració (`pnpm test`)
+1. Checkout del código e instalación de `pnpm`
+2. Auditoría de seguridad de dependencias (`pnpm audit`)
+3. Validación del linter y tipado estricto (`pnpm lint` + `pnpm tsc`)
+4. Ejecución de la suite de tests unitarios y de integración (`pnpm test`)
 
-### Pipeline B: Desplegament i Docker Build (`cd.yml`)
+### Pipeline B: Despliegue y Docker Build (`cd.yml`)
 
-S'executa automàticament quan es fa merge a la branca `main`.
+Se ejecuta automáticamente cuando se hace merge a la rama `main`.
 
-1. Execució de tests i build de Next.js de producció
-2. Generació de la imatge Docker optimitzada amb **Multi-stage builds** (<200MB)
-3. Puja de la imatge al **GitHub Container Registry (GHCR)** amb tag `:latest` + hash del commit
-4. Imatge llesta per a clients SaaS i Self-Hosted
-
----
-
-## 🎯 3. Monitorització i Observabilitat (Sentry)
-
-Sentry captura en temps real qualsevol error en producció abans que el client se n'adoni:
-
-- **Frontend:** Errors de renderització o Hydration a Next.js
-- **Backend:** Errors a Server Actions o rutes de l'API
-
-### Regla d'or per a Self-Hosted
-
-> Si l'aplicació s'executa en mode `self_hosted`, els errors es redirigeixen al Sentry local del client o es desactiven completament per protegir la privacitat de les dades de l'empresa, segons la configuració del fitxer `.env`.
+1. Ejecución de tests y build de Next.js de producción
+2. Generación de la imagen Docker optimizada con **Multi-stage builds** (<200MB)
+3. Subida de la imagen al **GitHub Container Registry (GHCR)** con tag `:latest` + hash del commit
+4. Imagen lista para clientes SaaS y Self-Hosted
 
 ---
 
-## 🧠 4. Memòria del Projecte i Protocols d'Agents
+## 🎯 3. Monitorización y Observabilidad (Sentry)
+
+Sentry captura en tiempo real cualquier error en producción antes de que el cliente se dé cuenta:
+
+- **Frontend:** Errores de renderizado o Hydration en Next.js
+- **Backend:** Errores en Server Actions o rutas de la API
+
+### Regla de oro para Self-Hosted
+
+> Si la aplicación se ejecuta en modo `self_hosted`, los errores se redirigen al Sentry local del cliente o se desactivan completamente para proteger la privacidad de los datos de la empresa, según la configuración del archivo `.env`.
+
+---
+
+## 🧠 4. Memoria del Proyecto y Protocolos de Agentes
 
 ### A. MCP Engram (Model Context Protocol - Memory Core)
 
-Aquest projecte està optimitzat per ser desenvolupat en col·laboració amb agents de IA utilitzant **Engram**.
+Este proyecto está optimizado para ser desarrollado en colaboración con agentes de IA utilizando **Engram**.
 
-**Funció:** Engram manté un índex de memòria semàntica a llarg termini sobre les decisions d'arquitectura. Cada vegada que un agent crea o modifica un servei estructural (com la lògica de Veri*factu o els vectors del RAG), ha d'actualitzar la memòria d'Engram perquè els següents agents recordin el context exacte sense necessitat de tornar a llegir tot el repositori.
+**Función:** Engram mantiene un índice de memoria semántica a largo plazo sobre las decisiones de arquitectura. Cada vez que un agente crea o modifica un servicio estructural (como la lógica de Veri*factu o los vectores del RAG), debe actualizar la memoria de Engram para que los siguientes agentes recuerden el contexto exacto sin necesidad de volver a leer todo el repositorio.
 
-### B. Metodologia Hermes (Desenvolupament Proactiu Guiat per IA)
+### B. Metodología Hermes (Desarrollo Proactivo Guiado por IA)
 
-La metodologia Hermes és l'estàndard de desenvolupament que optimitza com els agents d'IA dissenyen programari en cicles paral·lels de forma asíncrona:
+La metodología Hermes es el estándar de desarrollo que optimiza cómo los agentes de IA diseñan software en ciclos paralelos de forma asíncrona:
 
 ```
-[ Especificació Declarativa ] ──> [ Agent Hermes ] ──> [ Generació Automàtica de Proves/Mocks ]
-                                                                       │
-[ Codi Refinat Final ] <── [ Execució en Sandbox/Validació ] <────────┘
+[ Especificación Declarativa ] ──> [ Agente Hermes ] ──> [ Generación Automática de Pruebas/Mocks ]
+                                                                         │
+[ Código Refinado Final ] <── [ Ejecución en Sandbox/Validación ] <─────┘
 ```
 
-| Fase | Descripció |
-|------|------------|
-| **Abstracció Declarativa** | No es demana codi directament. Primer s'escriu l'especificació o la interfície pura a nivell de tipus (SDD) |
-| **Generació Aïllada en Sandbox** | L'agent genera la funcionalitat en un fitxer separat o branca aïllada i genera immediatament els mocks de base de dades utilitzant factories de test |
-| **Feedback Loop Automatitzat** | L'agent utilitza la seva pròpia eina d'execució de tests per provar el codi 3-4 vegades en segon pla abans de presentar la solució final |
+| Fase | Descripción |
+|------|-------------|
+| **Abstracción Declarativa** | No se pide código directamente. Primero se escribe la especificación o la interfaz pura a nivel de tipos (SDD) |
+| **Generación Aislada en Sandbox** | El agente genera la funcionalidad en un archivo separado o rama aislada y genera inmediatamente los mocks de base de datos usando factories de test |
+| **Feedback Loop Automatizado** | El agente utiliza su propia herramienta de ejecución de tests para probar el código 3-4 veces en segundo plano antes de presentar la solución final |
 
-**Resultat:** Codi que compila al 100% i respecta la separació de responsabilitats de l'`AGENTS.md`.
+**Resultado:** Código que compila al 100% y respeta la separación de responsabilidades del `AGENTS.md`.
