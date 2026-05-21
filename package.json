@@ -20,6 +20,11 @@
     "db:push": "drizzle-kit push",
     "db:pull": "drizzle-kit pull",
     "db:check": "drizzle-kit check",
+    "db:up": "docker compose -f docker-compose.dev.yml up -d",
+    "db:down": "docker compose -f docker-compose.dev.yml down",
+    "db:logs": "docker compose -f docker-compose.dev.yml logs -f db",
+    "db:reset": "docker compose -f docker-compose.dev.yml down -v && docker compose -f docker-compose.dev.yml up -d",
+    "db:setup": "pnpm db:up && echo 'Waiting for PostgreSQL...' && timeout /t 8 /nobreak >nul && pnpm db:push",
     "prepare": "husky"
   },
   "dependencies": {

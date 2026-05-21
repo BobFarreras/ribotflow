@@ -5,12 +5,27 @@
 
 ## 🚀 Inicio Rápido
 
+### Desarrollo Local
+
 ```bash
 pnpm install
 cp .env.example .env.local
-pnpm db:generate
-pnpm db:migrate
+pnpm db:setup        # Levanta PostgreSQL + aplica esquema
+pnpm dev             # http://localhost:3000
+```
+
+### Cloud (Supabase)
+
+```bash
+# Pon tu DATABASE_URL de Supabase en .env.local
+pnpm db:push
 pnpm dev
+```
+
+### Self-Hosted (Clientes)
+
+```bash
+docker compose up -d
 ```
 
 ## 📦 Tecnologías
@@ -60,10 +75,12 @@ Mismo código, diferente contexto. El filtro `company_id` funciona en ambos modo
 |---------|-----------|
 | `AGENTS.md` | Reglas de arquitectura y desarrollo |
 | `PROJECT.md` | Blueprint de módulos y hoja de ruta |
-| `INFRASTRUCTURE.md` | Matriu de comportamiento por modo |
+| `INFRASTRUCTURE.md` | Matriz de comportamiento por modo |
 | `TOOLING_AND_WORKFLOW.md` | Ecosistema de calidad, CI/CD, Hermes |
 | `AUTH.md` | Autenticación, multi-tenancy y RBAC |
-| `ARCHITECTURE.md` | Plànols completos de la estructura |
+| `DATABASE.md` | Guía de base de datos (setup, proveedores, esquema) |
+| `DESIGN.md` | Sistema de diseño (tokens, colores, componentes) |
+| `ARCHITECTURE.md` | Planos completos de la estructura |
 | `.skills/` | Contexto rápido para agentes IA |
 
 ## 🌐 Idiomas

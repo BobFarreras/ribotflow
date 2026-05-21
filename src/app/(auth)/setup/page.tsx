@@ -1,7 +1,7 @@
 /**
  * Creation/modification date: 21/05/2026
- * Path: src/app/(auth)/register/page.tsx
- * Description: Registration page with form connected to Server Action. Creates company + owner.
+ * Path: src/app/(auth)/setup/page.tsx
+ * Description: Self-hosted initial setup page. Creates first company + owner user.
  */
 
 "use client";
@@ -9,10 +9,10 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "motion/react";
-import { Lock, Mail, User, Building } from "lucide-react";
-import { registerAction } from "@/actions/auth/register";
+import { Lock, Mail, Building } from "lucide-react";
+import { setupAction } from "@/actions/auth/setup";
 
-export default function RegisterPage() {
+export default function SetupPage() {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -20,11 +20,10 @@ export default function RegisterPage() {
   async function handleSubmit(formData: FormData) {
     setError(null);
     startTransition(async () => {
-      const result = await registerAction({
-        name: formData.get("name"),
+      const result = await setupAction({
+        companyName: formData.get("companyName"),
         email: formData.get("email"),
         password: formData.get("password"),
-        companyName: formData.get("companyName"),
       });
 
       if (result?.error) {
@@ -45,11 +44,14 @@ export default function RegisterPage() {
         className="w-full max-w-md space-y-8 rounded-xl border border-[var(--border)] bg-[var(--surface)] p-8 shadow-sm"
       >
         <div className="text-center">
-          <h1 className="text-2xl font-semibold text-[var(--text)]">
-            RIBOTFLOW
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[var(--primary)]/10">
+            <Building className="h-6 w-6 text-[var(--primary)]" />
+          </div>
+          <h1 className="mt-4 text-2xl font-semibold text-[var(--text)]">
+            Configuración inicial
           </h1>
           <p className="mt-2 text-sm text-[var(--text-muted)]">
-            Crea tu cuenta para empezar
+            Crea tu empresa y cuenta de administrador
           </p>
         </div>
 
@@ -84,31 +86,10 @@ export default function RegisterPage() {
 
             <div>
               <label
-                htmlFor="name"
-                className="mb-1.5 block text-sm font-medium text-[var(--text)]"
-              >
-                Nombre completo
-              </label>
-              <div className="relative">
-                <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--text-muted)]" />
-                <input
-                  id="name"
-                  name="name"
-                  type="text"
-                  required
-                  disabled={isPending}
-                  className="w-full rounded-md border border-[var(--border)] bg-[var(--surface)] py-2 pl-10 pr-3 text-sm text-[var(--text)] placeholder:text-[var(--text-muted)] focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)] disabled:opacity-50"
-                  placeholder="Juan García"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label
                 htmlFor="email"
                 className="mb-1.5 block text-sm font-medium text-[var(--text)]"
               >
-                Correo electrónico
+                Correo del administrador
               </label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--text-muted)]" />
@@ -120,7 +101,7 @@ export default function RegisterPage() {
                   required
                   disabled={isPending}
                   className="w-full rounded-md border border-[var(--border)] bg-[var(--surface)] py-2 pl-10 pr-3 text-sm text-[var(--text)] placeholder:text-[var(--text-muted)] focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)] disabled:opacity-50"
-                  placeholder="tu@empresa.com"
+                  placeholder="admin@empresa.com"
                 />
               </div>
             </div>
@@ -153,18 +134,8 @@ export default function RegisterPage() {
             disabled={isPending}
             className="w-full rounded-md bg-[var(--primary)] px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[var(--primary-hover)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:ring-offset-2 disabled:opacity-50"
           >
-            {isPending ? "Creando cuenta..." : "Crear cuenta"}
+            {isPending ? "Configurando..." : "Configurar empresa"}
           </button>
-
-          <p className="text-center text-sm text-[var(--text-muted)]">
-            ¿Ya tienes cuenta?{" "}
-            <a
-              href="/login"
-              className="font-medium text-[var(--primary)] hover:text-[var(--primary-hover)]"
-            >
-              Inicia sesión
-            </a>
-          </p>
         </form>
       </motion.div>
     </div>

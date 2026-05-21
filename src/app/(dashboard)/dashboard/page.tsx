@@ -1,7 +1,7 @@
 /**
  * Creation/modification date: 21/05/2026
  * Path: src/app/(dashboard)/dashboard/page.tsx
- * Description: Dashboard home page with module overview using design system.
+ * Description: Dashboard home page with module overview and logout functionality.
  */
 
 "use client";
@@ -14,7 +14,11 @@ import {
   Users,
   Clock,
   Settings,
+  LogOut,
 } from "lucide-react";
+import { logoutAction } from "@/actions/auth/logout";
+import { useRouter } from "next/navigation";
+import { useTransition } from "react";
 
 const modules = [
   {
@@ -68,6 +72,17 @@ const modules = [
 ];
 
 export default function DashboardPage() {
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+
+  function handleLogout() {
+    startTransition(async () => {
+      await logoutAction();
+      router.push("/login");
+      router.refresh();
+    });
+  }
+
   return (
     <div className="min-h-screen bg-[var(--bg)]">
       <header className="border-b border-[var(--border)] bg-[var(--surface)] px-6 py-4">
@@ -77,8 +92,13 @@ export default function DashboardPage() {
           </h1>
           <nav className="flex items-center gap-4">
             <span className="text-sm text-[var(--text-muted)]">Dashboard</span>
-            <button className="rounded-md bg-[var(--danger)] px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-[var(--danger)]/90">
-              Cerrar sesión
+            <button
+              onClick={handleLogout}
+              disabled={isPending}
+              className="flex items-center gap-1.5 rounded-md border border-[var(--border)] bg-[var(--surface)] px-3 py-1.5 text-sm font-medium text-[var(--text-muted)] transition-colors hover:border-[var(--danger)] hover:text-[var(--danger)] disabled:opacity-50"
+            >
+              <LogOut className="h-3.5 w-3.5" />
+              {isPending ? "Cerrando..." : "Cerrar sesión"}
             </button>
           </nav>
         </div>

@@ -14,5 +14,5 @@ export default defineConfig({
     url: process.env.DATABASE_URL ?? "postgresql://postgres:postgres@localhost:5432/ribotflow",
   },
   verbose: true,
-  strict: true,
+  strict: false,
 });
