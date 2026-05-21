@@ -1,14 +1,18 @@
 /**
- * Data de creació/modificació: 21/05/2026
- * Ruta: src/app/layout.tsx
- * Descripció: Layout arrel de l'aplicació. Configura idioma, metadades i providers globals.
+ * Creation/modification date: 21/05/2026
+ * Path: src/app/layout.tsx
+ * Description: Root layout with Inter font, dark mode support, and metadata.
  */
 
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "@/styles/globals.css";
 
-const inter = Inter({ subsets: ["latin"] });
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: {
@@ -24,8 +28,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="ca">
-      <body className={inter.className}>{children}</body>
+    <html lang="ca" className={`${inter.variable}`} suppressHydrationWarning>
+      <body className="min-h-screen antialiased">{children}</body>
     </html>
   );
 }

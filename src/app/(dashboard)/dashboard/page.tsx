@@ -1,63 +1,83 @@
 /**
  * Creation/modification date: 21/05/2026
  * Path: src/app/(dashboard)/dashboard/page.tsx
- * Description: Dashboard home page with module overview.
+ * Description: Dashboard home page with module overview using design system.
  */
 
-export default function DashboardPage() {
-  const modules = [
-    {
-      name: "SAT",
-      description: "Órdenes de trabajo y asistencia técnica",
-      icon: "🔧",
-      href: "/dashboard/sat",
-      color: "bg-blue-50 hover:bg-blue-100 border-blue-200",
-    },
-    {
-      name: "ERP",
-      description: "Productos, stock y almacenes",
-      icon: "📦",
-      href: "/dashboard/erp",
-      color: "bg-green-50 hover:bg-green-100 border-green-200",
-    },
-    {
-      name: "Facturación",
-      description: "Presupuestos, facturas y Veri*factu",
-      icon: "💰",
-      href: "/dashboard/billing",
-      color: "bg-yellow-50 hover:bg-yellow-100 border-yellow-200",
-    },
-    {
-      name: "CRM",
-      description: "Clientes, ventas y oportunidades",
-      icon: "🤝",
-      href: "/dashboard/crm",
-      color: "bg-purple-50 hover:bg-purple-100 border-purple-200",
-    },
-    {
-      name: "Control de Acceso",
-      description: "Fichaje de jornada y ausencias",
-      icon: "⏱️",
-      href: "/dashboard/access",
-      color: "bg-red-50 hover:bg-red-100 border-red-200",
-    },
-    {
-      name: "Configuración",
-      description: "Ajustes de empresa y usuarios",
-      icon: "⚙️",
-      href: "/dashboard/settings",
-      color: "bg-gray-50 hover:bg-gray-100 border-gray-200",
-    },
-  ];
+"use client";
 
+import { motion } from "motion/react";
+import {
+  Wrench,
+  Package,
+  FileText,
+  Users,
+  Clock,
+  Settings,
+} from "lucide-react";
+
+const modules = [
+  {
+    name: "SAT",
+    description: "Órdenes de trabajo y asistencia técnica",
+    icon: Wrench,
+    href: "/dashboard/sat",
+    color: "var(--module-sat)",
+    bg: "color-mix(in srgb, var(--module-sat) 8%, transparent)",
+  },
+  {
+    name: "ERP",
+    description: "Productos, stock y almacenes",
+    icon: Package,
+    href: "/dashboard/erp",
+    color: "var(--module-erp)",
+    bg: "color-mix(in srgb, var(--module-erp) 8%, transparent)",
+  },
+  {
+    name: "Facturación",
+    description: "Presupuestos, facturas y Veri*factu",
+    icon: FileText,
+    href: "/dashboard/billing",
+    color: "var(--module-billing)",
+    bg: "color-mix(in srgb, var(--module-billing) 8%, transparent)",
+  },
+  {
+    name: "CRM",
+    description: "Clientes, ventas y oportunidades",
+    icon: Users,
+    href: "/dashboard/crm",
+    color: "var(--module-crm)",
+    bg: "color-mix(in srgb, var(--module-crm) 8%, transparent)",
+  },
+  {
+    name: "Control de Acceso",
+    description: "Fichaje de jornada y ausencias",
+    icon: Clock,
+    href: "/dashboard/access",
+    color: "var(--module-access)",
+    bg: "color-mix(in srgb, var(--module-access) 8%, transparent)",
+  },
+  {
+    name: "Configuración",
+    description: "Ajustes de empresa y usuarios",
+    icon: Settings,
+    href: "/dashboard/settings",
+    color: "var(--module-settings)",
+    bg: "color-mix(in srgb, var(--module-settings) 8%, transparent)",
+  },
+];
+
+export default function DashboardPage() {
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="border-b border-gray-200 bg-white px-6 py-4">
+    <div className="min-h-screen bg-[var(--bg)]">
+      <header className="border-b border-[var(--border)] bg-[var(--surface)] px-6 py-4">
         <div className="mx-auto flex max-w-7xl items-center justify-between">
-          <h1 className="text-xl font-bold text-gray-900">RIBOTFLOW</h1>
+          <h1 className="text-xl font-semibold text-[var(--text)]">
+            RIBOTFLOW
+          </h1>
           <nav className="flex items-center gap-4">
-            <span className="text-sm text-gray-600">Dashboard</span>
-            <button className="rounded-md bg-red-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-red-500">
+            <span className="text-sm text-[var(--text-muted)]">Dashboard</span>
+            <button className="rounded-md bg-[var(--danger)] px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-[var(--danger)]/90">
               Cerrar sesión
             </button>
           </nav>
@@ -65,28 +85,44 @@ export default function DashboardPage() {
       </header>
 
       <main className="mx-auto max-w-7xl px-6 py-8">
-        <div className="mb-8">
-          <h2 className="text-2xl font-bold text-gray-900">
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, ease: "easeOut" }}
+          className="mb-8"
+        >
+          <h2 className="text-2xl font-semibold text-[var(--text)]">
             Bienvenido a RIBOTFLOW
           </h2>
-          <p className="mt-1 text-gray-600">
+          <p className="mt-1 text-[var(--text-muted)]">
             Selecciona un módulo para empezar
           </p>
-        </div>
+        </motion.div>
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {modules.map((mod) => (
-            <a
+          {modules.map((mod, i) => (
+            <motion.a
               key={mod.name}
               href={mod.href}
-              className={`rounded-lg border p-6 transition ${mod.color}`}
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: i * 0.05, ease: "easeOut" }}
+              whileHover={{ y: -2, transition: { duration: 0.15 } }}
+              className="group rounded-lg border border-[var(--border)] bg-[var(--surface)] p-6 shadow-sm transition-all hover:border-[var(--border-strong)] hover:shadow-md"
             >
-              <div className="text-3xl">{mod.icon}</div>
-              <h3 className="mt-3 text-lg font-semibold text-gray-900">
+              <div
+                className="flex h-10 w-10 items-center justify-center rounded-md transition-transform group-hover:scale-110"
+                style={{ backgroundColor: mod.bg, color: mod.color }}
+              >
+                <mod.icon className="h-5 w-5" />
+              </div>
+              <h3 className="mt-3 text-lg font-medium text-[var(--text)]">
                 {mod.name}
               </h3>
-              <p className="mt-1 text-sm text-gray-600">{mod.description}</p>
-            </a>
+              <p className="mt-1 text-sm text-[var(--text-muted)]">
+                {mod.description}
+              </p>
+            </motion.a>
           ))}
         </div>
       </main>
