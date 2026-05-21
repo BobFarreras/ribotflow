@@ -1,11 +1,35 @@
 # AGENTS.md - Regles d'Arquitectura i Desenvolupament per a RIBOTFLOW
 
+## 🌐 Convenció d'Idioma
+
+| Element | Idioma | Exemple |
+|---------|--------|---------|
+| **Codi** (variables, funcions, tipus, fitxers) | 🇬🇧 Anglès | `getUserById`, `InvoiceStatus`, `billing-service.ts` |
+| **Comments** (capçaleres, JSDoc, inline) | 🇬🇧 Anglès | `// Fetches user by ID with company filter` |
+| **UI** (text visible per l'usuari) | 🇨🇦 Català / 🇪🇸 Castellà | via `i18n` keys: `t("billing.invoice.title")` |
+| **DB** (taules, columnes) | 🇬🇧 Anglès | `work_orders`, `company_id`, `created_at` |
+| **API** (rutes, endpoints, responses) | 🇬🇧 Anglès | `/api/billing/invoices`, `{ "invoiceId": "..." }` |
+| **Docs equip** (AGENTS.md, PROJECT.md, .skills/) | 🇨🇦 Català | Documentació interna de l'equip |
+| **Commits** (missatges git) | 🇬🇧 Anglès | `feat: add invoice generation` |
+| **i18n keys** | 🇬🇧 Anglès | `sat.workOrder.create.success` |
+
+### Regla d'Or
+> **Tot el codi en anglès.** L'usuari final veu català o castellà mitjançant el sistema `i18n`. La documentació de l'equip es manté en català.
+
+### i18n Implementation
+- Fitxers JSON a `/src/locales/{ca,es}/`
+- Mai text hardcoded en components → sempre claus de traducció
+- Taules DB: estats i categories amb claus, mai text rígid
+- Server Components: `getTranslations()` per a i18n al servidor
+- Client Components: `useTranslations()` hook per a i18n al client
+
 ## 🤖 Regles Globals per a Agents IA
 - **Idioma de comunicació:** Català (preferent) / Castellà / Anglès (codi)
 - **Gestor de paquets:** `pnpm` (obligatori, mai npm ni yarn)
 - **Tipat:** TypeScript estricte (`strict: true` al tsconfig)
 - **Metodologia:** SDD (Specification-Driven Development) + SOLID
 - **Arquitectura:** Clean Architecture amb Separació de Responsabilitats (SoC)
+- **Memòria:** Engram MCP persistent — els agents guarden decisions a `~/.engram/`
 
 ## 🏗️ Principis Arquitectònics
 1. **SoC (Separation of Concerns):** Cada capa té una responsabilitat única
