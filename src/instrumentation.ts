@@ -1,7 +1,7 @@
 /**
- * Data de creació/modificació: 21/05/2026
- * Ruta: src/instrumentation.ts
- * Descripció: Instrumentació de Sentry. Només s'activa en mode cloud o si Sentry està configurat.
+ * Creation/modification date: 21/05/2026
+ * Path: src/instrumentation.ts
+ * Description: Sentry instrumentation placeholder. Activated when @sentry/nextjs is installed.
  */
 
 export async function register() {
@@ -10,7 +10,8 @@ export async function register() {
     const mode = process.env.NEXT_PUBLIC_APP_MODE;
 
     if (dsn && mode === "cloud") {
-      await import("@sentry/nextjs");
+      // Sentry will be initialized when @sentry/nextjs is installed
+      // await import("@sentry/nextjs");
     }
   }
 }

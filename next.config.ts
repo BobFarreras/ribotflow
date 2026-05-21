@@ -7,12 +7,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  output: "standalone",
-  experimental: {
-    serverActions: {
-      bodySizeLimit: "10mb",
-    },
-  },
+  output: process.env.NODE_ENV === "production" ? "standalone" : undefined,
   poweredByHeader: false,
   reactStrictMode: true,
 };

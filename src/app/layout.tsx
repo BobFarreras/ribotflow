@@ -12,11 +12,10 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: {
-    default: "RIBOTFLOW - Sistema Operatiu Empresarial",
+    default: "RIBOTFLOW - Sistema Operativo Empresarial",
     template: "%s | RIBOTFLOW",
   },
-  description: "ERP, SAT, CRM i Control d'Accés proactiu per a empreses del 2026.",
-  manifest: "/manifest.json",
+  description: "ERP, SAT, CRM y Control de Acceso proactivo para empresas del 2026.",
 };
 
 export default function RootLayout({

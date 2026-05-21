@@ -1,0 +1,18 @@
+# Core team reviews all PRs
+* @BobFarreras
+
+# DB changes reviewed by DB_ARCHITECT
+src/db/ @BobFarreras
+
+# Auth changes reviewed by AUTH_GUARD
+src/lib/auth/ @BobFarreras
+src/proxy.ts @BobFarreras
+
+# UI changes reviewed by UI_UX
+src/components/ @BobFarreras
+src/app/ @BobFarreras
+
+# Infrastructure changes reviewed by DEVOPS_HERMES
+.github/ @BobFarreras
+Dockerfile @BobFarreras
+docker-compose.yml @BobFarreras
