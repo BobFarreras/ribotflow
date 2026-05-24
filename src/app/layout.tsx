@@ -8,6 +8,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
+import { SessionProvider } from "next-auth/react";
 import "@/styles/globals.css";
 
 const inter = Inter({
@@ -30,7 +31,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang="ca" className={`${inter.variable}`} suppressHydrationWarning>
       <body className="min-h-screen antialiased" suppressHydrationWarning>
-        <NextIntlClientProvider messages={messages}>{children}</NextIntlClientProvider>
+        <SessionProvider>
+          <NextIntlClientProvider messages={messages}>{children}</NextIntlClientProvider>
+        </SessionProvider>
       </body>
     </html>
   );
