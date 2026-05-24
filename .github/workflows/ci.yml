@@ -1,44 +1,64 @@
 # ==========================================
-# RIBOTFLOW - CI Pipeline (GitHub Actions)
-# Data: 21/05/2026
+# RIBOTFLOW - GitHub Actions CI Pipeline
+# Description: Runs lint, typecheck, tests, and build on every PR.
 # ==========================================
 
-name: CI - Validació de Qualitat
+name: CI
 
 on:
+  push:
+    branches: [main, develop]
   pull_request:
     branches: [main, develop]
 
 jobs:
-  validate:
+  quality:
+    name: Quality Checks
     runs-on: ubuntu-latest
+    timeout-minutes: 10
 
     steps:
-      - name: Checkout
+      - name: Checkout code
         uses: actions/checkout@v4
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: latest
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: "pnpm"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 10
+          run_install: false
+
+      - name: Get pnpm store directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Security audit
-        run: pnpm audit --audit-level=moderate
+      - name: Run typecheck
+        run: pnpm typecheck
 
-      - name: Lint
+      - name: Run lint
         run: pnpm lint
 
-      - name: Type check
-        run: pnpm tsc --noEmit
+      - name: Run format check
+        run: pnpm format:check
 
-      - name: Tests
+      - name: Run tests
         run: pnpm test
+
+      - name: Build
+        run: pnpm build

@@ -25,6 +25,8 @@
     "db:logs": "docker compose -f docker-compose.dev.yml logs -f db",
     "db:reset": "docker compose -f docker-compose.dev.yml down -v && docker compose -f docker-compose.dev.yml up -d",
     "db:setup": "pnpm db:up && echo 'Waiting for PostgreSQL...' && timeout /t 8 /nobreak >nul && pnpm db:push",
+    "test:db:setup": "tsx tests/db-setup.ts",
+    "test:ci": "vitest run --coverage",
     "prepare": "husky"
   },
   "dependencies": {
@@ -51,6 +53,7 @@
     "@types/react-dom": "^19.0.0",
     "@vitejs/plugin-react": "^4.3.0",
     "@vitest/coverage-v8": "^4.1.7",
+    "dotenv": "^17.4.2",
     "drizzle-kit": "^0.30.0",
     "eslint": "^9.0.0",
     "eslint-config-next": "^16.2.6",
@@ -59,11 +62,15 @@
     "postcss": "^8.4.0",
     "prettier": "^3.4.0",
     "tailwindcss": "^4.0.0",
+    "tsx": "^4.22.3",
     "typescript": "^5.7.0",
     "vitest": "^4.1.7"
   },
   "packageManager": "pnpm@10.0.0",
   "engines": {
     "node": ">=20.0.0"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": ["@sentry/cli", "esbuild", "sharp", "unrs-resolver"]
   }
 }
