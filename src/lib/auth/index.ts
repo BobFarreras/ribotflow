@@ -74,6 +74,26 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       }
       return session;
     },
+    authorized: async ({ auth, request }) => {
+      // Allow public routes
+      const pathname = request?.nextUrl?.pathname ?? "";
+      const publicRoutes = ["/login", "/register", "/setup", "/api/health"];
+      if (publicRoutes.includes(pathname)) return true;
+      if (pathname.startsWith("/api/auth")) return true;
+
+      // Require auth for protected routes
+      if (!auth?.user) return false;
+
+      // RBAC for TECHNICIAN
+      const userRole = auth.user.role as Role;
+      if (userRole === "TECHNICIAN") {
+        const allowedRoutes = ["/dashboard/sat", "/dashboard/access"];
+        const isAllowed = allowedRoutes.some((route) => pathname.startsWith(route));
+        return isAllowed;
+      }
+
+      return true;
+    },
   },
   pages: {
     signIn: "/login",
