@@ -67,14 +67,8 @@ export const workOrderCategories = pgTable(
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
   },
   (table) => ({
-    companySlugIdx: index("idx_wo_categories_company_slug").on(
-      table.companyId,
-      table.slug
-    ),
-    companySortIdx: index("idx_wo_categories_company_sort").on(
-      table.companyId,
-      table.sortOrder
-    ),
+    companySlugIdx: index("idx_wo_categories_company_slug").on(table.companyId, table.slug),
+    companySortIdx: index("idx_wo_categories_company_sort").on(table.companyId, table.sortOrder),
   })
 );
 
@@ -100,18 +94,14 @@ export const workOrders = pgTable(
     number: text("number").notNull(),
     title: text("title").notNull(),
     description: text("description"),
-    status: text("status").$type<
-      | "pending"
-      | "assigned"
-      | "in_progress"
-      | "paused"
-      | "completed"
-      | "closed"
-      | "cancelled"
-    >()
+    status: text("status")
+      .$type<
+        "pending" | "assigned" | "in_progress" | "paused" | "completed" | "closed" | "cancelled"
+      >()
       .default("pending")
       .notNull(),
-    priority: text("priority").$type<"low" | "medium" | "high" | "urgent">()
+    priority: text("priority")
+      .$type<"low" | "medium" | "high" | "urgent">()
       .default("medium")
       .notNull(),
     scheduledDate: timestamp("scheduled_date"),
@@ -128,18 +118,9 @@ export const workOrders = pgTable(
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
   },
   (table) => ({
-    companyStatusIdx: index("idx_wo_company_status").on(
-      table.companyId,
-      table.status
-    ),
-    companyAssignedIdx: index("idx_wo_company_assigned").on(
-      table.companyId,
-      table.assignedTo
-    ),
-    companyClientIdx: index("idx_wo_company_client").on(
-      table.companyId,
-      table.clientId
-    ),
+    companyStatusIdx: index("idx_wo_company_status").on(table.companyId, table.status),
+    companyAssignedIdx: index("idx_wo_company_assigned").on(table.companyId, table.assignedTo),
+    companyClientIdx: index("idx_wo_company_client").on(table.companyId, table.clientId),
     numberIdx: index("idx_wo_number").on(table.companyId, table.number),
   })
 );
@@ -204,8 +185,7 @@ export const workOrderAttachments = pgTable(
       .references(() => workOrders.id, { onDelete: "cascade" })
       .notNull(),
     uploadedBy: uuid("uploaded_by").notNull(),
-    type: text("type").$type<"photo" | "video" | "document" | "audio">()
-      .notNull(),
+    type: text("type").$type<"photo" | "video" | "document" | "audio">().notNull(),
     fileName: text("file_name").notNull(),
     storageKey: text("storage_key").notNull(),
     url: text("url"),
@@ -224,10 +204,7 @@ export const workOrderAttachments = pgTable(
     createdAt: timestamp("created_at").defaultNow().notNull(),
   },
   (table) => ({
-    woTypeIdx: index("idx_wo_attachments_work_order_type").on(
-      table.workOrderId,
-      table.type
-    ),
+    woTypeIdx: index("idx_wo_attachments_work_order_type").on(table.workOrderId, table.type),
     woCreatedIdx: index("idx_wo_attachments_work_order_created").on(
       table.workOrderId,
       table.createdAt
@@ -272,9 +249,8 @@ export const workOrderLocations = pgTable(
       .references(() => workOrders.id, { onDelete: "cascade" })
       .notNull(),
     userId: uuid("user_id").notNull(),
-    eventType: text("event_type").$type<
-      "check_in" | "check_out" | "location_update" | "route_point"
-    >()
+    eventType: text("event_type")
+      .$type<"check_in" | "check_out" | "location_update" | "route_point">()
       .notNull(),
     lat: numeric("lat", { precision: 10, scale: 7 }).notNull(),
     lng: numeric("lng", { precision: 10, scale: 7 }).notNull(),
@@ -305,16 +281,13 @@ export const clientsRelations = relations(clients, ({ one, many }) => ({
   workOrders: many(workOrders),
 }));
 
-export const workOrderCategoriesRelations = relations(
-  workOrderCategories,
-  ({ one, many }) => ({
-    company: one(companies, {
-      fields: [workOrderCategories.companyId],
-      references: [companies.id],
-    }),
-    workOrders: many(workOrders),
-  })
-);
+export const workOrderCategoriesRelations = relations(workOrderCategories, ({ one, many }) => ({
+  company: one(companies, {
+    fields: [workOrderCategories.companyId],
+    references: [companies.id],
+  }),
+  workOrders: many(workOrders),
+}));
 
 export const workOrdersRelations = relations(workOrders, ({ one, many }) => ({
   company: one(companies, {
@@ -336,52 +309,37 @@ export const workOrdersRelations = relations(workOrders, ({ one, many }) => ({
   locations: many(workOrderLocations),
 }));
 
-export const workOrderStatusHistoryRelations = relations(
-  workOrderStatusHistory,
-  ({ one }) => ({
-    workOrder: one(workOrders, {
-      fields: [workOrderStatusHistory.workOrderId],
-      references: [workOrders.id],
-    }),
-  })
-);
+export const workOrderStatusHistoryRelations = relations(workOrderStatusHistory, ({ one }) => ({
+  workOrder: one(workOrders, {
+    fields: [workOrderStatusHistory.workOrderId],
+    references: [workOrders.id],
+  }),
+}));
 
-export const workOrderMaterialsRelations = relations(
-  workOrderMaterials,
-  ({ one }) => ({
-    workOrder: one(workOrders, {
-      fields: [workOrderMaterials.workOrderId],
-      references: [workOrders.id],
-    }),
-  })
-);
+export const workOrderMaterialsRelations = relations(workOrderMaterials, ({ one }) => ({
+  workOrder: one(workOrders, {
+    fields: [workOrderMaterials.workOrderId],
+    references: [workOrders.id],
+  }),
+}));
 
-export const workOrderAttachmentsRelations = relations(
-  workOrderAttachments,
-  ({ one }) => ({
-    workOrder: one(workOrders, {
-      fields: [workOrderAttachments.workOrderId],
-      references: [workOrders.id],
-    }),
-  })
-);
+export const workOrderAttachmentsRelations = relations(workOrderAttachments, ({ one }) => ({
+  workOrder: one(workOrders, {
+    fields: [workOrderAttachments.workOrderId],
+    references: [workOrders.id],
+  }),
+}));
 
-export const workOrderSignaturesRelations = relations(
-  workOrderSignatures,
-  ({ one }) => ({
-    workOrder: one(workOrders, {
-      fields: [workOrderSignatures.workOrderId],
-      references: [workOrders.id],
-    }),
-  })
-);
+export const workOrderSignaturesRelations = relations(workOrderSignatures, ({ one }) => ({
+  workOrder: one(workOrders, {
+    fields: [workOrderSignatures.workOrderId],
+    references: [workOrders.id],
+  }),
+}));
 
-export const workOrderLocationsRelations = relations(
-  workOrderLocations,
-  ({ one }) => ({
-    workOrder: one(workOrders, {
-      fields: [workOrderLocations.workOrderId],
-      references: [workOrders.id],
-    }),
-  })
-);
+export const workOrderLocationsRelations = relations(workOrderLocations, ({ one }) => ({
+  workOrder: one(workOrders, {
+    fields: [workOrderLocations.workOrderId],
+    references: [workOrders.id],
+  }),
+}));

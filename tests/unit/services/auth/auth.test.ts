@@ -38,7 +38,7 @@ describe("Auth Service (Integration)", () => {
       if (!hasDbConnection) return;
 
       const input = {
-        companyName: "Test Corp",
+        companyName: `Test Corp ${Date.now()}`,
         email: `owner-${Date.now()}@test.com`,
         password: "SecureP@ss123",
       };
@@ -47,7 +47,7 @@ describe("Auth Service (Integration)", () => {
 
       expect(company).toBeDefined();
       expect(company.name).toBe(input.companyName);
-      expect(company.tenantSlug).toBe("test-corp");
+      expect(company.tenantSlug).toMatch(/^test-corp/);
       expect(company.plan).toBe("free");
 
       expect(user).toBeDefined();
@@ -60,7 +60,7 @@ describe("Auth Service (Integration)", () => {
       if (!hasDbConnection) return;
 
       const input = {
-        companyName: "Duplicate Corp",
+        companyName: `Duplicate Corp ${Date.now()}`,
         email: `duplicate-${Date.now()}@test.com`,
         password: "SecureP@ss123",
       };
@@ -68,7 +68,7 @@ describe("Auth Service (Integration)", () => {
       await authService.createCompanyAndOwner(input);
 
       await expect(authService.createCompanyAndOwner(input)).rejects.toThrow(
-        "Email already exists"
+        "An account with this email already exists"
       );
     });
   });
@@ -77,12 +77,18 @@ describe("Auth Service (Integration)", () => {
     it("should register a new user under a company", async () => {
       if (!hasDbConnection) return;
 
-      const company = createCompanyFactory();
+      // First create a real company
+      const companyResult = await authService.createCompanyAndOwner({
+        companyName: `Reg Corp ${Date.now()}`,
+        email: `reg-owner-${Date.now()}@test.com`,
+        password: "SecureP@ss123",
+      });
+
       const input = {
         name: "Jane Doe",
         email: `jane-${Date.now()}@test.com`,
         password: "SecureP@ss123",
-        companyId: company.id,
+        companyId: companyResult.company.id,
         role: "ADMIN" as const,
       };
 
@@ -91,7 +97,7 @@ describe("Auth Service (Integration)", () => {
       expect(user).toBeDefined();
       expect(user.email).toBe(input.email);
       expect(user.role).toBe("ADMIN");
-      expect(user.companyId).toBe(company.id);
+      expect(user.companyId).toBe(companyResult.company.id);
     });
   });
 });

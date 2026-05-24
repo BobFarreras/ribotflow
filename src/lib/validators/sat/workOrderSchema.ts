@@ -14,7 +14,7 @@ export const createWorkOrderSchema = z.object({
     .min(3, "Title must be at least 3 characters")
     .max(200, "Title must be at most 200 characters"),
   description: z.string().max(2000, "Description too long").optional(),
-  priority: z.enum(["low", "medium", "high", "urgent"]).default("medium"),
+  priority: z.enum(["low", "medium", "high", "urgent"]).default("medium").optional(),
   scheduledDate: z.string().datetime().optional(),
   estimatedDurationMinutes: z.number().int().min(1).max(480).optional(),
   notes: z.string().max(2000).optional(),

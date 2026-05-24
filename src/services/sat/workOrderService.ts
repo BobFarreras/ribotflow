@@ -5,13 +5,12 @@
  */
 
 import { db } from "@/db";
-import {
-  workOrders,
-  workOrderStatusHistory,
-  workOrderCategories,
-} from "@/db/schema/sat";
+import { workOrders, workOrderStatusHistory, workOrderCategories, clients } from "@/db/schema/sat";
 import { eq, and, desc, sql } from "drizzle-orm";
-import type { CreateWorkOrderInput, UpdateWorkOrderInput } from "@/lib/validators/sat/workOrderSchema";
+import type {
+  CreateWorkOrderInput,
+  UpdateWorkOrderInput,
+} from "@/lib/validators/sat/workOrderSchema";
 import type { WorkOrderStatus } from "@/types/sat";
 
 const VALID_STATUS_TRANSITIONS: Record<WorkOrderStatus, WorkOrderStatus[]> = {
@@ -37,10 +36,7 @@ export const workOrderService = {
       .select({ maxNumber: sql<string>`MAX(${workOrders.number})` })
       .from(workOrders)
       .where(
-        and(
-          eq(workOrders.companyId, companyId),
-          sql`${workOrders.number} LIKE ${prefix + "%"}`
-        )
+        and(eq(workOrders.companyId, companyId), sql`${workOrders.number} LIKE ${prefix + "%"}`)
       );
 
     const maxNumber = result[0]?.maxNumber;
@@ -61,10 +57,7 @@ export const workOrderService = {
       .select({ id: workOrderCategories.id })
       .from(workOrderCategories)
       .where(
-        and(
-          eq(workOrderCategories.companyId, companyId),
-          eq(workOrderCategories.isDefault, true)
-        )
+        and(eq(workOrderCategories.companyId, companyId), eq(workOrderCategories.isDefault, true))
       )
       .limit(1);
 
@@ -107,17 +100,11 @@ export const workOrderService = {
     return workOrder;
   },
 
-  async update(
-    companyId: string,
-    workOrderId: string,
-    input: UpdateWorkOrderInput
-  ) {
+  async update(companyId: string, workOrderId: string, input: UpdateWorkOrderInput) {
     const existing = await db
       .select()
       .from(workOrders)
-      .where(
-        and(eq(workOrders.id, workOrderId), eq(workOrders.companyId, companyId))
-      )
+      .where(and(eq(workOrders.id, workOrderId), eq(workOrders.companyId, companyId)))
       .limit(1);
 
     if (existing.length === 0) {
@@ -128,9 +115,7 @@ export const workOrderService = {
       .update(workOrders)
       .set({
         ...input,
-        scheduledDate: input.scheduledDate
-          ? new Date(input.scheduledDate)
-          : undefined,
+        scheduledDate: input.scheduledDate ? new Date(input.scheduledDate) : undefined,
         updatedAt: new Date(),
       })
       .where(eq(workOrders.id, workOrderId))
@@ -149,9 +134,7 @@ export const workOrderService = {
     const existing = await db
       .select()
       .from(workOrders)
-      .where(
-        and(eq(workOrders.id, workOrderId), eq(workOrders.companyId, companyId))
-      )
+      .where(and(eq(workOrders.id, workOrderId), eq(workOrders.companyId, companyId)))
       .limit(1);
 
     if (existing.length === 0) {
@@ -161,9 +144,7 @@ export const workOrderService = {
     const currentStatus = existing[0].status as WorkOrderStatus;
 
     if (!isValidTransition(currentStatus, newStatus)) {
-      throw new Error(
-        `Invalid status transition from ${currentStatus} to ${newStatus}`
-      );
+      throw new Error(`Invalid status transition from ${currentStatus} to ${newStatus}`);
     }
 
     const updateData: Partial<typeof workOrders.$inferInsert> = {
@@ -178,8 +159,7 @@ export const workOrderService = {
     if (newStatus === "completed") {
       updateData.completedAt = new Date();
       if (existing[0].startedAt) {
-        const duration =
-          (new Date().getTime() - existing[0].startedAt.getTime()) / 60000;
+        const duration = (new Date().getTime() - existing[0].startedAt.getTime()) / 60000;
         updateData.actualDurationMinutes = Math.round(duration);
       }
     }
@@ -209,15 +189,42 @@ export const workOrderService = {
     const result = await db
       .select()
       .from(workOrders)
-      .where(
-        and(eq(workOrders.id, workOrderId), eq(workOrders.companyId, companyId))
-      )
+      .where(and(eq(workOrders.id, workOrderId), eq(workOrders.companyId, companyId)))
       .limit(1);
 
     return result[0] ?? null;
   },
 
-  async getByCompany(companyId: string, filters?: { status?: WorkOrderStatus; assignedTo?: string }) {
+  async getByIdWithRelations(companyId: string, workOrderId: string) {
+    const result = await db
+      .select({
+        workOrder: workOrders,
+        client: {
+          id: clients.id,
+          name: clients.name,
+          email: clients.email,
+          phone: clients.phone,
+          address: clients.address,
+        },
+        category: {
+          id: workOrderCategories.id,
+          name: workOrderCategories.name,
+          color: workOrderCategories.color,
+        },
+      })
+      .from(workOrders)
+      .innerJoin(clients, eq(workOrders.clientId, clients.id))
+      .innerJoin(workOrderCategories, eq(workOrders.categoryId, workOrderCategories.id))
+      .where(and(eq(workOrders.id, workOrderId), eq(workOrders.companyId, companyId)))
+      .limit(1);
+
+    return result[0] ?? null;
+  },
+
+  async getByCompany(
+    companyId: string,
+    filters?: { status?: WorkOrderStatus; assignedTo?: string }
+  ) {
     const conditions = [eq(workOrders.companyId, companyId)];
 
     if (filters?.status) {
@@ -231,6 +238,37 @@ export const workOrderService = {
     return db
       .select()
       .from(workOrders)
+      .where(and(...conditions))
+      .orderBy(desc(workOrders.createdAt));
+  },
+
+  async getByCompanyWithRelations(
+    companyId: string,
+    filters?: { status?: WorkOrderStatus; assignedTo?: string }
+  ) {
+    const conditions = [eq(workOrders.companyId, companyId)];
+
+    if (filters?.status) {
+      conditions.push(eq(workOrders.status, filters.status));
+    }
+
+    if (filters?.assignedTo) {
+      conditions.push(eq(workOrders.assignedTo, filters.assignedTo));
+    }
+
+    return db
+      .select({
+        workOrder: workOrders,
+        client: { id: clients.id, name: clients.name },
+        category: {
+          id: workOrderCategories.id,
+          name: workOrderCategories.name,
+          color: workOrderCategories.color,
+        },
+      })
+      .from(workOrders)
+      .innerJoin(clients, eq(workOrders.clientId, clients.id))
+      .innerJoin(workOrderCategories, eq(workOrders.categoryId, workOrderCategories.id))
       .where(and(...conditions))
       .orderBy(desc(workOrders.createdAt));
   },

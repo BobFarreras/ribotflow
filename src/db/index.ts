@@ -4,6 +4,9 @@
  * Description: Centralized Drizzle ORM instance. Works with any PostgreSQL-compatible database (PostgreSQL, Supabase, Neon).
  */
 
+import { config } from "dotenv";
+config({ path: ".env.local" });
+
 import { drizzle } from "drizzle-orm/node-postgres";
 import pg from "pg";
 import * as authSchema from "./schema/auth";

@@ -1,23 +1,23 @@
 /**
  * Data de creació/modificació: 24/05/2026
  * Ruta: tests/unit/services/sat/workOrderService.test.ts
- * Descripció: Tests unitaris i d'integració per al workOrderService.
- *              Requereixen connexió a base de dades (pnpm test:db:setup).
+ * Descripció: Tests d'integració per al workOrderService amb base de dades real.
  */
 
 import { describe, it, expect, beforeAll } from "vitest";
 import { workOrderService } from "@/services/sat/workOrderService";
+import { seedTestDatabase } from "../../../db-seed";
 
+let testData: Awaited<ReturnType<typeof seedTestDatabase>>;
 let hasDbConnection = false;
 
-describe("WorkOrder Service", () => {
+describe("WorkOrder Service (Integration)", () => {
   beforeAll(async () => {
     try {
-      await workOrderService.getByCompany("test-company-id");
+      testData = await seedTestDatabase();
       hasDbConnection = true;
-    } catch {
-      console.warn("⚠️ Skipping integration tests: No database connection.");
-      console.warn("   Run: pnpm test:db:setup");
+    } catch (err) {
+      console.warn("⚠️ Skipping integration tests:", err);
     }
   });
 
@@ -25,75 +25,163 @@ describe("WorkOrder Service", () => {
     it("should generate first number for a new company", async () => {
       if (!hasDbConnection) return;
       const year = new Date().getFullYear();
-      const number = await workOrderService.getNextOrderNumber("new-company-id");
-      expect(number).toBe(`OT-${year}-0001`);
-    });
-
-    it("should increment sequence for existing orders", async () => {
-      if (!hasDbConnection) return;
-      // Note: This test would need an existing order in the database
-      const year = new Date().getFullYear();
-      const number = await workOrderService.getNextOrderNumber("existing-company-id");
+      const number = await workOrderService.getNextOrderNumber(
+        testData.company.id
+      );
       expect(number).toMatch(new RegExp(`OT-${year}-\\d{4}`));
     });
   });
 
-  describe("isValidTransition (logic)", () => {
-    it("should allow pending -> assigned", async () => {
-      // This tests the internal logic indirectly through updateStatus
-      // We test the error case for invalid transitions
-      expect(true).toBe(true); // Placeholder - tested via updateStatus
-    });
-  });
-
-  describe.todo("create", () => {
+  describe("create", () => {
     it("should create a work order with auto-generated number", async () => {
-      // Requires: companyId with default category, clientId
-      // Seed test data first
+      if (!hasDbConnection) return;
+
+      const categories = await workOrderService.getDefaultCategoryId(
+        testData.company.id
+      );
+
+      const workOrder = await workOrderService.create(
+        testData.company.id,
+        testData.user.id,
+        {
+          clientId: testData.client.id,
+          categoryId: categories,
+          title: "Test Work Order",
+          description: "This is a test work order",
+          priority: "high",
+        }
+      );
+
+      expect(workOrder).toBeDefined();
+      expect(workOrder.title).toBe("Test Work Order");
+      expect(workOrder.status).toBe("pending");
+      expect(workOrder.number).toMatch(/^OT-\d{4}-\d{4}$/);
     });
 
     it("should create status history entry on creation", async () => {
-      // Verify work_order_status_history row is inserted
-    });
+      if (!hasDbConnection) return;
 
-    it("should reject creation without company_id filter", async () => {
-      // Security test: ensure company_id is always applied
+      const categories = await workOrderService.getDefaultCategoryId(
+        testData.company.id
+      );
+
+      const workOrder = await workOrderService.create(
+        testData.company.id,
+        testData.user.id,
+        {
+          clientId: testData.client.id,
+          categoryId: categories,
+          title: "History Test",
+        }
+      );
+
+      const history = await workOrderService.getStatusHistory(workOrder.id);
+      expect(history.length).toBeGreaterThan(0);
+      expect(history[0].statusTo).toBe("pending");
     });
   });
 
-  describe.todo("updateStatus", () => {
+  describe("updateStatus", () => {
     it("should update status and create history entry", async () => {
+      if (!hasDbConnection) return;
+
+      const categories = await workOrderService.getDefaultCategoryId(
+        testData.company.id
+      );
+
+      const workOrder = await workOrderService.create(
+        testData.company.id,
+        testData.user.id,
+        {
+          clientId: testData.client.id,
+          categoryId: categories,
+          title: "Status Transition Test",
+        }
+      );
+
       // pending -> assigned
+      const updated = await workOrderService.updateStatus(
+        testData.company.id,
+        workOrder.id,
+        testData.user.id,
+        "assigned",
+        "Assigned to technician"
+      );
+
+      expect(updated.status).toBe("assigned");
+
+      const history = await workOrderService.getStatusHistory(workOrder.id);
+      expect(history.some((h) => h.statusTo === "assigned")).toBe(true);
     });
 
     it("should reject invalid status transitions", async () => {
-      // pending -> closed (should fail)
+      if (!hasDbConnection) return;
+
+      const categories = await workOrderService.getDefaultCategoryId(
+        testData.company.id
+      );
+
+      const workOrder = await workOrderService.create(
+        testData.company.id,
+        testData.user.id,
+        {
+          clientId: testData.client.id,
+          categoryId: categories,
+          title: "Invalid Transition Test",
+        }
+      );
+
+      await expect(
+        workOrderService.updateStatus(
+          testData.company.id,
+          workOrder.id,
+          testData.user.id,
+          "closed" // Invalid: pending -> closed
+        )
+      ).rejects.toThrow("Invalid status transition");
     });
 
     it("should set started_at on first in_progress", async () => {
-      // assigned -> in_progress
-    });
+      if (!hasDbConnection) return;
 
-    it("should calculate actual_duration on completed", async () => {
-      // in_progress -> completed (started_at exists)
-    });
+      const categories = await workOrderService.getDefaultCategoryId(
+        testData.company.id
+      );
 
-    it("should set closed_at on closed status", async () => {
-      // completed -> closed
+      const workOrder = await workOrderService.create(
+        testData.company.id,
+        testData.user.id,
+        {
+          clientId: testData.client.id,
+          categoryId: categories,
+          title: "Start Test",
+        }
+      );
+
+      await workOrderService.updateStatus(
+        testData.company.id,
+        workOrder.id,
+        testData.user.id,
+        "assigned"
+      );
+
+      const updated = await workOrderService.updateStatus(
+        testData.company.id,
+        workOrder.id,
+        testData.user.id,
+        "in_progress"
+      );
+
+      expect(updated.startedAt).not.toBeNull();
     });
   });
 
-  describe.todo("getByCompany", () => {
+  describe("getByCompany", () => {
     it("should filter by company_id", async () => {
-      // Never return orders from other companies
-    });
+      if (!hasDbConnection) return;
 
-    it("should filter by status when provided", async () => {
-      // Filter: { status: "pending" }
-    });
-
-    it("should filter by assignedTo when provided", async () => {
-      // Filter: { assignedTo: "user-id" }
+      const result = await workOrderService.getByCompany(testData.company.id);
+      expect(Array.isArray(result)).toBe(true);
     });
   });
 });

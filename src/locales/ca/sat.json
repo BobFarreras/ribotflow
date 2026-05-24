@@ -1,0 +1,72 @@
+{
+  "title": "SAT - Servei d'Assistència Tècnica",
+  "workOrder": {
+    "list": {
+      "title": "Ordres de Treball",
+      "searchPlaceholder": "Cerca per número, títol o client...",
+      "newButton": "Nova Ordre",
+      "status": {
+        "all": "Tots els estats",
+        "pending": "Pendent",
+        "assigned": "Assignada",
+        "in_progress": "En curs",
+        "paused": "Pausada",
+        "completed": "Completada",
+        "closed": "Tancada",
+        "cancelled": "Cancel·lada"
+      },
+      "columns": {
+        "number": "Número",
+        "title": "Títol",
+        "client": "Client",
+        "status": "Estat",
+        "priority": "Prioritat",
+        "scheduledDate": "Data prevista",
+        "actions": "Accions"
+      },
+      "priority": {
+        "low": "Baixa",
+        "medium": "Mitja",
+        "high": "Alta",
+        "urgent": "Urgent"
+      },
+      "emptyState": "No hi ha ordres de treball. Crea la primera!",
+      "viewDetails": "Veure detall"
+    },
+    "detail": {
+      "backToList": "Tornar al llistat",
+      "edit": "Editar",
+      "statusHistory": "Historial d'estats",
+      "materials": "Materials",
+      "attachments": "Adjunts",
+      "signature": "Signatura",
+      "location": "Ubicació",
+      "actionsTitle": "Accions",
+      "actions": {
+        "start": "Iniciar",
+        "pause": "Pausar",
+        "resume": "Reprendre",
+        "complete": "Completar",
+        "invoice": "Facturar",
+        "cancel": "Cancel·lar",
+        "delete": "Eliminar"
+      },
+      "confirmDelete": "Estàs segur que vols eliminar aquesta ordre?"
+    },
+    "create": {
+      "title": "Nova Ordre de Treball",
+      "clientLabel": "Client",
+      "categoryLabel": "Categoria",
+      "titleLabel": "Títol",
+      "descriptionLabel": "Descripció",
+      "priorityLabel": "Prioritat",
+      "scheduledDateLabel": "Data programada",
+      "estimatedDurationLabel": "Durada estimada (minuts)",
+      "notesLabel": "Notes internes",
+      "submit": "Crear Ordre",
+      "cancel": "Cancel·lar",
+      "success": "Ordre de treball creada correctament",
+      "error": "Error en crear l'ordre de treball"
+    }
+  }
+}
