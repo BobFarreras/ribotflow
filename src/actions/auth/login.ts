@@ -9,12 +9,12 @@
 import { signIn } from "@/lib/auth";
 import { loginSchema } from "@/lib/validators/auth";
 import { AuthError } from "@/lib/errors/auth";
-import { isRedirectError } from "next/dist/client/components/redirect-error";
 
 export async function loginAction(rawInput: unknown) {
   try {
     const input = loginSchema.parse(rawInput);
 
+    // signIn will throw a redirect on success; let it propagate
     await signIn("credentials", {
       email: input.email,
       password: input.password,
@@ -23,10 +23,6 @@ export async function loginAction(rawInput: unknown) {
 
     return { success: true };
   } catch (error) {
-    if (isRedirectError(error)) {
-      throw error;
-    }
-
     if (error instanceof AuthError) {
       return { success: false, error: error.message };
     }

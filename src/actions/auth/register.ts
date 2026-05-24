@@ -6,11 +6,9 @@
 
 "use server";
 
-import { signIn } from "@/lib/auth";
 import { registerSchema } from "@/lib/validators/auth";
 import { authService } from "@/services/auth/auth";
 import { AuthError } from "@/lib/errors/auth";
-import { isRedirectError } from "next/dist/client/components/redirect-error";
 
 export async function registerAction(rawInput: unknown) {
   try {
@@ -22,18 +20,8 @@ export async function registerAction(rawInput: unknown) {
       password: input.password,
     });
 
-    await signIn("credentials", {
-      email: input.email,
-      password: input.password,
-      redirectTo: "/dashboard",
-    });
-
     return { success: true };
   } catch (error) {
-    if (isRedirectError(error)) {
-      throw error;
-    }
-
     if (error instanceof AuthError) {
       return { success: false, error: error.message };
     }

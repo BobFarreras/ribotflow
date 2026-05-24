@@ -1,36 +1,37 @@
 /**
- * Creation/modification date: 21/05/2026
- * Path: src/app/(auth)/register/page.tsx
- * Description: Registration page with form connected to Server Action. Creates company + owner.
+ * Creation/modification date: 24/05/2026
+ * Path: src/app/(auth)/login/LoginForm.tsx
+ * Description: Client login form with search params awareness.
  */
 
 "use client";
 
 import { useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "motion/react";
-import { Lock, Mail, User, Building } from "lucide-react";
-import { registerAction } from "@/actions/auth/register";
+import { Lock, Mail } from "lucide-react";
+import { loginAction } from "@/actions/auth/login";
 
-export default function RegisterPage() {
+export function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const justRegistered = searchParams.get("registered") === "true";
 
   async function handleSubmit(formData: FormData) {
     setError(null);
     startTransition(async () => {
-      const result = await registerAction({
-        name: formData.get("name"),
+      const result = await loginAction({
         email: formData.get("email"),
         password: formData.get("password"),
-        companyName: formData.get("companyName"),
       });
 
       if (result?.error) {
         setError(result.error);
       } else {
-        router.push("/login?registered=true");
+        router.push("/dashboard");
+        router.refresh();
       }
     });
   }
@@ -45,10 +46,15 @@ export default function RegisterPage() {
       >
         <div className="text-center">
           <h1 className="text-2xl font-semibold text-[var(--text)]">RIBOTFLOW</h1>
-          <p className="mt-2 text-sm text-[var(--text-muted)]">Crea tu cuenta para empezar</p>
+          <p className="mt-2 text-sm text-[var(--text-muted)]">Inicia sesión para continuar</p>
         </div>
 
         <form action={handleSubmit} className="mt-8 space-y-5">
+          {justRegistered && (
+            <div className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
+              Compte creat correctament. Entra amb les teves credencials per començar.
+            </div>
+          )}
           {error && (
             <div className="rounded-md border border-[var(--danger)]/30 bg-[var(--danger)]/5 px-3 py-2 text-sm text-[var(--danger)]">
               {error}
@@ -56,45 +62,6 @@ export default function RegisterPage() {
           )}
 
           <div className="space-y-4">
-            <div>
-              <label
-                htmlFor="companyName"
-                className="mb-1.5 block text-sm font-medium text-[var(--text)]"
-              >
-                Nombre de la empresa
-              </label>
-              <div className="relative">
-                <Building className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--text-muted)]" />
-                <input
-                  id="companyName"
-                  name="companyName"
-                  type="text"
-                  required
-                  disabled={isPending}
-                  className="w-full rounded-md border border-[var(--border)] bg-[var(--surface)] py-2 pl-10 pr-3 text-sm text-[var(--text)] placeholder:text-[var(--text-muted)] focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)] disabled:opacity-50"
-                  placeholder="Mi Empresa S.L."
-                />
-              </div>
-            </div>
-
-            <div>
-              <label htmlFor="name" className="mb-1.5 block text-sm font-medium text-[var(--text)]">
-                Nombre completo
-              </label>
-              <div className="relative">
-                <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--text-muted)]" />
-                <input
-                  id="name"
-                  name="name"
-                  type="text"
-                  required
-                  disabled={isPending}
-                  className="w-full rounded-md border border-[var(--border)] bg-[var(--surface)] py-2 pl-10 pr-3 text-sm text-[var(--text)] placeholder:text-[var(--text-muted)] focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)] disabled:opacity-50"
-                  placeholder="Juan García"
-                />
-              </div>
-            </div>
-
             <div>
               <label
                 htmlFor="email"
@@ -130,11 +97,11 @@ export default function RegisterPage() {
                   id="password"
                   name="password"
                   type="password"
-                  autoComplete="new-password"
+                  autoComplete="current-password"
                   required
                   disabled={isPending}
                   className="w-full rounded-md border border-[var(--border)] bg-[var(--surface)] py-2 pl-10 pr-3 text-sm text-[var(--text)] placeholder:text-[var(--text-muted)] focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)] disabled:opacity-50"
-                  placeholder="Mínimo 8 caracteres"
+                  placeholder="••••••••"
                 />
               </div>
             </div>
@@ -145,16 +112,16 @@ export default function RegisterPage() {
             disabled={isPending}
             className="w-full rounded-md bg-[var(--primary)] px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[var(--primary-hover)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:ring-offset-2 disabled:opacity-50"
           >
-            {isPending ? "Creando cuenta..." : "Crear cuenta"}
+            {isPending ? "Iniciando sesión..." : "Iniciar sesión"}
           </button>
 
           <p className="text-center text-sm text-[var(--text-muted)]">
-            ¿Ya tienes cuenta?{" "}
+            ¿No tienes cuenta?{" "}
             <a
-              href="/login"
+              href="/register"
               className="font-medium text-[var(--primary)] hover:text-[var(--primary-hover)]"
             >
-              Inicia sesión
+              Regístrate
             </a>
           </p>
         </form>
