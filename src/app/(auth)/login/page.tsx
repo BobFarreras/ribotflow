@@ -43,12 +43,8 @@ export default function LoginPage() {
         className="w-full max-w-md space-y-8 rounded-xl border border-[var(--border)] bg-[var(--surface)] p-8 shadow-sm"
       >
         <div className="text-center">
-          <h1 className="text-2xl font-semibold text-[var(--text)]">
-            RIBOTFLOW
-          </h1>
-          <p className="mt-2 text-sm text-[var(--text-muted)]">
-            Inicia sesión para continuar
-          </p>
+          <h1 className="text-2xl font-semibold text-[var(--text)]">RIBOTFLOW</h1>
+          <p className="mt-2 text-sm text-[var(--text-muted)]">Inicia sesión para continuar</p>
         </div>
 
         <form action={handleSubmit} className="mt-8 space-y-5">

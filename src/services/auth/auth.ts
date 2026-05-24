@@ -11,11 +11,7 @@ import { hashPassword } from "@/lib/utils/crypto";
 import { EmailAlreadyExistsError } from "@/lib/errors/auth";
 
 export const authService = {
-  async createCompanyAndOwner(input: {
-    companyName: string;
-    email: string;
-    password: string;
-  }) {
+  async createCompanyAndOwner(input: { companyName: string; email: string; password: string }) {
     const existingUser = await db
       .select({ id: users.id })
       .from(users)

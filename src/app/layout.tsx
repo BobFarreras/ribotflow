@@ -22,11 +22,7 @@ export const metadata: Metadata = {
   description: "ERP, SAT, CRM y Control de Acceso proactivo para empresas del 2026.",
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ca" className={`${inter.variable}`} suppressHydrationWarning>
       <body className="min-h-screen antialiased" suppressHydrationWarning>

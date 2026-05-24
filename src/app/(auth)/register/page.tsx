@@ -45,12 +45,8 @@ export default function RegisterPage() {
         className="w-full max-w-md space-y-8 rounded-xl border border-[var(--border)] bg-[var(--surface)] p-8 shadow-sm"
       >
         <div className="text-center">
-          <h1 className="text-2xl font-semibold text-[var(--text)]">
-            RIBOTFLOW
-          </h1>
-          <p className="mt-2 text-sm text-[var(--text-muted)]">
-            Crea tu cuenta para empezar
-          </p>
+          <h1 className="text-2xl font-semibold text-[var(--text)]">RIBOTFLOW</h1>
+          <p className="mt-2 text-sm text-[var(--text-muted)]">Crea tu cuenta para empezar</p>
         </div>
 
         <form action={handleSubmit} className="mt-8 space-y-5">
@@ -83,10 +79,7 @@ export default function RegisterPage() {
             </div>
 
             <div>
-              <label
-                htmlFor="name"
-                className="mb-1.5 block text-sm font-medium text-[var(--text)]"
-              >
+              <label htmlFor="name" className="mb-1.5 block text-sm font-medium text-[var(--text)]">
                 Nombre completo
               </label>
               <div className="relative">
