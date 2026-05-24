@@ -9,7 +9,6 @@ import { workOrderService } from "@/services/sat/workOrderService";
 import type { WorkOrderStatus } from "@/types/sat";
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import { Wrench, Plus, Filter } from "lucide-react";
 
 interface Props {
@@ -18,10 +17,9 @@ interface Props {
 
 export default async function SatListPage({ searchParams }: Props) {
   const session = await auth();
-  if (!session?.user) {
-    redirect("/login");
+  if (!session?.user?.companyId) {
+    return null; // Proxy should handle redirect; this is just type safety
   }
-
   const companyId = session.user.companyId;
   const t = await getTranslations("sat.workOrder");
   const params = await searchParams;

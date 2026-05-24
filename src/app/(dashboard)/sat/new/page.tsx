@@ -8,13 +8,12 @@ import { auth } from "@/lib/auth";
 import { db } from "@/db";
 import { clients, workOrderCategories } from "@/db/schema/sat";
 import { eq, asc } from "drizzle-orm";
-import { redirect } from "next/navigation";
 import { WorkOrderForm } from "@/components/sat/WorkOrderForm";
 
 export default async function NewWorkOrderPage() {
   const session = await auth();
-  if (!session?.user) {
-    redirect("/login");
+  if (!session?.user?.companyId) {
+    return null;
   }
 
   const companyId = session.user.companyId;

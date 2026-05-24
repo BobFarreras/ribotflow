@@ -8,7 +8,7 @@ import { auth } from "@/lib/auth";
 import { workOrderService } from "@/services/sat/workOrderService";
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
-import { redirect, notFound } from "next/navigation";
+import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { WorkOrderActions } from "@/components/sat/WorkOrderActions";
 import { TechnicianAssigner } from "@/components/sat/TechnicianAssigner";
@@ -19,8 +19,8 @@ interface Props {
 
 export default async function WorkOrderDetailPage({ params }: Props) {
   const session = await auth();
-  if (!session?.user) {
-    redirect("/login");
+  if (!session?.user?.companyId) {
+    return null;
   }
 
   const { id } = await params;
