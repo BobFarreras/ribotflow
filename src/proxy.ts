@@ -8,7 +8,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { auth } from "@/lib/auth";
-import { ROUTES, ROLES } from "@/lib/constants";
+// Constants are available in lib/constants but not used directly in this proxy
 
 const PUBLIC_ROUTES = ["/login", "/register", "/setup", "/api/health"];
 const PROTECTED_PREFIXES = ["/dashboard", "/api"];

@@ -26,11 +26,9 @@ export interface Company {
   updatedAt: Date;
 }
 
-export interface SessionUser extends User {}
-
 declare module "next-auth" {
   interface Session {
-    user: SessionUser;
+    user: User;
   }
   interface User {
     id: string;

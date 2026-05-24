@@ -8,7 +8,7 @@ import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { DrizzleAdapter } from "@auth/drizzle-adapter";
 import { db } from "@/db";
-import { users, companies } from "@/db/schema/auth";
+import { users } from "@/db/schema/auth";
 import { eq } from "drizzle-orm";
 import { verifyPassword } from "@/lib/utils/crypto";
 import type { Role } from "@/types";
