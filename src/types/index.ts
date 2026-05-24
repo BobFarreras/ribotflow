@@ -26,11 +26,9 @@ export interface Company {
   updatedAt: Date;
 }
 
-export interface SessionUser extends User {}
-
 declare module "next-auth" {
   interface Session {
-    user: SessionUser;
+    user: User;
   }
   interface User {
     id: string;
@@ -39,10 +37,5 @@ declare module "next-auth" {
   }
 }
 
-declare module "next-auth/jwt" {
-  interface JWT {
-    id: string;
-    companyId: string;
-    role: Role;
-  }
-}
+// Note: Auth.js v5 handles JWT types internally via the callbacks configuration.
+// Custom JWT fields (id, companyId, role) are injected in src/lib/auth/index.ts

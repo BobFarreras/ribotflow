@@ -8,14 +8,10 @@ import { db } from "@/db";
 import { companies, users } from "@/db/schema/auth";
 import { eq } from "drizzle-orm";
 import { hashPassword } from "@/lib/utils/crypto";
-import { EmailAlreadyExistsError, SetupAlreadyCompletedError } from "@/lib/errors/auth";
+import { EmailAlreadyExistsError } from "@/lib/errors/auth";
 
 export const authService = {
-  async createCompanyAndOwner(input: {
-    companyName: string;
-    email: string;
-    password: string;
-  }) {
+  async createCompanyAndOwner(input: { companyName: string; email: string; password: string }) {
     const existingUser = await db
       .select({ id: users.id })
       .from(users)

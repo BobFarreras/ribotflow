@@ -7,15 +7,7 @@
 "use client";
 
 import { motion } from "motion/react";
-import {
-  Wrench,
-  Package,
-  FileText,
-  Users,
-  Clock,
-  Settings,
-  LogOut,
-} from "lucide-react";
+import { Wrench, Package, FileText, Users, Clock, Settings, LogOut } from "lucide-react";
 import { logoutAction } from "@/actions/auth/logout";
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
@@ -87,9 +79,7 @@ export default function DashboardPage() {
     <div className="min-h-screen bg-[var(--bg)]">
       <header className="border-b border-[var(--border)] bg-[var(--surface)] px-6 py-4">
         <div className="mx-auto flex max-w-7xl items-center justify-between">
-          <h1 className="text-xl font-semibold text-[var(--text)]">
-            RIBOTFLOW
-          </h1>
+          <h1 className="text-xl font-semibold text-[var(--text)]">RIBOTFLOW</h1>
           <nav className="flex items-center gap-4">
             <span className="text-sm text-[var(--text-muted)]">Dashboard</span>
             <button
@@ -111,12 +101,8 @@ export default function DashboardPage() {
           transition={{ duration: 0.3, ease: "easeOut" }}
           className="mb-8"
         >
-          <h2 className="text-2xl font-semibold text-[var(--text)]">
-            Bienvenido a RIBOTFLOW
-          </h2>
-          <p className="mt-1 text-[var(--text-muted)]">
-            Selecciona un módulo para empezar
-          </p>
+          <h2 className="text-2xl font-semibold text-[var(--text)]">Bienvenido a RIBOTFLOW</h2>
+          <p className="mt-1 text-[var(--text-muted)]">Selecciona un módulo para empezar</p>
         </motion.div>
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -136,12 +122,8 @@ export default function DashboardPage() {
               >
                 <mod.icon className="h-5 w-5" />
               </div>
-              <h3 className="mt-3 text-lg font-medium text-[var(--text)]">
-                {mod.name}
-              </h3>
-              <p className="mt-1 text-sm text-[var(--text-muted)]">
-                {mod.description}
-              </p>
+              <h3 className="mt-3 text-lg font-medium text-[var(--text)]">{mod.name}</h3>
+              <p className="mt-1 text-sm text-[var(--text-muted)]">{mod.description}</p>
             </motion.a>
           ))}
         </div>
