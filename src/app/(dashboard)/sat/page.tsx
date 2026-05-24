@@ -92,7 +92,7 @@ export default async function SatListPage({ searchParams }: Props) {
             </div>
           </div>
           <Link
-            href="/dashboard/sat/new"
+            href="/sat/new"
             className="flex items-center gap-1.5 rounded-md bg-[var(--module-sat)] px-3 py-2 text-sm font-medium text-white shadow-sm transition-opacity hover:opacity-90"
           >
             <Plus className="h-4 w-4" />
@@ -108,7 +108,7 @@ export default async function SatListPage({ searchParams }: Props) {
           {statusOptions.map((opt) => (
             <Link
               key={opt.key}
-              href={opt.key === "all" ? "/dashboard/sat" : `/dashboard/sat?status=${opt.key}`}
+              href={opt.key === "all" ? "/sat" : `/sat?status=${opt.key}`}
               className={`shrink-0 rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
                 (params.status ?? "all") === opt.key
                   ? "border-[var(--module-sat)] bg-[var(--module-sat)]/10 text-[var(--module-sat)]"
@@ -126,7 +126,7 @@ export default async function SatListPage({ searchParams }: Props) {
             <Wrench className="mb-3 h-10 w-10 text-[var(--text-muted)]" />
             <p className="text-sm font-medium text-[var(--text)]">{t("list.emptyState")}</p>
             <Link
-              href="/dashboard/sat/new"
+              href="/sat/new"
               className="mt-4 rounded-md bg-[var(--module-sat)] px-4 py-2 text-sm font-medium text-white"
             >
               {t("list.newButton")}
@@ -137,7 +137,7 @@ export default async function SatListPage({ searchParams }: Props) {
             {orders.map(({ workOrder, client, category, technician }) => (
               <Link
                 key={workOrder.id}
-                href={`/dashboard/sat/${workOrder.id}`}
+                href={`/sat/${workOrder.id}`}
                 className="group rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4 shadow-sm transition-all hover:border-[var(--border-strong)] hover:shadow-md"
               >
                 <div className="flex items-start justify-between">

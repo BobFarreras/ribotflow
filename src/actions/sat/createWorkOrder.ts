@@ -27,7 +27,7 @@ export async function createWorkOrderAction(rawInput: unknown) {
       input
     );
 
-    revalidatePath("/dashboard/sat");
+    revalidatePath("/sat");
 
     return { success: true, data: workOrder };
   } catch (error) {

@@ -29,8 +29,8 @@ export async function assignTechnicianAction(workOrderId: string, technicianId: 
       technicianId
     );
 
-    revalidatePath("/dashboard/sat");
-    revalidatePath(`/dashboard/sat/${workOrderId}`);
+    revalidatePath("/sat");
+    revalidatePath(`/sat/${workOrderId}`);
 
     return { success: true, data: workOrder };
   } catch (error) {

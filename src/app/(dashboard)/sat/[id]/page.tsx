@@ -65,7 +65,7 @@ export default async function WorkOrderDetailPage({ params }: Props) {
         <div className="mx-auto flex max-w-4xl items-center justify-between">
           <div className="flex items-center gap-3">
             <Link
-              href="/dashboard/sat"
+              href="/sat"
               className="flex h-8 w-8 items-center justify-center rounded-md border border-[var(--border)] text-[var(--text-muted)] transition-colors hover:bg-[var(--surface)]"
             >
               <ArrowLeft className="h-4 w-4" />

@@ -63,7 +63,7 @@ export function WorkOrderForm({ clients, categories }: Props) {
     setIsSubmitting(false);
 
     if (result.success) {
-      router.push("/dashboard/sat");
+      router.push("/sat");
       router.refresh();
     } else {
       setError(result.error ?? t("error"));
@@ -74,7 +74,7 @@ export function WorkOrderForm({ clients, categories }: Props) {
     <div className="mx-auto max-w-2xl px-4 py-6 sm:px-6">
       <div className="mb-6 flex items-center gap-3">
         <Link
-          href="/dashboard/sat"
+          href="/sat"
           className="flex h-8 w-8 items-center justify-center rounded-md border border-[var(--border)] text-[var(--text-muted)] transition-colors hover:bg-[var(--surface)]"
         >
           <ArrowLeft className="h-4 w-4" />
@@ -228,7 +228,7 @@ export function WorkOrderForm({ clients, categories }: Props) {
 
         <div className="flex items-center justify-end gap-3 pt-2">
           <Link
-            href="/dashboard/sat"
+            href="/sat"
             className="rounded-md border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-sm font-medium text-[var(--text-muted)] transition-colors hover:bg-[var(--bg)]"
           >
             {t("cancel")}

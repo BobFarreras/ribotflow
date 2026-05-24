@@ -87,7 +87,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       // RBAC for TECHNICIAN
       const userRole = auth.user.role as Role;
       if (userRole === "TECHNICIAN") {
-        const allowedRoutes = ["/dashboard/sat", "/dashboard/access"];
+        const allowedRoutes = ["/sat", "/access"];
         const isAllowed = allowedRoutes.some((route) => pathname.startsWith(route));
         return isAllowed;
       }

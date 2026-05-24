@@ -29,8 +29,8 @@ export async function updateWorkOrderStatusAction(rawInput: unknown) {
       input.reason
     );
 
-    revalidatePath("/dashboard/sat");
-    revalidatePath(`/dashboard/sat/${input.workOrderId}`);
+    revalidatePath("/sat");
+    revalidatePath(`/sat/${input.workOrderId}`);
 
     return { success: true, data: workOrder };
   } catch (error) {
