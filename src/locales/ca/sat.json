@@ -42,6 +42,9 @@
       "signature": "Signatura",
       "location": "Ubicació",
       "actionsTitle": "Accions",
+      "assignTitle": "Assignar tècnic",
+      "unassigned": "Sense assignar",
+      "unassign": "Desassignar",
       "actions": {
         "start": "Iniciar",
         "pause": "Pausar",

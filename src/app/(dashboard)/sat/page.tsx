@@ -134,7 +134,7 @@ export default async function SatListPage({ searchParams }: Props) {
           </div>
         ) : (
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {orders.map(({ workOrder, client, category }) => (
+            {orders.map(({ workOrder, client, category, technician }) => (
               <Link
                 key={workOrder.id}
                 href={`/dashboard/sat/${workOrder.id}`}
@@ -167,7 +167,11 @@ export default async function SatListPage({ searchParams }: Props) {
                   <span className="truncate">{category.name}</span>
                 </div>
 
-                <div className="mt-3 flex items-center justify-between">
+                <div className="mt-2 text-xs text-[var(--text-muted)]">
+                  {technician?.name ? `👤 ${technician.name}` : t("detail.unassigned")}
+                </div>
+
+                <div className="mt-2 flex items-center justify-between">
                   <span
                     className={`rounded-full border px-2 py-0.5 text-[10px] font-medium ${priorityBadgeColor(workOrder.priority)}`}
                   >

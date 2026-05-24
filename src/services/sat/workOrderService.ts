@@ -6,6 +6,7 @@
 
 import { db } from "@/db";
 import { workOrders, workOrderStatusHistory, workOrderCategories, clients } from "@/db/schema/sat";
+import { users } from "@/db/schema/auth";
 import { eq, and, desc, sql } from "drizzle-orm";
 import type {
   CreateWorkOrderInput,
@@ -211,10 +212,15 @@ export const workOrderService = {
           name: workOrderCategories.name,
           color: workOrderCategories.color,
         },
+        technician: {
+          id: users.id,
+          name: users.name,
+        },
       })
       .from(workOrders)
       .innerJoin(clients, eq(workOrders.clientId, clients.id))
       .innerJoin(workOrderCategories, eq(workOrders.categoryId, workOrderCategories.id))
+      .leftJoin(users, eq(workOrders.assignedTo, users.id))
       .where(and(eq(workOrders.id, workOrderId), eq(workOrders.companyId, companyId)))
       .limit(1);
 
@@ -265,12 +271,60 @@ export const workOrderService = {
           name: workOrderCategories.name,
           color: workOrderCategories.color,
         },
+        technician: { id: users.id, name: users.name },
       })
       .from(workOrders)
       .innerJoin(clients, eq(workOrders.clientId, clients.id))
       .innerJoin(workOrderCategories, eq(workOrders.categoryId, workOrderCategories.id))
+      .leftJoin(users, eq(workOrders.assignedTo, users.id))
       .where(and(...conditions))
       .orderBy(desc(workOrders.createdAt));
+  },
+
+  async assignTechnician(companyId: string, workOrderId: string, technicianId: string | null) {
+    const existing = await db
+      .select()
+      .from(workOrders)
+      .where(and(eq(workOrders.id, workOrderId), eq(workOrders.companyId, companyId)))
+      .limit(1);
+
+    if (existing.length === 0) {
+      throw new Error("Work order not found");
+    }
+
+    if (technicianId) {
+      const tech = await db
+        .select()
+        .from(users)
+        .where(
+          and(
+            eq(users.id, technicianId),
+            eq(users.companyId, companyId),
+            eq(users.role, "TECHNICIAN")
+          )
+        )
+        .limit(1);
+
+      if (tech.length === 0) {
+        throw new Error("Technician not found in company");
+      }
+    }
+
+    const [updated] = await db
+      .update(workOrders)
+      .set({ assignedTo: technicianId, updatedAt: new Date() })
+      .where(eq(workOrders.id, workOrderId))
+      .returning();
+
+    return updated;
+  },
+
+  async getTechniciansByCompany(companyId: string) {
+    return db
+      .select({ id: users.id, name: users.name, email: users.email })
+      .from(users)
+      .where(and(eq(users.companyId, companyId), eq(users.role, "TECHNICIAN")))
+      .orderBy(users.name);
   },
 
   async getStatusHistory(workOrderId: string) {

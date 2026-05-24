@@ -42,6 +42,9 @@
       "signature": "Firma",
       "location": "Ubicación",
       "actionsTitle": "Acciones",
+      "assignTitle": "Asignar técnico",
+      "unassigned": "Sin asignar",
+      "unassign": "Desasignar",
       "actions": {
         "start": "Iniciar",
         "pause": "Pausar",

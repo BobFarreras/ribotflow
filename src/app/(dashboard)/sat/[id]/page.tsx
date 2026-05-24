@@ -11,6 +11,7 @@ import Link from "next/link";
 import { redirect, notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { WorkOrderActions } from "@/components/sat/WorkOrderActions";
+import { TechnicianAssigner } from "@/components/sat/TechnicianAssigner";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -32,6 +33,8 @@ export default async function WorkOrderDetailPage({ params }: Props) {
   }
 
   const history = await workOrderService.getStatusHistory(id);
+  const technicians = await workOrderService.getTechniciansByCompany(companyId);
+  const userRole = session.user.role;
 
   function statusBadgeColor(status: string) {
     switch (status) {
@@ -163,6 +166,19 @@ export default async function WorkOrderDetailPage({ params }: Props) {
                 <span>{category.name}</span>
               </div>
             </div>
+
+            {userRole !== "TECHNICIAN" && (
+              <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4">
+                <h2 className="mb-3 text-sm font-semibold text-[var(--text)]">
+                  {t("detail.assignTitle")}
+                </h2>
+                <TechnicianAssigner
+                  workOrderId={workOrder.id}
+                  currentTechnicianId={order.technician?.id ?? null}
+                  technicians={technicians}
+                />
+              </div>
+            )}
 
             <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4">
               <h2 className="mb-3 text-sm font-semibold text-[var(--text)]">
