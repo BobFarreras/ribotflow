@@ -1,13 +1,14 @@
 /**
  * Creation/modification date: 24/05/2026
  * Path: src/app/(auth)/login/LoginForm.tsx
- * Description: Client login form with search params awareness.
+ * Description: Client login form with controlled inputs and client-side signIn via next-auth/react.
  */
 
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { signIn } from "next-auth/react";
 import { motion } from "motion/react";
 import { Lock, Mail } from "lucide-react";
 import { loginAction } from "@/actions/auth/login";
@@ -15,25 +16,42 @@ import { loginAction } from "@/actions/auth/login";
 export function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [isPending, startTransition] = useTransition();
+  const [isPending, setIsPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const justRegistered = searchParams.get("registered") === "true";
 
-  async function handleSubmit(formData: FormData) {
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setIsPending(true);
     setError(null);
-    startTransition(async () => {
-      const result = await loginAction({
-        email: formData.get("email"),
-        password: formData.get("password"),
-      });
 
-      if (result?.error) {
-        setError(result.error);
-      } else {
-        router.push("/dashboard");
-        router.refresh();
-      }
+    // Step 1: validate credentials server-side (no password in response)
+    const validation = await loginAction({ email, password });
+
+    if (!validation.success) {
+      setError(validation.error ?? "Invalid email or password");
+      setIsPending(false);
+      return;
+    }
+
+    // Step 2: client-side signIn establishes the session cookie
+    const result = await signIn("credentials", {
+      email,
+      password,
+      redirect: false,
+      callbackUrl: "/dashboard",
     });
+
+    setIsPending(false);
+
+    if (result?.error) {
+      setError("Invalid email or password");
+    } else if (result?.ok) {
+      router.push("/dashboard");
+      router.refresh();
+    }
   }
 
   return (
@@ -49,7 +67,7 @@ export function LoginForm() {
           <p className="mt-2 text-sm text-[var(--text-muted)]">Inicia sesión para continuar</p>
         </div>
 
-        <form action={handleSubmit} className="mt-8 space-y-5">
+        <form onSubmit={handleSubmit} className="mt-8 space-y-5">
           {justRegistered && (
             <div className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
               Compte creat correctament. Entra amb les teves credencials per començar.
@@ -78,6 +96,8 @@ export function LoginForm() {
                   autoComplete="email"
                   required
                   disabled={isPending}
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   className="w-full rounded-md border border-[var(--border)] bg-[var(--surface)] py-2 pl-10 pr-3 text-sm text-[var(--text)] placeholder:text-[var(--text-muted)] focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)] disabled:opacity-50"
                   placeholder="tu@empresa.com"
                 />
@@ -100,6 +120,8 @@ export function LoginForm() {
                   autoComplete="current-password"
                   required
                   disabled={isPending}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   className="w-full rounded-md border border-[var(--border)] bg-[var(--surface)] py-2 pl-10 pr-3 text-sm text-[var(--text)] placeholder:text-[var(--text-muted)] focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)] disabled:opacity-50"
                   placeholder="••••••••"
                 />

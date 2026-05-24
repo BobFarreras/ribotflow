@@ -1,7 +1,7 @@
 /**
- * Creation/modification date: 21/05/2026
+ * Creation/modification date: 24/05/2026
  * Path: src/actions/auth/register.ts
- * Description: Server Action for user registration. Creates company + owner user, then signs in.
+ * Description: Server Action for user registration. Creates company + owner user only.
  */
 
 "use server";
@@ -26,7 +26,6 @@ export async function registerAction(rawInput: unknown) {
       return { success: false, error: error.message };
     }
 
-    // Log real error in development for debugging
     if (process.env.NODE_ENV === "development") {
       console.error("[registerAction] Unexpected error:", error);
     }
