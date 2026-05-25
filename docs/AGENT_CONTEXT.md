@@ -3,22 +3,17 @@
 ## Purpose
 This document allows any AI agent to quickly understand the full project context without reading all source files. Use this when starting work on a new machine or after a long break.
 
-## Quick Import (Run This First!)
+## Quick Start (Run This First!)
 
-When you open this project on a new machine, run this command to import all previous session memories:
+When you open this project on a new machine, **read this file completely** before doing anything else.
 
-```bash
-# If engram CLI is available:
-engram import docs/engram-export.json
-
-# If the above fails, read this file carefully and the memories will guide you
-```
-
-This imports 278+ observations from previous development sessions including:
+This document contains all critical context from previous development sessions including:
 - Architecture decisions
 - Bugs found and their solutions
 - Feature implementations
 - Database design choices
+
+**After reading, save key decisions to your own local memory** (e.g., Engram) so future sessions on this machine retain context.
 
 ---
 
@@ -259,7 +254,7 @@ NEXT_PUBLIC_APP_MODE=cloud
 When you start working on this project:
 
 1. **Read this file first** (you're doing great!)
-2. **Import Engram memories:** `engram import docs/engram-export.json`
+2. **Save critical decisions to your local memory** (Engram, notes, etc.)
 3. **Check the branch:** Should be `features/sat-work-orders`
 4. **Start PostgreSQL:** `pnpm db:setup`
 5. **Seed demo data:** `pnpm db:seed:demo`
@@ -271,7 +266,9 @@ If any of the above fails, check the Known Issues section above, or ask the user
 
 **Remember:** This project uses English for code, Catalan/Spanish for UI, and Spanish for team documentation (AGENTS.md, this file).
 
+**Privacy note:** Do not import/export Engram memories from this project to other projects or vice versa. Each project's context should remain isolated.
+
 ---
 
 *Last updated: 25/05/2026 by Agent OpenCode (kimi-k2.6)*
-*Session memories exported to: docs/engram-export.json*
+*Context stored in: docs/AGENT_CONTEXT.md (this file)*
