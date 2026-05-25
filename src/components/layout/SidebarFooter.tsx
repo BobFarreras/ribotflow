@@ -9,7 +9,7 @@
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { useTranslations, useLocale } from "next-intl";
-import { Moon, Sun, Globe, LogOut, ChevronLeft, ChevronRight, User } from "lucide-react";
+import { Moon, Sun, Globe, LogOut, PanelLeft, PanelLeftClose, User } from "lucide-react";
 import { logoutAction } from "@/actions/auth/logout";
 import { useSidebar } from "./SidebarContext";
 
@@ -56,7 +56,7 @@ export default function SidebarFooter() {
           className="flex w-full items-center justify-center rounded-lg p-2 text-[var(--text-muted)] transition-colors hover:bg-[var(--surface-hover)] hover:text-[var(--text)]"
           title={t("actions.expand")}
         >
-          <ChevronRight className="h-4 w-4" />
+          <PanelLeft className="h-4 w-4" />
         </button>
         <button
           onClick={handleLogout}
@@ -95,7 +95,7 @@ export default function SidebarFooter() {
         onClick={toggleCollapse}
         className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs text-[var(--text-muted)] transition-colors hover:bg-[var(--surface-hover)] hover:text-[var(--text)]"
       >
-        <ChevronLeft className="h-4 w-4" />
+        <PanelLeftClose className="h-4 w-4" />
         {t("actions.collapse")}
       </button>
 

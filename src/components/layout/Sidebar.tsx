@@ -8,18 +8,18 @@
 "use client";
 
 import { motion, AnimatePresence } from "motion/react";
-import { PanelLeft, PanelLeftClose } from "lucide-react";
+import { PanelLeft } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useSidebar } from "./SidebarContext";
 import SidebarNav from "./SidebarNav";
 import SidebarFooter from "./SidebarFooter";
 
 function SidebarHeader() {
-  const { isCollapsed, toggleCollapse } = useSidebar();
+  const { isCollapsed } = useSidebar();
   const t = useTranslations("sidebar");
 
   return (
-    <div className="flex h-14 items-center justify-between border-b border-[var(--border)] px-3">
+    <div className="flex h-14 items-center border-b border-[var(--border)] px-3">
       <AnimatePresence mode="wait">
         {!isCollapsed && (
           <motion.a
@@ -47,18 +47,6 @@ function SidebarHeader() {
           RF
         </a>
       )}
-
-      <button
-        onClick={toggleCollapse}
-        className="rounded-lg p-1.5 text-[var(--text-muted)] transition-colors hover:bg-[var(--surface-hover)] hover:text-[var(--text)]"
-        title={isCollapsed ? t("actions.expand") : t("actions.collapse")}
-      >
-        {isCollapsed ? (
-          <PanelLeft className="h-4 w-4" />
-        ) : (
-          <PanelLeftClose className="h-4 w-4" />
-        )}
-      </button>
     </div>
   );
 }
