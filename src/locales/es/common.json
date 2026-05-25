@@ -1,1 +1,99 @@
-{}
+{
+  "sidebar": {
+    "brand": "RIBOTFLOW",
+    "sections": {
+      "main": "Principal"
+    },
+    "modules": {
+      "dashboard": {
+        "label": "Inicio"
+      },
+      "sat": {
+        "label": "SAT",
+        "subItems": {
+          "workOrders": "Órdenes de Trabajo",
+          "clients": "Clientes",
+          "categories": "Categorías"
+        }
+      },
+      "erp": {
+        "label": "ERP",
+        "subItems": {
+          "products": "Productos",
+          "inventory": "Inventario"
+        }
+      },
+      "billing": {
+        "label": "Facturación",
+        "subItems": {
+          "invoices": "Facturas",
+          "budgets": "Presupuestos"
+        }
+      },
+      "crm": {
+        "label": "CRM",
+        "subItems": {
+          "contacts": "Contactos",
+          "opportunities": "Oportunidades"
+        }
+      },
+      "access": {
+        "label": "Control de Acceso",
+        "subItems": {
+          "timeTracking": "Fichaje",
+          "absences": "Ausencias"
+        }
+      },
+      "settings": {
+        "label": "Configuración",
+        "subItems": {
+          "company": "Empresa",
+          "users": "Usuarios",
+          "profile": "Perfil"
+        }
+      }
+    },
+    "actions": {
+      "collapse": "Contraer menú",
+      "expand": "Expandir menú",
+      "darkMode": "Modo oscuro",
+      "lightMode": "Modo claro",
+      "language": "Idioma",
+      "logout": "Cerrar sesión"
+    },
+    "user": {
+      "account": "Mi cuenta",
+      "manage": "Gestionar perfil"
+    }
+  },
+  "dashboard": {
+    "title": "Bienvenido a RIBOTFLOW",
+    "subtitle": "Selecciona un módulo para empezar",
+    "modules": {
+      "sat": {
+        "title": "SAT",
+        "description": "Órdenes de trabajo y asistencia técnica"
+      },
+      "erp": {
+        "title": "ERP",
+        "description": "Productos, stock y almacenes"
+      },
+      "billing": {
+        "title": "Facturación",
+        "description": "Presupuestos, facturas y Veri*factu"
+      },
+      "crm": {
+        "title": "CRM",
+        "description": "Clientes, ventas y oportunidades"
+      },
+      "access": {
+        "title": "Control de Acceso",
+        "description": "Fichaje de jornada y ausencias"
+      },
+      "settings": {
+        "title": "Configuración",
+        "description": "Ajustes de empresa y usuarios"
+      }
+    }
+  }
+}
