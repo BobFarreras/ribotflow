@@ -75,9 +75,9 @@ export default function Sidebar() {
       <MobileOverlay />
       <MobileToggleButton />
 
-      <aside
+        <aside
         className={`fixed left-0 top-0 z-50 flex h-[100dvh] flex-col border-r border-[var(--border)] bg-[var(--surface)] shadow-lg ${
-          ready ? "transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]" : ""
+          ready ? "opacity-100" : "opacity-0"
         } ${isCollapsed ? "w-[72px]" : "w-[260px]"} ${
           isMobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         }`}
