@@ -1,13 +1,14 @@
 /**
  * Creation/modification date: 25/05/2026
  * Path: src/components/layout/SidebarNav.tsx
- * Description: Navigation section with modules, sub-menus, and collapsed tooltips.
- *              Tooltips use position:fixed to escape overflow-y-auto clipping.
+ * Description: Static navigation sidebar. The nav tree is rendered once and
+ *              never re-rendered on route change. Active state is applied via
+ *              a tiny ActiveHighlighter component that manipulates DOM classes.
  */
 
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useLayoutEffect, useCallback } from "react";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import {
@@ -41,6 +42,7 @@ interface NavItem {
   key: string;
   href: string;
   icon: React.ComponentType<{ className?: string }>;
+  label?: string;
   subItems?: SubItem[];
 }
 
@@ -116,69 +118,113 @@ function CalendarIcon({ className }: { className?: string }) {
 }
 
 /* ================================================================
-   COLLAPSED TOOLTIP — position:fixed so it escapes overflow:hidden
+   ACTIVE HIGHLIGHTER — the ONLY component that re-renders on route change
+   Updates DOM classes directly, sidebar tree never re-renders
+   ================================================================ */
+
+function ActiveHighlighter() {
+  const pathname = usePathname();
+
+  useLayoutEffect(() => {
+    const nav = document.getElementById("sidebar-nav");
+    if (!nav) return;
+
+    // Remove all active classes
+    nav.querySelectorAll("[data-nav-item]").forEach((el) => {
+      el.classList.remove("bg-[var(--primary)]/10", "text-[var(--primary)]");
+      el.classList.add("text-[var(--text-muted)]");
+    });
+
+    // Add active to matching items
+    nav.querySelectorAll("[data-nav-item]").forEach((el) => {
+      const href = el.getAttribute("data-href");
+      if (!href) return;
+      const isActive = pathname === href || pathname.startsWith(href + "/");
+      if (isActive) {
+        el.classList.remove("text-[var(--text-muted)]");
+        el.classList.add("bg-[var(--primary)]/10", "text-[var(--primary)]");
+      }
+    });
+  }, [pathname]);
+
+  return null;
+}
+
+/* ================================================================
+   COLLAPSED TOOLTIP
    ================================================================ */
 
 function CollapsedTooltip({
-  item,
+  label,
   top,
 }: {
-  item: NavItem;
+  label: string;
   top: number;
 }) {
-  const t = useTranslations("sidebar.modules");
-  const hasSubItems = item.subItems && item.subItems.length > 0;
-
   return (
     <div
-      className="fixed z-[100] rounded-lg bg-[var(--surface)] px-3 py-2.5 text-sm font-medium text-[var(--text)] shadow-xl border border-[var(--border)] whitespace-nowrap"
+      className="fixed z-[100] rounded-lg bg-[var(--surface)] px-3 py-1.5 text-xs font-medium text-[var(--text)] shadow-lg border border-[var(--border)] whitespace-nowrap pointer-events-none"
       style={{ top, left: 80, transform: "translateY(-50%)" }}
-      onMouseDown={(e) => e.stopPropagation()}
     >
-      <div className="font-medium mb-1">{t(`${item.key}.label`)}</div>
-      {hasSubItems && (
-        <div className="space-y-1">
-          {item.subItems?.map((sub) => (
-            <a
-              key={sub.key}
-              href={sub.href}
-              className="flex items-center gap-2 rounded px-2 py-1 text-xs text-[var(--text-muted)] hover:bg-[var(--surface-hover)] hover:text-[var(--text)]"
-            >
-              <sub.icon className="h-3.5 w-3.5" />
-              {t(`${item.key}.subItems.${sub.key}`)}
-            </a>
-          ))}
-        </div>
-      )}
+      {label}
     </div>
   );
 }
 
 /* ================================================================
-   SUB-ITEM
+   COLLAPSED ITEM — simple icon + tooltip
    ================================================================ */
 
-function NavSubItem({
+function CollapsedNavItem({ item }: { item: NavItem }) {
+  const [showTooltip, setShowTooltip] = useState(false);
+  const [tooltipTop, setTooltipTop] = useState(0);
+
+  const handleMouseEnter = useCallback((e: React.MouseEvent<HTMLAnchorElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    setTooltipTop(rect.top + rect.height / 2);
+    setShowTooltip(true);
+  }, []);
+
+  const handleMouseLeave = useCallback(() => {
+    setShowTooltip(false);
+  }, []);
+
+  return (
+    <div className="relative flex items-center justify-center">
+      <a
+        href={item.href}
+        data-nav-item
+        data-href={item.href}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        className="flex items-center justify-center rounded-lg p-2.5 text-[var(--text-muted)] hover:bg-[var(--surface-hover)] hover:text-[var(--text)]"
+      >
+        <item.icon className="h-5 w-5" />
+      </a>
+      {showTooltip && item.label && <CollapsedTooltip label={item.label} top={tooltipTop} />}
+    </div>
+  );
+}
+
+/* ================================================================
+   EXPANDED SUB-ITEM — static, classes updated by ActiveHighlighter
+   ================================================================ */
+
+function ExpandedSubItem({
   item,
   parentKey,
 }: {
   item: SubItem;
   parentKey: string;
 }) {
-  const pathname = usePathname();
-  const { isCollapsed } = useSidebar();
   const t = useTranslations("sidebar.modules");
-  const isActive = pathname === item.href;
 
   return (
     <a
       href={item.href}
-      className={`group flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-all ${
-        isActive
-          ? "bg-[var(--primary)]/10 text-[var(--primary)] font-medium"
-          : "text-[var(--text-muted)] hover:bg-[var(--surface-hover)] hover:text-[var(--text)]"
-      }`}
-      title={isCollapsed ? t(`${parentKey}.subItems.${item.key}`) : undefined}
+      data-nav-item
+      data-href={item.href}
+      className="group flex items-center gap-2 rounded-md px-3 py-2 text-sm text-[var(--text-muted)] hover:bg-[var(--surface-hover)] hover:text-[var(--text)]"
     >
       <item.icon className="h-4 w-4 shrink-0" />
       <span className="truncate">{t(`${parentKey}.subItems.${item.key}`)}</span>
@@ -187,97 +233,34 @@ function NavSubItem({
 }
 
 /* ================================================================
-   NAV ITEM
+   EXPANDED ITEM — static tree, classes updated by ActiveHighlighter
    ================================================================ */
 
-function NavItemComponent({ item }: { item: NavItem }) {
-  const pathname = usePathname();
-  const { isCollapsed } = useSidebar();
+function ExpandedNavItem({ item }: { item: NavItem }) {
   const t = useTranslations("sidebar.modules");
-
-  const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
   const hasSubItems = item.subItems && item.subItems.length > 0;
   const isLeafItem = !hasSubItems;
 
   const [isExpanded, setIsExpanded] = useState(() => {
-    if (typeof window === "undefined") return isActive;
-    const saved = localStorage.getItem(`sidebar:expanded:${item.key}`);
-    return saved !== null ? saved === "true" : isActive;
+    if (typeof window === "undefined") return false;
+    return localStorage.getItem(`sidebar:expanded:${item.key}`) === "true";
   });
 
-  const [showTooltip, setShowTooltip] = useState(false);
-  const [tooltipTop, setTooltipTop] = useState(0);
-  const iconRef = useRef<HTMLAnchorElement>(null);
-  const leaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const handleToggle = () => {
+  const handleToggle = useCallback(() => {
     if (!hasSubItems) return;
     const next = !isExpanded;
     setIsExpanded(next);
-    if (typeof window !== "undefined") {
-      localStorage.setItem(`sidebar:expanded:${item.key}`, String(next));
-    }
-  };
+    localStorage.setItem(`sidebar:expanded:${item.key}`, String(next));
+  }, [hasSubItems, isExpanded, item.key]);
 
-  const handleMouseEnter = () => {
-    if (leaveTimer.current) clearTimeout(leaveTimer.current);
-    if (iconRef.current) {
-      const rect = iconRef.current.getBoundingClientRect();
-      setTooltipTop(rect.top + rect.height / 2);
-    }
-    setShowTooltip(true);
-  };
-
-  const handleMouseLeave = () => {
-    leaveTimer.current = setTimeout(() => {
-      setShowTooltip(false);
-    }, 150);
-  };
-
-  /* -------------------- Collapsed mode -------------------- */
-  if (isCollapsed) {
-    return (
-      <div
-        className="relative flex items-center justify-center"
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
-      >
-        <a
-          ref={iconRef}
-          href={item.href}
-          className={`flex items-center justify-center rounded-lg p-2.5 transition-all ${
-            isActive
-              ? "bg-[var(--primary)]/10 text-[var(--primary)]"
-              : "text-[var(--text-muted)] hover:bg-[var(--surface-hover)] hover:text-[var(--text)]"
-          }`}
-        >
-          <item.icon className="h-5 w-5" />
-        </a>
-        {showTooltip && (
-          <div
-            onMouseEnter={() => {
-              if (leaveTimer.current) clearTimeout(leaveTimer.current);
-            }}
-            onMouseLeave={handleMouseLeave}
-          >
-            <CollapsedTooltip item={item} top={tooltipTop} />
-          </div>
-        )}
-      </div>
-    );
-  }
-
-  /* -------------------- Expanded mode -------------------- */
   return (
     <div>
       {isLeafItem ? (
         <a
           href={item.href}
-          className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all ${
-            isActive
-              ? "bg-[var(--primary)]/10 text-[var(--primary)]"
-              : "text-[var(--text-muted)] hover:bg-[var(--surface-hover)] hover:text-[var(--text)]"
-          }`}
+          data-nav-item
+          data-href={item.href}
+          className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-[var(--text-muted)] hover:bg-[var(--surface-hover)] hover:text-[var(--text)]"
         >
           <item.icon className="h-5 w-5 shrink-0" />
           <span className="flex-1 text-left truncate">{t(`${item.key}.label`)}</span>
@@ -285,11 +268,9 @@ function NavItemComponent({ item }: { item: NavItem }) {
       ) : (
         <button
           onClick={handleToggle}
-          className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all ${
-            isActive
-              ? "bg-[var(--primary)]/10 text-[var(--primary)]"
-              : "text-[var(--text-muted)] hover:bg-[var(--surface-hover)] hover:text-[var(--text)]"
-          }`}
+          data-nav-item
+          data-href={item.href}
+          className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-[var(--text-muted)] hover:bg-[var(--surface-hover)] hover:text-[var(--text)]"
         >
           <item.icon className="h-5 w-5 shrink-0" />
           <span className="flex-1 text-left truncate">{t(`${item.key}.label`)}</span>
@@ -304,7 +285,7 @@ function NavItemComponent({ item }: { item: NavItem }) {
       {hasSubItems && isExpanded && (
         <div className="mt-1 ml-4 space-y-0.5 border-l-2 border-[var(--border)] pl-3">
           {item.subItems?.map((sub) => (
-            <NavSubItem key={sub.key} item={sub} parentKey={item.key} />
+            <ExpandedSubItem key={sub.key} item={sub} parentKey={item.key} />
           ))}
         </div>
       )}
@@ -317,11 +298,21 @@ function NavItemComponent({ item }: { item: NavItem }) {
    ================================================================ */
 
 export default function SidebarNav() {
+  const { isCollapsed } = useSidebar();
+  const t = useTranslations("sidebar.modules");
+
   return (
-    <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-1">
-      {navItems.map((item) => (
-        <NavItemComponent key={item.key} item={item} />
-      ))}
-    </nav>
+    <>
+      <ActiveHighlighter />
+      <nav id="sidebar-nav" className="flex-1 overflow-y-auto px-3 py-4 space-y-1">
+        {navItems.map((item) =>
+          isCollapsed ? (
+            <CollapsedNavItem key={item.key} item={{ ...item, label: t(`${item.key}.label`) }} />
+          ) : (
+            <ExpandedNavItem key={item.key} item={item} />
+          )
+        )}
+      </nav>
+    </>
   );
 }
