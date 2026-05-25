@@ -1,14 +1,15 @@
 /**
  * Creation/modification date: 25/05/2026
  * Path: src/components/layout/SidebarNav.tsx
- * Description: Static navigation sidebar. The nav tree is rendered once and
- *              never re-rendered on route change. Active state is applied via
- *              a tiny ActiveHighlighter component that manipulates DOM classes.
+ * Description: Navigation section. The nav tree is memoized and stable.
+ *              Active selection is handled by a tiny ActiveIndicator component
+ *              that only re-renders on route change — the rest of the sidebar
+ *              stays completely still.
  */
 
 "use client";
 
-import { useState, useLayoutEffect, useCallback } from "react";
+import { useState, useRef, useLayoutEffect, memo } from "react";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import {
@@ -32,6 +33,10 @@ import {
 } from "lucide-react";
 import { useSidebar } from "./SidebarContext";
 
+/* ================================================================
+   DATA
+   ================================================================ */
+
 interface SubItem {
   key: string;
   href: string;
@@ -42,7 +47,6 @@ interface NavItem {
   key: string;
   href: string;
   icon: React.ComponentType<{ className?: string }>;
-  label?: string;
   subItems?: SubItem[];
 }
 
@@ -118,36 +122,62 @@ function CalendarIcon({ className }: { className?: string }) {
 }
 
 /* ================================================================
-   ACTIVE HIGHLIGHTER — the ONLY component that re-renders on route change
-   Updates DOM classes directly, sidebar tree never re-renders
+   ACTIVE INDICATOR — the ONLY component that re-renders on route change
+   Moves a small colored bar to highlight the active item
    ================================================================ */
 
-function ActiveHighlighter() {
+function ActiveIndicator() {
   const pathname = usePathname();
+  const navRef = useRef<HTMLElement>(null);
+  const [indicatorStyle, setIndicatorStyle] = useState({ top: 0, height: 0, opacity: 0 });
 
   useLayoutEffect(() => {
-    const nav = document.getElementById("sidebar-nav");
+    const nav = navRef.current;
     if (!nav) return;
 
-    // Remove all active classes
-    nav.querySelectorAll("[data-nav-item]").forEach((el) => {
-      el.classList.remove("bg-[var(--primary)]/10", "text-[var(--primary)]");
-      el.classList.add("text-[var(--text-muted)]");
-    });
+    // Find the most specific active link
+    const links = Array.from(nav.querySelectorAll<HTMLElement>("[data-nav-target]"));
+    let bestMatch: HTMLElement | null = null;
+    let bestScore = -1;
 
-    // Add active to matching items
-    nav.querySelectorAll("[data-nav-item]").forEach((el) => {
-      const href = el.getAttribute("data-href");
-      if (!href) return;
-      const isActive = pathname === href || pathname.startsWith(href + "/");
-      if (isActive) {
-        el.classList.remove("text-[var(--text-muted)]");
-        el.classList.add("bg-[var(--primary)]/10", "text-[var(--primary)]");
+    for (const link of links) {
+      const href = link.getAttribute("data-nav-target") || "";
+      if (pathname === href) {
+        bestMatch = link;
+        bestScore = Infinity;
+        break;
       }
-    });
+      if (pathname.startsWith(href + "/") && href.length > bestScore) {
+        bestMatch = link;
+        bestScore = href.length;
+      }
+    }
+
+    if (bestMatch) {
+      const rect = bestMatch.getBoundingClientRect();
+      const navRect = nav.getBoundingClientRect();
+      setIndicatorStyle({
+        top: rect.top - navRect.top + nav.scrollTop,
+        height: rect.height,
+        opacity: 1,
+      });
+    } else {
+      setIndicatorStyle((prev) => ({ ...prev, opacity: 0 }));
+    }
   }, [pathname]);
 
-  return null;
+  return (
+    <div
+      ref={(el) => { if (el) navRef.current = el.closest("nav"); }}
+      className="absolute left-0 w-1 rounded-r-full bg-[var(--primary)] pointer-events-none z-10"
+      style={{
+        top: indicatorStyle.top,
+        height: indicatorStyle.height,
+        opacity: indicatorStyle.opacity,
+        transition: "top 150ms ease, height 150ms ease, opacity 150ms ease",
+      }}
+    />
+  );
 }
 
 /* ================================================================
@@ -172,45 +202,37 @@ function CollapsedTooltip({
 }
 
 /* ================================================================
-   COLLAPSED ITEM — simple icon + tooltip
+   NAV ITEMS — memoized, never re-render on route change
    ================================================================ */
 
-function CollapsedNavItem({ item }: { item: NavItem }) {
+const CollapsedItem = memo(function CollapsedItem({ item }: { item: NavItem }) {
+  const t = useTranslations("sidebar.modules");
   const [showTooltip, setShowTooltip] = useState(false);
   const [tooltipTop, setTooltipTop] = useState(0);
 
-  const handleMouseEnter = useCallback((e: React.MouseEvent<HTMLAnchorElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    setTooltipTop(rect.top + rect.height / 2);
-    setShowTooltip(true);
-  }, []);
-
-  const handleMouseLeave = useCallback(() => {
-    setShowTooltip(false);
-  }, []);
-
   return (
-    <div className="relative flex items-center justify-center">
+    <div
+      className="relative flex items-center justify-center"
+      onMouseEnter={(e) => {
+        const rect = e.currentTarget.getBoundingClientRect();
+        setTooltipTop(rect.top + rect.height / 2);
+        setShowTooltip(true);
+      }}
+      onMouseLeave={() => setShowTooltip(false)}
+    >
       <a
         href={item.href}
-        data-nav-item
-        data-href={item.href}
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
+        data-nav-target={item.href}
         className="flex items-center justify-center rounded-lg p-2.5 text-[var(--text-muted)] hover:bg-[var(--surface-hover)] hover:text-[var(--text)]"
       >
         <item.icon className="h-5 w-5" />
       </a>
-      {showTooltip && item.label && <CollapsedTooltip label={item.label} top={tooltipTop} />}
+      {showTooltip && <CollapsedTooltip label={t(`${item.key}.label`)} top={tooltipTop} />}
     </div>
   );
-}
+});
 
-/* ================================================================
-   EXPANDED SUB-ITEM — static, classes updated by ActiveHighlighter
-   ================================================================ */
-
-function ExpandedSubItem({
+const ExpandedSubItem = memo(function ExpandedSubItem({
   item,
   parentKey,
 }: {
@@ -222,21 +244,16 @@ function ExpandedSubItem({
   return (
     <a
       href={item.href}
-      data-nav-item
-      data-href={item.href}
+      data-nav-target={item.href}
       className="group flex items-center gap-2 rounded-md px-3 py-2 text-sm text-[var(--text-muted)] hover:bg-[var(--surface-hover)] hover:text-[var(--text)]"
     >
       <item.icon className="h-4 w-4 shrink-0" />
       <span className="truncate">{t(`${parentKey}.subItems.${item.key}`)}</span>
     </a>
   );
-}
+});
 
-/* ================================================================
-   EXPANDED ITEM — static tree, classes updated by ActiveHighlighter
-   ================================================================ */
-
-function ExpandedNavItem({ item }: { item: NavItem }) {
+const ExpandedItem = memo(function ExpandedItem({ item }: { item: NavItem }) {
   const t = useTranslations("sidebar.modules");
   const hasSubItems = item.subItems && item.subItems.length > 0;
   const isLeafItem = !hasSubItems;
@@ -246,20 +263,19 @@ function ExpandedNavItem({ item }: { item: NavItem }) {
     return localStorage.getItem(`sidebar:expanded:${item.key}`) === "true";
   });
 
-  const handleToggle = useCallback(() => {
+  const handleToggle = () => {
     if (!hasSubItems) return;
     const next = !isExpanded;
     setIsExpanded(next);
     localStorage.setItem(`sidebar:expanded:${item.key}`, String(next));
-  }, [hasSubItems, isExpanded, item.key]);
+  };
 
   return (
     <div>
       {isLeafItem ? (
         <a
           href={item.href}
-          data-nav-item
-          data-href={item.href}
+          data-nav-target={item.href}
           className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-[var(--text-muted)] hover:bg-[var(--surface-hover)] hover:text-[var(--text)]"
         >
           <item.icon className="h-5 w-5 shrink-0" />
@@ -268,8 +284,7 @@ function ExpandedNavItem({ item }: { item: NavItem }) {
       ) : (
         <button
           onClick={handleToggle}
-          data-nav-item
-          data-href={item.href}
+          data-nav-target={item.href}
           className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-[var(--text-muted)] hover:bg-[var(--surface-hover)] hover:text-[var(--text)]"
         >
           <item.icon className="h-5 w-5 shrink-0" />
@@ -291,7 +306,7 @@ function ExpandedNavItem({ item }: { item: NavItem }) {
       )}
     </div>
   );
-}
+});
 
 /* ================================================================
    EXPORT
@@ -299,20 +314,17 @@ function ExpandedNavItem({ item }: { item: NavItem }) {
 
 export default function SidebarNav() {
   const { isCollapsed } = useSidebar();
-  const t = useTranslations("sidebar.modules");
 
   return (
-    <>
-      <ActiveHighlighter />
-      <nav id="sidebar-nav" className="flex-1 overflow-y-auto px-3 py-4 space-y-1">
-        {navItems.map((item) =>
-          isCollapsed ? (
-            <CollapsedNavItem key={item.key} item={{ ...item, label: t(`${item.key}.label`) }} />
-          ) : (
-            <ExpandedNavItem key={item.key} item={item} />
-          )
-        )}
-      </nav>
-    </>
+    <nav id="sidebar-nav" className="relative flex-1 overflow-y-auto px-3 py-4 space-y-1">
+      <ActiveIndicator />
+      {navItems.map((item) =>
+        isCollapsed ? (
+          <CollapsedItem key={item.key} item={item} />
+        ) : (
+          <ExpandedItem key={item.key} item={item} />
+        )
+      )}
+    </nav>
   );
 }

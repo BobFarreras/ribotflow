@@ -37,7 +37,7 @@ function MobileToggleButton() {
 }
 
 function SidebarHeader() {
-  const { isCollapsed, ready } = useSidebar();
+  const { isCollapsed } = useSidebar();
   const t = useTranslations("sidebar");
 
   return (
@@ -45,8 +45,8 @@ function SidebarHeader() {
       <a
         href="/dashboard"
         className={`flex items-center gap-2 overflow-hidden whitespace-nowrap ${
-          ready ? "transition-opacity duration-200" : ""
-        } ${isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100"}`}
+          isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100"
+        }`}
       >
         <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--primary)] text-white font-bold text-sm">
           RF
@@ -68,7 +68,7 @@ function SidebarHeader() {
 }
 
 export default function Sidebar() {
-  const { isCollapsed, isMobileOpen, ready } = useSidebar();
+  const { isCollapsed, isMobileOpen } = useSidebar();
 
   return (
     <>
@@ -77,8 +77,8 @@ export default function Sidebar() {
 
         <aside
         className={`fixed left-0 top-0 z-50 flex h-[100dvh] flex-col border-r border-[var(--border)] bg-[var(--surface)] shadow-lg ${
-          ready ? "opacity-100" : "opacity-0"
-        } ${isCollapsed ? "w-[72px]" : "w-[260px]"} ${
+          isCollapsed ? "w-[72px]" : "w-[260px]"
+        } ${
           isMobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         }`}
       >

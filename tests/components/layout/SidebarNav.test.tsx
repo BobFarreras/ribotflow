@@ -5,8 +5,7 @@
  */
 
 import { describe, it, expect, vi } from "vitest";
-import { render, screen, waitFor } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
+import { render, screen } from "@testing-library/react";
 import SidebarNav from "@/components/layout/SidebarNav";
 import { SidebarProvider } from "@/components/layout/SidebarContext";
 
@@ -48,18 +47,6 @@ describe("SidebarNav", () => {
     expect(screen.getByText("SAT")).toBeInTheDocument();
   });
 
-  it("highlights active route", () => {
-    mockUsePathname.mockReturnValue("/sat");
-    render(
-      <SidebarProvider>
-        <SidebarNav />
-      </SidebarProvider>
-    );
-
-    const satLink = screen.getByText("SAT").closest("button");
-    expect(satLink).toHaveClass("bg-[var(--primary)]/10");
-  });
-
   it("renders sub-items when section is active", () => {
     mockUsePathname.mockReturnValue("/sat");
     // Pre-expand SAT in localStorage so sub-items render
@@ -91,5 +78,25 @@ describe("SidebarNav", () => {
     expect(screen.getByText("CRM")).toBeInTheDocument();
     expect(screen.getByText("Control d'Accés")).toBeInTheDocument();
     expect(screen.getByText("Configuració")).toBeInTheDocument();
+  });
+
+  it("places data-nav-target on every link/button for ActiveIndicator", () => {
+    mockUsePathname.mockReturnValue("/dashboard");
+    render(
+      <SidebarProvider>
+        <SidebarNav />
+      </SidebarProvider>
+    );
+
+    const nav = document.getElementById("sidebar-nav");
+    expect(nav).toBeInTheDocument();
+
+    const targets = nav!.querySelectorAll("[data-nav-target]");
+    expect(targets.length).toBeGreaterThan(0);
+
+    // Every target should have a non-empty href
+    targets.forEach((el) => {
+      expect(el.getAttribute("data-nav-target")).toBeTruthy();
+    });
   });
 });
