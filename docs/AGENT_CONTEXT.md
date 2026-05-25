@@ -179,6 +179,18 @@ This document contains all critical context from previous development sessions i
 **Root Cause:** Chrome/Chromium blocks localhost connections by default.
 **Solution:** Use Firefox, or disable Chrome security flags for localhost.
 
+### Issue: "Conflict. The container name '/ribotflow-dev-db' is already in use"
+**Root Cause:** A previous Docker container exists (stopped or running) with the same name.
+**Solution:** Run `docker rm -f ribotflow-dev-db` then retry `pnpm db:setup`.
+
+### Issue: db:setup fails with "redirección de entradas" (Windows)
+**Root Cause:** The `timeout` command in `package.json` fails when pnpm redirects stdin.
+**Solution:** The `db:setup` script now uses `node -e "setTimeout(()=>process.exit(0), 8000)"` instead of `timeout`.
+
+### Issue: ECONNREFUSED ::1:5432 during db:push
+**Root Cause:** `.env.local` had `DATABASE_URL` pointing to port 5432, but Docker maps PostgreSQL to host port 5433.
+**Solution:** Verify `.env.local` uses `DATABASE_URL=postgresql://postgres:postgres@localhost:5433/ribotflow`.
+
 ---
 
 ## File Structure Quick Reference
@@ -186,9 +198,17 @@ This document contains all critical context from previous development sessions i
 ```
 src/
   app/(dashboard)/         # Route group (no URL prefix)
+    layout.tsx              # Dashboard layout with Sidebar + Shell
+    dashboard/page.tsx      # Home dashboard template
     sat/page.tsx            # List orders → URL: /sat
     sat/[id]/page.tsx       # Order detail → URL: /sat/:id
     sat/new/page.tsx        # Create order → URL: /sat/new
+  components/layout/        # Layout Components
+    SidebarContext.tsx      # React context for sidebar state
+    Sidebar.tsx             # Main sidebar (collapsible, responsive)
+    SidebarNav.tsx          # Navigation with sub-menus
+    SidebarFooter.tsx       # Theme, language, logout
+    DashboardShell.tsx      # Content wrapper that adapts to sidebar
   actions/sat/             # Server Actions
     createWorkOrder.ts
     updateStatus.ts
@@ -202,9 +222,77 @@ src/
   lib/auth/index.ts         # NextAuth config (NO authorized callback!)
   proxy.ts                  # Auth proxy (SINGLE source of truth)
   db/schema/sat.ts          # Database schema
-  locales/ca/sat.json       # Catalan translations
-  locales/es/sat.json       # Spanish translations
+  locales/ca/*.json         # Catalan translations (common + sat)
+  locales/es/*.json         # Spanish translations (common + sat)
 ```
+
+---
+
+## Sidebar Architecture
+
+### Components
+| Component | Responsibility |
+|-----------|----------------|
+| `SidebarContext.tsx` | Global state: collapsed, mobileOpen, theme, toggle functions |
+| `Sidebar.tsx` | Main sidebar with header, nav, footer; handles mobile overlay |
+| `SidebarNav.tsx` | Navigation items with collapsible sub-menus; active route highlighting |
+| `SidebarFooter.tsx` | Theme toggle, language switcher, user info, logout |
+| `DashboardShell.tsx` | Content wrapper that adapts margin based on sidebar state |
+
+### Features
+- **Collapsible:** Width transitions between 260px (open) and 72px (collapsed)
+- **Responsive:** Desktop = fixed sidebar; Mobile (<1024px) = drawer with overlay
+- **Sub-menus:** Each module can have nested items (e.g., SAT → Work Orders, Clients, Categories)
+- **Theme:** Light/Dark mode toggled via CSS class `.dark` on `<html>`
+- **Language:** Switch between `ca` and `es` via next-intl
+- **Persistence:** Sidebar state and theme saved to `localStorage`
+- **Smart tooltips:** When collapsed, hovering shows full label + sub-menu items
+
+### Adding a New Module to Sidebar
+1. Edit `src/components/layout/SidebarNav.tsx`
+2. Add entry to `navItems` array with `key`, `href`, `icon`, and optional `subItems`
+3. Add translations to `src/locales/{ca,es}/common.json` under `sidebar.modules.{key}`
+
+---
+
+## Database Migration Workflow (Team Development)
+
+**CRITICAL:** Do NOT use `db:push` in a team setting. It directly alters the database and can drop data. Use versioned migrations instead.
+
+### Daily Developer Workflow
+
+```bash
+pnpm db:setup               # Start container + apply pending migrations (SAFE)
+```
+
+### When You Modify the Schema
+
+1. Edit `src/db/schema/*.ts`
+2. Generate a versioned migration:
+   ```bash
+   pnpm db:generate
+   ```
+3. Commit the generated SQL file in `src/db/migrations/`:
+   ```bash
+   git add src/db/migrations/
+   git commit -m "feat: add CRM leads table"
+   ```
+4. Other developers pull and run:
+   ```bash
+   pnpm db:migrate
+   ```
+
+### Command Reference
+
+| Command | Purpose | Safe for Data? |
+|---------|---------|----------------|
+| `pnpm db:setup` | Start container + apply pending migrations | Yes |
+| `pnpm db:setup:fresh` | Start container + force schema push (CI only) | No |
+| `pnpm db:migrate` | Apply pending versioned migrations | Yes |
+| `pnpm db:generate` | Create new migration from schema changes | N/A |
+| `pnpm db:push` | Directly push schema (solo dev / fresh container only) | No |
+| `pnpm db:reset` | Destroy volume + recreate container (ALL DATA LOST) | No |
+| `pnpm db:seed:demo` | Create DigitAIStudios demo data | N/A |
 
 ---
 
@@ -215,7 +303,6 @@ pnpm dev                    # Development server
 pnpm build                  # Production build
 pnpm test                   # Run tests
 pnpm ci:check               # Full validation
-pnpm db:setup               # Start PostgreSQL + migrate
 pnpm db:studio              # UI for database
 pnpm db:seed:demo           # Create DigitAIStudios demo data
 pnpm format                 # Format code
@@ -246,6 +333,10 @@ NEXT_PUBLIC_APP_MODE=cloud
 | 24/05/2026 | Use /sat URLs (not /dashboard/sat) | Route groups don't add URL prefixes |
 | 24/05/2026 | 10 work order statuses | Added scheduled, waiting_parts, waiting_client for realism |
 | 25/05/2026 | DigitAIStudios as official demo account | Permanent test data with realistic scenarios |
+| 25/05/2026 | Fixed db:setup script for Windows | Replaced `timeout` with Node.js sleep to avoid stdin redirect error |
+| 25/05/2026 | Fixed DATABASE_URL port mismatch | Corrected `.env.local` from 5432 to 5433 to match docker-compose mapping |
+| 25/05/2026 | Adopted versioned migrations for team dev | `db:generate` + `db:migrate` replaces `db:push` for safe team schema evolution |
+| 25/05/2026 | Professional sidebar with sub-menus | Collapsible, responsive, theme/language toggle, multi-module navigation |
 
 ---
 
@@ -270,5 +361,5 @@ If any of the above fails, check the Known Issues section above, or ask the user
 
 ---
 
-*Last updated: 25/05/2026 by Agent OpenCode (kimi-k2.6)*
+*Last updated: 25/05/2026 by Agent OpenCode (kimi-k2.6) — Added professional sidebar, fixed db:setup script, .env.local port, adopted versioned migrations*
 *Context stored in: docs/AGENT_CONTEXT.md (this file)*
