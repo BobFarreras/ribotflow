@@ -6,7 +6,7 @@
 
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import {
@@ -142,48 +142,6 @@ function NavSubItem({
   );
 }
 
-function CollapsedTooltip({
-  item,
-  anchorRef,
-}: {
-  item: NavItem;
-  anchorRef: React.RefObject<HTMLAnchorElement | null>;
-}) {
-  const t = useTranslations("sidebar.modules");
-  const hasSubItems = item.subItems && item.subItems.length > 0;
-  const [pos, setPos] = useState({ top: 0, left: 0 });
-
-  useEffect(() => {
-    if (anchorRef.current) {
-      const rect = anchorRef.current.getBoundingClientRect();
-      setPos({ top: rect.top + rect.height / 2, left: rect.right + 8 });
-    }
-  }, [anchorRef]);
-
-  return (
-    <div
-      className="fixed z-[9999] rounded-md bg-[var(--surface)] px-3 py-2 text-sm font-medium text-[var(--text)] shadow-xl border border-[var(--border)] whitespace-nowrap"
-      style={{ top: pos.top, left: pos.left, transform: "translateY(-50%)" }}
-    >
-      <div className="font-medium">{t(`${item.key}.label`)}</div>
-      {hasSubItems && (
-        <div className="mt-1.5 space-y-1 border-t border-[var(--border)] pt-1.5">
-          {item.subItems?.map((sub) => (
-            <a
-              key={sub.key}
-              href={sub.href}
-              className="flex items-center gap-2 text-xs text-[var(--text-muted)] hover:text-[var(--text)]"
-            >
-              <sub.icon className="h-3.5 w-3.5" />
-              {t(`${item.key}.subItems.${sub.key}`)}
-            </a>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
 function NavItemComponent({ item }: { item: NavItem }) {
   const pathname = usePathname();
   const { isCollapsed } = useSidebar();
@@ -198,10 +156,6 @@ function NavItemComponent({ item }: { item: NavItem }) {
     return saved !== null ? saved === "true" : isActive;
   });
 
-  const [showTooltip, setShowTooltip] = useState(false);
-  const anchorRef = useRef<HTMLAnchorElement>(null);
-  const leaveTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
-
   const handleToggle = () => {
     if (!hasSubItems) return;
     const next = !isExpanded;
@@ -213,20 +167,8 @@ function NavItemComponent({ item }: { item: NavItem }) {
 
   if (isCollapsed) {
     return (
-      <div
-        className="relative"
-        onMouseEnter={() => {
-          if (leaveTimeout.current) clearTimeout(leaveTimeout.current);
-          setShowTooltip(true);
-        }}
-        onMouseLeave={() => {
-          leaveTimeout.current = setTimeout(() => {
-            setShowTooltip(false);
-          }, 250);
-        }}
-      >
+      <div className="group relative flex items-center justify-center">
         <a
-          ref={anchorRef}
           href={item.href}
           className={`flex items-center justify-center rounded-lg p-2.5 transition-all ${
             isActive
@@ -236,20 +178,10 @@ function NavItemComponent({ item }: { item: NavItem }) {
         >
           <item.icon className="h-5 w-5" />
         </a>
-        {showTooltip && (
-          <div
-            onMouseEnter={() => {
-              if (leaveTimeout.current) clearTimeout(leaveTimeout.current);
-            }}
-            onMouseLeave={() => {
-              leaveTimeout.current = setTimeout(() => {
-                setShowTooltip(false);
-              }, 250);
-            }}
-          >
-            <CollapsedTooltip item={item} anchorRef={anchorRef} />
-          </div>
-        )}
+        {/* Simple label tooltip — no submenus, immediate, clean */}
+        <div className="absolute left-full ml-1.5 hidden rounded-md bg-[var(--surface)] px-2.5 py-1 text-xs font-medium text-[var(--text)] shadow-md border border-[var(--border)] whitespace-nowrap group-hover:block z-50">
+          {t(`${item.key}.label`)}
+        </div>
       </div>
     );
   }
