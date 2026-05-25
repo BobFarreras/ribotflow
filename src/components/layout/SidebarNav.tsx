@@ -6,7 +6,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useCallback } from "react";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import {
@@ -114,6 +114,56 @@ function CalendarIcon({ className }: { className?: string }) {
   );
 }
 
+/* ================================================================
+   COLLAPSED TOOLTIP — position:fixed so it escapes overflow:hidden
+   ================================================================ */
+
+function CollapsedTooltip({
+  label,
+  targetRef,
+}: {
+  label: string;
+  targetRef: React.RefObject<HTMLElement | null>;
+}) {
+  const [pos, setPos] = useState({ top: 0, left: 0 });
+
+  const measure = useCallback(() => {
+    const el = targetRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    setPos({
+      top: rect.top + rect.height / 2,
+      left: rect.right + 8,
+    });
+  }, [targetRef]);
+
+  // Measure immediately so first paint is correct
+  useRef(measure);
+  const measured = useRef(false);
+  if (!measured.current) {
+    measured.current = true;
+    // Defer to next tick so ref is attached
+    setTimeout(measure, 0);
+  }
+
+  return (
+    <div
+      className="fixed z-[100] rounded-md bg-[var(--surface)] px-3 py-1.5 text-xs font-medium text-[var(--text)] shadow-lg border border-[var(--border)] whitespace-nowrap pointer-events-none"
+      style={{
+        top: pos.top,
+        left: pos.left,
+        transform: "translateY(-50%)",
+      }}
+    >
+      {label}
+    </div>
+  );
+}
+
+/* ================================================================
+   SUB-ITEM
+   ================================================================ */
+
 function NavSubItem({
   item,
   parentKey,
@@ -142,10 +192,15 @@ function NavSubItem({
   );
 }
 
+/* ================================================================
+   NAV ITEM
+   ================================================================ */
+
 function NavItemComponent({ item }: { item: NavItem }) {
   const pathname = usePathname();
   const { isCollapsed } = useSidebar();
   const t = useTranslations("sidebar.modules");
+
   const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
   const hasSubItems = item.subItems && item.subItems.length > 0;
   const isLeafItem = !hasSubItems;
@@ -156,6 +211,9 @@ function NavItemComponent({ item }: { item: NavItem }) {
     return saved !== null ? saved === "true" : isActive;
   });
 
+  const iconRef = useRef<HTMLAnchorElement>(null);
+  const [showTooltip, setShowTooltip] = useState(false);
+
   const handleToggle = () => {
     if (!hasSubItems) return;
     const next = !isExpanded;
@@ -165,10 +223,16 @@ function NavItemComponent({ item }: { item: NavItem }) {
     }
   };
 
+  /* -------------------- Collapsed mode -------------------- */
   if (isCollapsed) {
     return (
-      <div className="group relative flex items-center justify-center">
+      <div
+        className="relative flex items-center justify-center"
+        onMouseEnter={() => setShowTooltip(true)}
+        onMouseLeave={() => setShowTooltip(false)}
+      >
         <a
+          ref={iconRef}
           href={item.href}
           className={`flex items-center justify-center rounded-lg p-2.5 transition-all ${
             isActive
@@ -178,14 +242,12 @@ function NavItemComponent({ item }: { item: NavItem }) {
         >
           <item.icon className="h-5 w-5" />
         </a>
-        {/* Simple label tooltip — no submenus, immediate, clean */}
-        <div className="absolute left-full ml-1.5 hidden rounded-md bg-[var(--surface)] px-2.5 py-1 text-xs font-medium text-[var(--text)] shadow-md border border-[var(--border)] whitespace-nowrap group-hover:block z-50">
-          {t(`${item.key}.label`)}
-        </div>
+        {showTooltip && <CollapsedTooltip label={t(`${item.key}.label`)} targetRef={iconRef} />}
       </div>
     );
   }
 
+  /* -------------------- Expanded mode -------------------- */
   return (
     <div>
       {isLeafItem ? (
@@ -229,6 +291,10 @@ function NavItemComponent({ item }: { item: NavItem }) {
     </div>
   );
 }
+
+/* ================================================================
+   EXPORT
+   ================================================================ */
 
 export default function SidebarNav() {
   return (
