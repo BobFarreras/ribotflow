@@ -44,7 +44,6 @@ describe("SidebarNav", () => {
       </SidebarProvider>
     );
 
-    expect(screen.getByText("Principal")).toBeInTheDocument();
     expect(screen.getByText("Inici")).toBeInTheDocument();
     expect(screen.getByText("SAT")).toBeInTheDocument();
   });

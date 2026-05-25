@@ -200,6 +200,7 @@ function NavItemComponent({ item }: { item: NavItem }) {
 
   const [showTooltip, setShowTooltip] = useState(false);
   const anchorRef = useRef<HTMLAnchorElement>(null);
+  const leaveTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const handleToggle = () => {
     if (!hasSubItems) return;
@@ -214,8 +215,15 @@ function NavItemComponent({ item }: { item: NavItem }) {
     return (
       <div
         className="relative"
-        onMouseEnter={() => setShowTooltip(true)}
-        onMouseLeave={() => setShowTooltip(false)}
+        onMouseEnter={() => {
+          if (leaveTimeout.current) clearTimeout(leaveTimeout.current);
+          setShowTooltip(true);
+        }}
+        onMouseLeave={() => {
+          leaveTimeout.current = setTimeout(() => {
+            setShowTooltip(false);
+          }, 250);
+        }}
       >
         <a
           ref={anchorRef}
@@ -228,7 +236,20 @@ function NavItemComponent({ item }: { item: NavItem }) {
         >
           <item.icon className="h-5 w-5" />
         </a>
-        {showTooltip && <CollapsedTooltip item={item} anchorRef={anchorRef} />}
+        {showTooltip && (
+          <div
+            onMouseEnter={() => {
+              if (leaveTimeout.current) clearTimeout(leaveTimeout.current);
+            }}
+            onMouseLeave={() => {
+              leaveTimeout.current = setTimeout(() => {
+                setShowTooltip(false);
+              }, 250);
+            }}
+          >
+            <CollapsedTooltip item={item} anchorRef={anchorRef} />
+          </div>
+        )}
       </div>
     );
   }
@@ -278,13 +299,8 @@ function NavItemComponent({ item }: { item: NavItem }) {
 }
 
 export default function SidebarNav() {
-  const t = useTranslations("sidebar");
-
   return (
     <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-1">
-      <div className="mb-3 px-3 text-[10px] font-semibold uppercase tracking-wider text-[var(--text-muted)]">
-        {t("sections.main")}
-      </div>
       {navItems.map((item) => (
         <NavItemComponent key={item.key} item={item} />
       ))}
