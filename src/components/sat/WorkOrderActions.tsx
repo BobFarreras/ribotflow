@@ -30,6 +30,10 @@ const TRANSITIONS: Record<
     { status: "in_progress", label: "detail.actions.start", icon: Play },
     { status: "cancelled", label: "detail.actions.cancel", icon: XCircle },
   ],
+  scheduled: [
+    { status: "in_progress", label: "detail.actions.start", icon: Play },
+    { status: "cancelled", label: "detail.actions.cancel", icon: XCircle },
+  ],
   in_progress: [
     { status: "paused", label: "detail.actions.pause", icon: Pause },
     { status: "completed", label: "detail.actions.complete", icon: CheckCircle },
@@ -45,6 +49,14 @@ const TRANSITIONS: Record<
   ],
   closed: [],
   cancelled: [{ status: "pending", label: "detail.actions.start", icon: RotateCcw }],
+  waiting_parts: [
+    { status: "in_progress", label: "detail.actions.resume", icon: RotateCcw },
+    { status: "cancelled", label: "detail.actions.cancel", icon: XCircle },
+  ],
+  waiting_client: [
+    { status: "in_progress", label: "detail.actions.resume", icon: RotateCcw },
+    { status: "cancelled", label: "detail.actions.cancel", icon: XCircle },
+  ],
 };
 
 export function WorkOrderActions({ workOrderId, currentStatus }: Props) {

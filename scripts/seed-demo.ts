@@ -12,7 +12,7 @@ import {
   workOrders,
   workOrderStatusHistory,
 } from "../src/db/schema/sat";
-import { eq, and } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { hashPassword } from "../src/lib/utils/crypto";
 
 async function seedDemo() {

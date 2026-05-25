@@ -96,7 +96,16 @@ export const workOrders = pgTable(
     description: text("description"),
     status: text("status")
       .$type<
-        "pending" | "assigned" | "in_progress" | "paused" | "completed" | "closed" | "cancelled"
+        | "pending"
+        | "assigned"
+        | "scheduled"
+        | "in_progress"
+        | "paused"
+        | "completed"
+        | "closed"
+        | "cancelled"
+        | "waiting_parts"
+        | "waiting_client"
       >()
       .default("pending")
       .notNull(),

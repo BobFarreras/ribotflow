@@ -15,13 +15,16 @@ import type {
 import type { WorkOrderStatus } from "@/types/sat";
 
 const VALID_STATUS_TRANSITIONS: Record<WorkOrderStatus, WorkOrderStatus[]> = {
-  pending: ["assigned", "cancelled"],
+  pending: ["assigned", "scheduled", "cancelled"],
   assigned: ["in_progress", "cancelled"],
-  in_progress: ["paused", "completed", "cancelled"],
+  scheduled: ["in_progress", "cancelled"],
+  in_progress: ["paused", "completed", "cancelled", "waiting_parts", "waiting_client"],
   paused: ["in_progress", "cancelled"],
   completed: ["closed", "in_progress"],
   closed: [],
   cancelled: ["pending"],
+  waiting_parts: ["in_progress", "cancelled"],
+  waiting_client: ["in_progress", "cancelled"],
 };
 
 function isValidTransition(from: WorkOrderStatus, to: WorkOrderStatus): boolean {

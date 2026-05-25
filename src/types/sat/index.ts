@@ -7,11 +7,14 @@
 export type WorkOrderStatus =
   | "pending"
   | "assigned"
+  | "scheduled"
   | "in_progress"
   | "paused"
   | "completed"
   | "closed"
-  | "cancelled";
+  | "cancelled"
+  | "waiting_parts"
+  | "waiting_client";
 
 export type WorkOrderPriority = "low" | "medium" | "high" | "urgent";
 

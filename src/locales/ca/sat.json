@@ -9,11 +9,14 @@
         "all": "Tots els estats",
         "pending": "Pendent",
         "assigned": "Assignada",
+        "scheduled": "Programada",
         "in_progress": "En curs",
         "paused": "Pausada",
         "completed": "Completada",
         "closed": "Tancada",
-        "cancelled": "Cancel·lada"
+        "cancelled": "Cancel·lada",
+        "waiting_parts": "Esperant peces",
+        "waiting_client": "Esperant client"
       },
       "columns": {
         "number": "Número",
