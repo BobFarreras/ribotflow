@@ -25,6 +25,7 @@
     "db:logs": "docker compose -f docker-compose.dev.yml logs -f db",
     "db:reset": "docker compose -f docker-compose.dev.yml down -v && docker compose -f docker-compose.dev.yml up -d",
     "db:setup": "pnpm db:up && echo 'Waiting for PostgreSQL...' && timeout /t 8 /nobreak >nul && pnpm db:push",
+    "db:seed:demo": "tsx scripts/seed-demo.ts",
     "test:db:setup": "tsx tests/db-setup.ts",
     "test:ci": "vitest run --coverage",
     "ci:check": "pnpm install --frozen-lockfile && pnpm typecheck && pnpm lint && pnpm format:check && pnpm test && pnpm build",
