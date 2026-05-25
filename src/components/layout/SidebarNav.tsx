@@ -125,7 +125,7 @@ function NavSubItem({
   const pathname = usePathname();
   const { isCollapsed } = useSidebar();
   const t = useTranslations("sidebar.modules");
-  const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
+  const isActive = pathname === item.href;
 
   return (
     <a
@@ -151,6 +151,7 @@ function NavItemComponent({ item }: { item: NavItem }) {
 
   const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
   const hasSubItems = item.subItems && item.subItems.length > 0;
+  const isLeafItem = !hasSubItems;
 
   // Load expanded state from localStorage
   useEffect(() => {
@@ -215,24 +216,36 @@ function NavItemComponent({ item }: { item: NavItem }) {
 
   return (
     <div>
-      <button
-        onClick={hasSubItems ? handleToggle : undefined}
-        className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all ${
-          isActive
-            ? "bg-[var(--primary)]/10 text-[var(--primary)]"
-            : "text-[var(--text-muted)] hover:bg-[var(--surface-hover)] hover:text-[var(--text)]"
-        } ${!hasSubItems ? "cursor-pointer" : ""}`}
-      >
-        <item.icon className="h-5 w-5 shrink-0" />
-        <span className="flex-1 text-left truncate">{t(`${item.key}.label`)}</span>
-        {hasSubItems && (
+      {isLeafItem ? (
+        <a
+          href={item.href}
+          className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all ${
+            isActive
+              ? "bg-[var(--primary)]/10 text-[var(--primary)]"
+              : "text-[var(--text-muted)] hover:bg-[var(--surface-hover)] hover:text-[var(--text)]"
+          }`}
+        >
+          <item.icon className="h-5 w-5 shrink-0" />
+          <span className="flex-1 text-left truncate">{t(`${item.key}.label`)}</span>
+        </a>
+      ) : (
+        <button
+          onClick={handleToggle}
+          className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all ${
+            isActive
+              ? "bg-[var(--primary)]/10 text-[var(--primary)]"
+              : "text-[var(--text-muted)] hover:bg-[var(--surface-hover)] hover:text-[var(--text)]"
+          }`}
+        >
+          <item.icon className="h-5 w-5 shrink-0" />
+          <span className="flex-1 text-left truncate">{t(`${item.key}.label`)}</span>
           <ChevronRight
             className={`h-4 w-4 shrink-0 transition-transform duration-200 ${
               isExpanded ? "rotate-90" : ""
             }`}
           />
-        )}
-      </button>
+        </button>
+      )}
 
       {hasSubItems && isExpanded && (
         <div className="mt-1 ml-4 space-y-0.5 border-l-2 border-[var(--border)] pl-3">
