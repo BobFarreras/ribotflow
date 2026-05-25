@@ -1,15 +1,14 @@
 /**
  * Creation/modification date: 25/05/2026
  * Path: src/components/layout/SidebarNav.tsx
- * Description: Navigation section. The nav tree is memoized and stable.
- *              Active selection is handled by a tiny ActiveIndicator component
- *              that only re-renders on route change — the rest of the sidebar
- *              stays completely still.
+ * Description: Navigation tree. Each item computes its own active state from
+ *              the current pathname. Sub-menus are always in the DOM (hidden/block)
+ *              so they never unmount and lose their scroll/expand state.
  */
 
 "use client";
 
-import { useState, useRef, useLayoutEffect, memo } from "react";
+import { useState } from "react";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import {
@@ -122,62 +121,13 @@ function CalendarIcon({ className }: { className?: string }) {
 }
 
 /* ================================================================
-   ACTIVE INDICATOR — the ONLY component that re-renders on route change
-   Moves a small colored bar to highlight the active item
+   HELPERS
    ================================================================ */
 
-function ActiveIndicator() {
-  const pathname = usePathname();
-  const navRef = useRef<HTMLElement>(null);
-  const [indicatorStyle, setIndicatorStyle] = useState({ top: 0, height: 0, opacity: 0 });
-
-  useLayoutEffect(() => {
-    const nav = navRef.current;
-    if (!nav) return;
-
-    // Find the most specific active link
-    const links = Array.from(nav.querySelectorAll<HTMLElement>("[data-nav-target]"));
-    let bestMatch: HTMLElement | null = null;
-    let bestScore = -1;
-
-    for (const link of links) {
-      const href = link.getAttribute("data-nav-target") || "";
-      if (pathname === href) {
-        bestMatch = link;
-        bestScore = Infinity;
-        break;
-      }
-      if (pathname.startsWith(href + "/") && href.length > bestScore) {
-        bestMatch = link;
-        bestScore = href.length;
-      }
-    }
-
-    if (bestMatch) {
-      const rect = bestMatch.getBoundingClientRect();
-      const navRect = nav.getBoundingClientRect();
-      setIndicatorStyle({
-        top: rect.top - navRect.top + nav.scrollTop,
-        height: rect.height,
-        opacity: 1,
-      });
-    } else {
-      setIndicatorStyle((prev) => ({ ...prev, opacity: 0 }));
-    }
-  }, [pathname]);
-
-  return (
-    <div
-      ref={(el) => { if (el) navRef.current = el.closest("nav"); }}
-      className="absolute left-0 w-1 rounded-r-full bg-[var(--primary)] pointer-events-none z-10"
-      style={{
-        top: indicatorStyle.top,
-        height: indicatorStyle.height,
-        opacity: indicatorStyle.opacity,
-        transition: "top 150ms ease, height 150ms ease, opacity 150ms ease",
-      }}
-    />
-  );
+function isLinkActive(pathname: string, href: string): boolean {
+  if (pathname === href) return true;
+  if (href !== "/" && pathname.startsWith(href + "/")) return true;
+  return false;
 }
 
 /* ================================================================
@@ -202,13 +152,14 @@ function CollapsedTooltip({
 }
 
 /* ================================================================
-   NAV ITEMS — memoized, never re-render on route change
+   COLLAPSED ITEM
    ================================================================ */
 
-const CollapsedItem = memo(function CollapsedItem({ item }: { item: NavItem }) {
+function CollapsedNavItem({ item, pathname }: { item: NavItem; pathname: string }) {
   const t = useTranslations("sidebar.modules");
   const [showTooltip, setShowTooltip] = useState(false);
   const [tooltipTop, setTooltipTop] = useState(0);
+  const active = isLinkActive(pathname, item.href);
 
   return (
     <div
@@ -223,41 +174,31 @@ const CollapsedItem = memo(function CollapsedItem({ item }: { item: NavItem }) {
       <a
         href={item.href}
         data-nav-target={item.href}
-        className="flex items-center justify-center rounded-lg p-2.5 text-[var(--text-muted)] hover:bg-[var(--surface-hover)] hover:text-[var(--text)]"
+        className={`flex items-center justify-center rounded-lg p-2.5 ${
+          active
+            ? "bg-[var(--primary)]/10 text-[var(--primary)]"
+            : "text-[var(--text-muted)] hover:bg-[var(--surface-hover)] hover:text-[var(--text)]"
+        }`}
       >
         <item.icon className="h-5 w-5" />
       </a>
       {showTooltip && <CollapsedTooltip label={t(`${item.key}.label`)} top={tooltipTop} />}
     </div>
   );
-});
+}
 
-const ExpandedSubItem = memo(function ExpandedSubItem({
-  item,
-  parentKey,
-}: {
-  item: SubItem;
-  parentKey: string;
-}) {
-  const t = useTranslations("sidebar.modules");
+/* ================================================================
+   EXPANDED ITEM
+   ================================================================ */
 
-  return (
-    <a
-      href={item.href}
-      data-nav-target={item.href}
-      className="group flex items-center gap-2 rounded-md px-3 py-2 text-sm text-[var(--text-muted)] hover:bg-[var(--surface-hover)] hover:text-[var(--text)]"
-    >
-      <item.icon className="h-4 w-4 shrink-0" />
-      <span className="truncate">{t(`${parentKey}.subItems.${item.key}`)}</span>
-    </a>
-  );
-});
-
-const ExpandedItem = memo(function ExpandedItem({ item }: { item: NavItem }) {
+function ExpandedNavItem({ item, pathname }: { item: NavItem; pathname: string }) {
   const t = useTranslations("sidebar.modules");
   const hasSubItems = item.subItems && item.subItems.length > 0;
-  const isLeafItem = !hasSubItems;
+  const isLeaf = !hasSubItems;
+  const isActive = isLinkActive(pathname, item.href);
+  const hasActiveChild = item.subItems?.some((sub) => isLinkActive(pathname, sub.href)) ?? false;
 
+  // Expanded state: initialize from localStorage, persist on toggle
   const [isExpanded, setIsExpanded] = useState(() => {
     if (typeof window === "undefined") return false;
     return localStorage.getItem(`sidebar:expanded:${item.key}`) === "true";
@@ -270,13 +211,22 @@ const ExpandedItem = memo(function ExpandedItem({ item }: { item: NavItem }) {
     localStorage.setItem(`sidebar:expanded:${item.key}`, String(next));
   };
 
+  const baseItemClasses =
+    "flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium";
+
+  const activeItemClasses = "bg-[var(--primary)]/10 text-[var(--primary)]";
+  const inactiveItemClasses =
+    "text-[var(--text-muted)] hover:bg-[var(--surface-hover)] hover:text-[var(--text)]";
+
+  const parentClasses = isActive || hasActiveChild ? activeItemClasses : inactiveItemClasses;
+
   return (
     <div>
-      {isLeafItem ? (
+      {isLeaf ? (
         <a
           href={item.href}
           data-nav-target={item.href}
-          className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-[var(--text-muted)] hover:bg-[var(--surface-hover)] hover:text-[var(--text)]"
+          className={`${baseItemClasses} ${parentClasses}`}
         >
           <item.icon className="h-5 w-5 shrink-0" />
           <span className="flex-1 text-left truncate">{t(`${item.key}.label`)}</span>
@@ -285,44 +235,64 @@ const ExpandedItem = memo(function ExpandedItem({ item }: { item: NavItem }) {
         <button
           onClick={handleToggle}
           data-nav-target={item.href}
-          className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-[var(--text-muted)] hover:bg-[var(--surface-hover)] hover:text-[var(--text)]"
+          className={`${baseItemClasses} ${parentClasses}`}
         >
           <item.icon className="h-5 w-5 shrink-0" />
           <span className="flex-1 text-left truncate">{t(`${item.key}.label`)}</span>
           <ChevronRight
-            className={`h-4 w-4 shrink-0 transition-transform duration-200 ${
-              isExpanded ? "rotate-90" : ""
-            }`}
+            className={`h-4 w-4 shrink-0 ${isExpanded ? "rotate-90" : ""}`}
           />
         </button>
       )}
 
-      {hasSubItems && isExpanded && (
-        <div className="mt-1 ml-4 space-y-0.5 border-l-2 border-[var(--border)] pl-3">
-          {item.subItems?.map((sub) => (
-            <ExpandedSubItem key={sub.key} item={sub} parentKey={item.key} />
-          ))}
+      {/* Sub-menu: ALWAYS in the DOM, visibility controlled by hidden/block */}
+      {hasSubItems && (
+        <div
+          className={`mt-1 ml-4 space-y-0.5 border-l-2 border-[var(--border)] pl-3 ${
+            isExpanded ? "block" : "hidden"
+          }`}
+        >
+          {item.subItems!.map((sub) => {
+            const subActive = isLinkActive(pathname, sub.href);
+            return (
+              <a
+                key={sub.key}
+                href={sub.href}
+                data-nav-target={sub.href}
+                className={`group flex items-center gap-2 rounded-md px-3 py-2 text-sm ${
+                  subActive
+                    ? "bg-[var(--primary)]/10 text-[var(--primary)]"
+                    : "text-[var(--text-muted)] hover:bg-[var(--surface-hover)] hover:text-[var(--text)]"
+                }`}
+              >
+                <sub.icon className="h-4 w-4 shrink-0" />
+                <span className="truncate">
+                  {t(`${item.key}.subItems.${sub.key}`)}
+                </span>
+              </a>
+            );
+          })}
         </div>
       )}
     </div>
   );
-});
+}
 
 /* ================================================================
    EXPORT
    ================================================================ */
 
 export default function SidebarNav() {
+  const pathname = usePathname();
   const { isCollapsed } = useSidebar();
 
   return (
-    <nav id="sidebar-nav" className="relative flex-1 overflow-y-auto px-3 py-4 space-y-1">
-      <ActiveIndicator />
+    <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-1">
       {navItems.map((item) =>
         isCollapsed ? (
-          <CollapsedItem key={item.key} item={item} />
+          <CollapsedNavItem key={item.key} item={item} pathname={pathname} />
         ) : (
-          <ExpandedItem key={item.key} item={item} />
+          <ExpandedNavItem key={item.key} item={item} pathname={pathname} />
         )
       )}
     </nav>

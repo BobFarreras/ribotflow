@@ -1,11 +1,13 @@
 /**
  * Creation/modification date: 25/05/2026
  * Path: tests/components/layout/SidebarNav.test.tsx
- * Description: Tests for SidebarNav component with navigation items and sub-menus.
+ * Description: Tests for SidebarNav component with active state classes
+ *              and sub-menu visibility.
  */
 
 import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import SidebarNav from "@/components/layout/SidebarNav";
 import { SidebarProvider } from "@/components/layout/SidebarContext";
 
@@ -18,7 +20,6 @@ vi.mock("next/navigation", () => ({
 vi.mock("next-intl", () => ({
   useTranslations: () => (key: string) => {
     const translations: Record<string, string> = {
-      "sections.main": "Principal",
       "dashboard.label": "Inici",
       "sat.label": "SAT",
       "sat.subItems.workOrders": "Ordres de Treball",
@@ -35,7 +36,7 @@ vi.mock("next-intl", () => ({
 }));
 
 describe("SidebarNav", () => {
-  it("renders main navigation section", () => {
+  it("renders main navigation items", () => {
     mockUsePathname.mockReturnValue("/dashboard");
     render(
       <SidebarProvider>
@@ -47,9 +48,21 @@ describe("SidebarNav", () => {
     expect(screen.getByText("SAT")).toBeInTheDocument();
   });
 
-  it("renders sub-items when section is active", () => {
+  it("highlights active top-level item", () => {
+    mockUsePathname.mockReturnValue("/dashboard");
+    render(
+      <SidebarProvider>
+        <SidebarNav />
+      </SidebarProvider>
+    );
+
+    const dashboardLink = screen.getByText("Inici").closest("a");
+    expect(dashboardLink).toHaveClass("bg-[var(--primary)]/10");
+    expect(dashboardLink).toHaveClass("text-[var(--primary)]");
+  });
+
+  it("shows sub-items when expanded", () => {
     mockUsePathname.mockReturnValue("/sat");
-    // Pre-expand SAT in localStorage so sub-items render
     localStorage.setItem("sidebar:expanded:sat", "true");
 
     render(
@@ -65,6 +78,41 @@ describe("SidebarNav", () => {
     localStorage.removeItem("sidebar:expanded:sat");
   });
 
+  it("highlights parent module when child is active", () => {
+    mockUsePathname.mockReturnValue("/sat/clients");
+    localStorage.setItem("sidebar:expanded:sat", "true");
+
+    render(
+      <SidebarProvider>
+        <SidebarNav />
+      </SidebarProvider>
+    );
+
+    const satButton = screen.getByText("SAT").closest("button");
+    expect(satButton).toHaveClass("bg-[var(--primary)]/10");
+
+    const clientsLink = screen.getByText("Clients").closest("a");
+    expect(clientsLink).toHaveClass("bg-[var(--primary)]/10");
+
+    localStorage.removeItem("sidebar:expanded:sat");
+  });
+
+  it("sub-menu is always in DOM but hidden when collapsed", () => {
+    mockUsePathname.mockReturnValue("/dashboard");
+    // SAT is NOT expanded
+    localStorage.removeItem("sidebar:expanded:sat");
+
+    render(
+      <SidebarProvider>
+        <SidebarNav />
+      </SidebarProvider>
+    );
+
+    const satButton = screen.getByText("SAT").closest("button");
+    const subMenu = satButton?.parentElement?.querySelector("div[class*='hidden']");
+    expect(subMenu).toBeInTheDocument();
+  });
+
   it("renders all modules", () => {
     mockUsePathname.mockReturnValue("/dashboard");
     render(
@@ -78,25 +126,5 @@ describe("SidebarNav", () => {
     expect(screen.getByText("CRM")).toBeInTheDocument();
     expect(screen.getByText("Control d'Accés")).toBeInTheDocument();
     expect(screen.getByText("Configuració")).toBeInTheDocument();
-  });
-
-  it("places data-nav-target on every link/button for ActiveIndicator", () => {
-    mockUsePathname.mockReturnValue("/dashboard");
-    render(
-      <SidebarProvider>
-        <SidebarNav />
-      </SidebarProvider>
-    );
-
-    const nav = document.getElementById("sidebar-nav");
-    expect(nav).toBeInTheDocument();
-
-    const targets = nav!.querySelectorAll("[data-nav-target]");
-    expect(targets.length).toBeGreaterThan(0);
-
-    // Every target should have a non-empty href
-    targets.forEach((el) => {
-      expect(el.getAttribute("data-nav-target")).toBeTruthy();
-    });
   });
 });

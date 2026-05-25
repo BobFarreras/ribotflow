@@ -17,9 +17,9 @@ function MobileOverlay() {
   const { isMobileOpen, closeMobile } = useSidebar();
   if (!isMobileOpen) return null;
   return (
-    <div
+      <div
       onClick={closeMobile}
-      className="fixed inset-0 z-40 bg-black/40 transition-opacity lg:hidden"
+      className="fixed inset-0 z-40 bg-black/40 lg:hidden"
     />
   );
 }
