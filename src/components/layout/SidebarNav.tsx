@@ -1,12 +1,13 @@
 /**
  * Creation/modification date: 25/05/2026
  * Path: src/components/layout/SidebarNav.tsx
- * Description: Navigation section of the sidebar with modules and sub-menus.
+ * Description: Navigation section with modules, sub-menus, and collapsed tooltips.
+ *              Tooltips use position:fixed to escape overflow-y-auto clipping.
  */
 
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef } from "react";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import {
@@ -119,43 +120,36 @@ function CalendarIcon({ className }: { className?: string }) {
    ================================================================ */
 
 function CollapsedTooltip({
-  label,
-  targetRef,
+  item,
+  top,
 }: {
-  label: string;
-  targetRef: React.RefObject<HTMLElement | null>;
+  item: NavItem;
+  top: number;
 }) {
-  const [pos, setPos] = useState({ top: 0, left: 0 });
-
-  const measure = useCallback(() => {
-    const el = targetRef.current;
-    if (!el) return;
-    const rect = el.getBoundingClientRect();
-    setPos({
-      top: rect.top + rect.height / 2,
-      left: rect.right + 8,
-    });
-  }, [targetRef]);
-
-  // Measure immediately so first paint is correct
-  useRef(measure);
-  const measured = useRef(false);
-  if (!measured.current) {
-    measured.current = true;
-    // Defer to next tick so ref is attached
-    setTimeout(measure, 0);
-  }
+  const t = useTranslations("sidebar.modules");
+  const hasSubItems = item.subItems && item.subItems.length > 0;
 
   return (
     <div
-      className="fixed z-[100] rounded-md bg-[var(--surface)] px-3 py-1.5 text-xs font-medium text-[var(--text)] shadow-lg border border-[var(--border)] whitespace-nowrap pointer-events-none"
-      style={{
-        top: pos.top,
-        left: pos.left,
-        transform: "translateY(-50%)",
-      }}
+      className="fixed z-[100] rounded-lg bg-[var(--surface)] px-3 py-2.5 text-sm font-medium text-[var(--text)] shadow-xl border border-[var(--border)] whitespace-nowrap"
+      style={{ top, left: 80, transform: "translateY(-50%)" }}
+      onMouseDown={(e) => e.stopPropagation()}
     >
-      {label}
+      <div className="font-medium mb-1">{t(`${item.key}.label`)}</div>
+      {hasSubItems && (
+        <div className="space-y-1">
+          {item.subItems?.map((sub) => (
+            <a
+              key={sub.key}
+              href={sub.href}
+              className="flex items-center gap-2 rounded px-2 py-1 text-xs text-[var(--text-muted)] hover:bg-[var(--surface-hover)] hover:text-[var(--text)]"
+            >
+              <sub.icon className="h-3.5 w-3.5" />
+              {t(`${item.key}.subItems.${sub.key}`)}
+            </a>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -211,8 +205,10 @@ function NavItemComponent({ item }: { item: NavItem }) {
     return saved !== null ? saved === "true" : isActive;
   });
 
-  const iconRef = useRef<HTMLAnchorElement>(null);
   const [showTooltip, setShowTooltip] = useState(false);
+  const [tooltipTop, setTooltipTop] = useState(0);
+  const iconRef = useRef<HTMLAnchorElement>(null);
+  const leaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const handleToggle = () => {
     if (!hasSubItems) return;
@@ -223,13 +219,28 @@ function NavItemComponent({ item }: { item: NavItem }) {
     }
   };
 
+  const handleMouseEnter = () => {
+    if (leaveTimer.current) clearTimeout(leaveTimer.current);
+    if (iconRef.current) {
+      const rect = iconRef.current.getBoundingClientRect();
+      setTooltipTop(rect.top + rect.height / 2);
+    }
+    setShowTooltip(true);
+  };
+
+  const handleMouseLeave = () => {
+    leaveTimer.current = setTimeout(() => {
+      setShowTooltip(false);
+    }, 150);
+  };
+
   /* -------------------- Collapsed mode -------------------- */
   if (isCollapsed) {
     return (
       <div
         className="relative flex items-center justify-center"
-        onMouseEnter={() => setShowTooltip(true)}
-        onMouseLeave={() => setShowTooltip(false)}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
       >
         <a
           ref={iconRef}
@@ -242,7 +253,16 @@ function NavItemComponent({ item }: { item: NavItem }) {
         >
           <item.icon className="h-5 w-5" />
         </a>
-        {showTooltip && <CollapsedTooltip label={t(`${item.key}.label`)} targetRef={iconRef} />}
+        {showTooltip && (
+          <div
+            onMouseEnter={() => {
+              if (leaveTimer.current) clearTimeout(leaveTimer.current);
+            }}
+            onMouseLeave={handleMouseLeave}
+          >
+            <CollapsedTooltip item={item} top={tooltipTop} />
+          </div>
+        )}
       </div>
     );
   }

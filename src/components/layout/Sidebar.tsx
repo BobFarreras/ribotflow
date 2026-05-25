@@ -1,8 +1,8 @@
 /**
  * Creation/modification date: 25/05/2026
  * Path: src/components/layout/Sidebar.tsx
- * Description: Main sidebar component with header, navigation, and footer.
- *              Collapsible, responsive, and animated via CSS only.
+ * Description: Main sidebar component. CSS transitions are ONLY enabled after
+ *              hydration (ready=true) to eliminate flash during navigation.
  */
 
 "use client";
@@ -37,16 +37,16 @@ function MobileToggleButton() {
 }
 
 function SidebarHeader() {
-  const { isCollapsed } = useSidebar();
+  const { isCollapsed, ready } = useSidebar();
   const t = useTranslations("sidebar");
 
   return (
     <div className="flex h-14 shrink-0 items-center border-b border-[var(--border)] px-3">
       <a
         href="/dashboard"
-        className={`flex items-center gap-2 overflow-hidden whitespace-nowrap transition-opacity duration-200 ${
-          isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100"
-        }`}
+        className={`flex items-center gap-2 overflow-hidden whitespace-nowrap ${
+          ready ? "transition-opacity duration-200" : ""
+        } ${isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100"}`}
       >
         <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--primary)] text-white font-bold text-sm">
           RF
@@ -68,7 +68,7 @@ function SidebarHeader() {
 }
 
 export default function Sidebar() {
-  const { isCollapsed, isMobileOpen } = useSidebar();
+  const { isCollapsed, isMobileOpen, ready } = useSidebar();
 
   return (
     <>
@@ -76,9 +76,11 @@ export default function Sidebar() {
       <MobileToggleButton />
 
       <aside
-        className={`fixed left-0 top-0 z-50 flex h-[100dvh] flex-col border-r border-[var(--border)] bg-[var(--surface)] shadow-lg transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] ${
-          isCollapsed ? "w-[72px]" : "w-[260px]"
-        } ${isMobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}
+        className={`fixed left-0 top-0 z-50 flex h-[100dvh] flex-col border-r border-[var(--border)] bg-[var(--surface)] shadow-lg ${
+          ready ? "transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]" : ""
+        } ${isCollapsed ? "w-[72px]" : "w-[260px]"} ${
+          isMobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+        }`}
       >
         <SidebarHeader />
         <SidebarNav />

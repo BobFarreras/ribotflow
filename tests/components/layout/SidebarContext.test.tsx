@@ -23,7 +23,7 @@ function TestComponent() {
 }
 
 describe("SidebarContext", () => {
-  it("provides default state", () => {
+  it("provides default state before hydration", () => {
     render(
       <SidebarProvider>
         <TestComponent />

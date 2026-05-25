@@ -2,6 +2,7 @@
  * Creation/modification date: 25/05/2026
  * Path: src/components/layout/SidebarContext.tsx
  * Description: React context for global sidebar state (collapsed, mobile open, theme).
+ *              SSR-safe: defaults to open, then reads localStorage after hydration.
  */
 
 "use client";
@@ -12,6 +13,7 @@ interface SidebarContextValue {
   isCollapsed: boolean;
   isMobileOpen: boolean;
   isMobile: boolean;
+  ready: boolean;
   toggleCollapse: () => void;
   toggleMobile: () => void;
   closeMobile: () => void;
@@ -21,22 +23,13 @@ interface SidebarContextValue {
 
 const SidebarContext = createContext<SidebarContextValue | null>(null);
 
-function getInitialCollapsed(): boolean {
-  if (typeof window === "undefined") return false;
-  return localStorage.getItem("sidebar:collapsed") === "true";
-}
-
-function getInitialTheme(): "light" | "dark" {
-  if (typeof window === "undefined") return "light";
-  const saved = localStorage.getItem("theme") as "light" | "dark" | null;
-  return saved ?? "light";
-}
-
 export function SidebarProvider({ children }: { children: React.ReactNode }) {
-  const [isCollapsed, setIsCollapsed] = useState(getInitialCollapsed);
+  // SSR-safe: always start open. localStorage is read after hydration.
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [ready, setReady] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
-  const [theme, setTheme] = useState<"light" | "dark">(getInitialTheme);
+  const [theme, setTheme] = useState<"light" | "dark">("light");
 
   // Detect mobile viewport
   useEffect(() => {
@@ -46,10 +39,21 @@ export function SidebarProvider({ children }: { children: React.ReactNode }) {
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
-  // Apply theme class on mount
+  // Hydration: read persisted states from localStorage ONCE
   useEffect(() => {
-    document.documentElement.classList.toggle("dark", theme === "dark");
-  }, [theme]);
+    const savedCollapsed = localStorage.getItem("sidebar:collapsed");
+    if (savedCollapsed !== null) {
+      setIsCollapsed(savedCollapsed === "true");
+    }
+
+    const savedTheme = localStorage.getItem("theme") as "light" | "dark" | null;
+    if (savedTheme) {
+      setTheme(savedTheme);
+      document.documentElement.classList.toggle("dark", savedTheme === "dark");
+    }
+
+    setReady(true);
+  }, []);
 
   const toggleCollapse = useCallback(() => {
     setIsCollapsed((prev) => {
@@ -82,6 +86,7 @@ export function SidebarProvider({ children }: { children: React.ReactNode }) {
         isCollapsed,
         isMobileOpen,
         isMobile,
+        ready,
         toggleCollapse,
         toggleMobile,
         closeMobile,
