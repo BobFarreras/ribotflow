@@ -11,7 +11,7 @@ import path from "path";
 export default defineConfig({
   plugins: [react()],
   test: {
-    environment: "node",
+    environment: "happy-dom",
     globals: true,
     setupFiles: ["./tests/setup.ts"],
     coverage: {
