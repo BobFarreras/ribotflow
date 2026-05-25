@@ -18,7 +18,6 @@ import {
   Clock,
   Settings,
   ChevronRight,
-  ChevronDown,
   List,
   UserCircle,
   Tag,
@@ -147,28 +146,21 @@ function NavItemComponent({ item }: { item: NavItem }) {
   const pathname = usePathname();
   const { isCollapsed } = useSidebar();
   const t = useTranslations("sidebar.modules");
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return localStorage.getItem(`sidebar:expanded:${item.key}`) === "true";
+  });
 
   const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
   const hasSubItems = item.subItems && item.subItems.length > 0;
   const isLeafItem = !hasSubItems;
 
-  // Load expanded state from localStorage
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const saved = localStorage.getItem(`sidebar:expanded:${item.key}`);
-    if (saved === "true") setIsExpanded(true);
-  }, [item.key]);
-
-  // Auto-expand if active
+  // Auto-expand on mount if this section is active but collapsed
   useEffect(() => {
     if (isActive && hasSubItems && !isExpanded) {
       setIsExpanded(true);
-      if (typeof window !== "undefined") {
-        localStorage.setItem(`sidebar:expanded:${item.key}`, "true");
-      }
     }
-  }, [isActive, hasSubItems, item.key]);
+  }, [isActive, hasSubItems]);
 
   const handleToggle = () => {
     if (!hasSubItems) return;
