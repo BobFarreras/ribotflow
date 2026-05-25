@@ -35,7 +35,7 @@ export default async function NewWorkOrderPage() {
     .orderBy(asc(workOrderCategories.sortOrder));
 
   return (
-    <div className="min-h-screen bg-[var(--bg)]">
+    <div className="flex-1 bg-[var(--bg)]">
       <WorkOrderForm clients={clientList} categories={categoryList} />
     </div>
   );

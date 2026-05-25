@@ -77,7 +77,7 @@ export default async function SatListPage({ searchParams }: Props) {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--bg)]">
+    <div className="flex-1 bg-[var(--bg)]">
       <header className="border-b border-[var(--border)] bg-[var(--surface)] px-4 py-4 sm:px-6">
         <div className="mx-auto flex max-w-7xl items-center justify-between">
           <div className="flex items-center gap-3">
