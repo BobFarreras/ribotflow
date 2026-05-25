@@ -6,7 +6,7 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import {
@@ -142,25 +142,64 @@ function NavSubItem({
   );
 }
 
+function CollapsedTooltip({
+  item,
+  anchorRef,
+}: {
+  item: NavItem;
+  anchorRef: React.RefObject<HTMLAnchorElement | null>;
+}) {
+  const t = useTranslations("sidebar.modules");
+  const hasSubItems = item.subItems && item.subItems.length > 0;
+  const [pos, setPos] = useState({ top: 0, left: 0 });
+
+  useEffect(() => {
+    if (anchorRef.current) {
+      const rect = anchorRef.current.getBoundingClientRect();
+      setPos({ top: rect.top + rect.height / 2, left: rect.right + 8 });
+    }
+  }, [anchorRef]);
+
+  return (
+    <div
+      className="fixed z-[9999] rounded-md bg-[var(--surface)] px-3 py-2 text-sm font-medium text-[var(--text)] shadow-xl border border-[var(--border)] whitespace-nowrap"
+      style={{ top: pos.top, left: pos.left, transform: "translateY(-50%)" }}
+    >
+      <div className="font-medium">{t(`${item.key}.label`)}</div>
+      {hasSubItems && (
+        <div className="mt-1.5 space-y-1 border-t border-[var(--border)] pt-1.5">
+          {item.subItems?.map((sub) => (
+            <a
+              key={sub.key}
+              href={sub.href}
+              className="flex items-center gap-2 text-xs text-[var(--text-muted)] hover:text-[var(--text)]"
+            >
+              <sub.icon className="h-3.5 w-3.5" />
+              {t(`${item.key}.subItems.${sub.key}`)}
+            </a>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function NavItemComponent({ item }: { item: NavItem }) {
   const pathname = usePathname();
   const { isCollapsed } = useSidebar();
   const t = useTranslations("sidebar.modules");
-  const [isExpanded, setIsExpanded] = useState(() => {
-    if (typeof window === "undefined") return false;
-    return localStorage.getItem(`sidebar:expanded:${item.key}`) === "true";
-  });
-
   const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
   const hasSubItems = item.subItems && item.subItems.length > 0;
   const isLeafItem = !hasSubItems;
 
-  // Auto-expand on mount if this section is active but collapsed
-  useEffect(() => {
-    if (isActive && hasSubItems && !isExpanded) {
-      setIsExpanded(true);
-    }
-  }, [isActive, hasSubItems]);
+  const [isExpanded, setIsExpanded] = useState(() => {
+    if (typeof window === "undefined") return isActive;
+    const saved = localStorage.getItem(`sidebar:expanded:${item.key}`);
+    return saved !== null ? saved === "true" : isActive;
+  });
+
+  const [showTooltip, setShowTooltip] = useState(false);
+  const anchorRef = useRef<HTMLAnchorElement>(null);
 
   const handleToggle = () => {
     if (!hasSubItems) return;
@@ -173,35 +212,23 @@ function NavItemComponent({ item }: { item: NavItem }) {
 
   if (isCollapsed) {
     return (
-      <div className="relative group">
+      <div
+        className="relative"
+        onMouseEnter={() => setShowTooltip(true)}
+        onMouseLeave={() => setShowTooltip(false)}
+      >
         <a
+          ref={anchorRef}
           href={item.href}
           className={`flex items-center justify-center rounded-lg p-2.5 transition-all ${
             isActive
               ? "bg-[var(--primary)]/10 text-[var(--primary)]"
               : "text-[var(--text-muted)] hover:bg-[var(--surface-hover)] hover:text-[var(--text)]"
           }`}
-          title={t(`${item.key}.label`)}
         >
           <item.icon className="h-5 w-5" />
         </a>
-        {/* Tooltip */}
-        <div className="absolute left-full top-1/2 z-50 ml-2 hidden -translate-y-1/2 rounded-md bg-[var(--surface)] px-3 py-1.5 text-sm font-medium text-[var(--text)] shadow-lg border border-[var(--border)] whitespace-nowrap group-hover:block">
-          {t(`${item.key}.label`)}
-          {hasSubItems && (
-            <div className="mt-1 space-y-0.5 border-t border-[var(--border)] pt-1">
-              {item.subItems?.map((sub) => (
-                <a
-                  key={sub.key}
-                  href={sub.href}
-                  className="block text-xs text-[var(--text-muted)] hover:text-[var(--text)]"
-                >
-                  {t(`${item.key}.subItems.${sub.key}`)}
-                </a>
-              ))}
-            </div>
-          )}
-        </div>
+        {showTooltip && <CollapsedTooltip item={item} anchorRef={anchorRef} />}
       </div>
     );
   }
