@@ -367,6 +367,67 @@ AUTH_SECRET=your-secret-key-here (minimum 32 characters)
 NEXT_PUBLIC_APP_MODE=cloud
 ```
 
+### File Storage (MinIO — Development)
+
+**CRITICAL:** Starting this project now requires **MinIO** alongside PostgreSQL.
+
+```env
+# MinIO (Development via docker-compose.dev.yml)
+STORAGE_PROVIDER=minio
+MINIO_ENDPOINT=localhost
+MINIO_PORT=9002
+MINIO_USE_SSL=false
+MINIO_ACCESS_KEY=minioadmin
+MINIO_SECRET_KEY=minioadmin
+MINIO_BUCKET=ribotflow
+MINIO_PUBLIC_URL_BASE=http://localhost:9002/ribotflow
+```
+
+> **Remember:** Next.js reads `.env.local` only at startup. If you change storage variables, **restart `pnpm dev`!**
+
+### MinIO Ports Explained
+
+| Service | Dev Port | Used By |
+|---------|----------|---------|
+| MinIO API (S3) | **9002** | Next.js app uploads/downloads |
+| MinIO Console (Web UI) | **9003** | You (human) browse buckets |
+
+---
+
+## File Storage Architecture
+
+### Abstract Interface (`src/services/storage/`)
+
+The app uses a **framework-agnostic `FileStorage` interface** with three implementations:
+
+| Provider | File | When Used |
+|----------|------|-----------|
+| `LocalFileStorage` | `localStorage.ts` | Dev fallback (no MinIO configured) |
+| `MinioStorage` | `minioStorage.ts` | **Self-Hosted** (`docker-compose.yml`) |
+| `SupabaseStorage` | `supabaseStorage.ts` | **Cloud** (`NEXT_PUBLIC_APP_MODE=cloud`) |
+
+**Factory selection logic (`src/services/storage/factory.ts`):**
+- `STORAGE_PROVIDER=minio` → MinIO
+- `STORAGE_PROVIDER=supabase` → Supabase
+- Missing / `STORAGE_PROVIDER=local` → Local filesystem (`./uploads/`)
+
+### What Each Service Does
+
+- **Business logic** (attachments, signatures, PDFs) → calls `FileStorage.upload()` / `delete()`
+- **Binary files** (images, videos, signatures) → go to MinIO/Supabase/Local
+- **Metadata** (filename, size, mime type, dimensions) → stored in PostgreSQL (`work_order_attachments`, `work_order_signatures`)
+
+### Making MinIO Bucket Public (Dev Only)
+
+After creating the `ribotflow` bucket in MinIO Console, make it public:
+
+```bash
+docker exec ribotflow-dev-minio mc alias set local http://127.0.0.1:9000 minioadmin minioadmin
+docker exec ribotflow-dev-minio mc anonymous set public local/ribotflow
+```
+
+> Production uses **Signed URLs** (temporary, secure). Dev uses public bucket for simplicity.
+
 ---
 
 ## Decision Log
@@ -388,6 +449,9 @@ NEXT_PUBLIC_APP_MODE=cloud
 | 26/05/2026 | Product catalog per company | Materials can link to catalog products or be free-text. Enables inventory tracking. |
 | 26/05/2026 | Local file storage for attachments | `uploads/sat/{companyId}/{workOrderId}/` folder served via `/api/uploads/[...path]`. Gitignored. Simple, no external dependencies. |
 | 26/05/2026 | Attachment metadata stored in DB | File name, size, mime type, dimensions, isBefore flag, caption. Actual file stored on disk. |
+| 26/05/2026 | **FileStorage abstraction layer** | `FileStorage` interface with `LocalFileStorage`, `MinioStorage`, `SupabaseStorage`. Factory selects provider via `STORAGE_PROVIDER` env. Clean Architecture: business logic never knows where files live. |
+| 26/05/2026 | **MinIO in dev docker-compose** | `docker-compose.dev.yml` now includes MinIO (ports 9002 API, 9003 Console). All dev uploads go to real S3-compatible storage, not just local folders. |
+| 26/05/2026 | **Bucket public policy (dev only)** | `mc anonymous set public local/ribotflow` via CLI. In production, use signed URLs. |
 
 ---
 
@@ -429,11 +493,20 @@ When you start working on this project:
 1. **Read this file first** (you're doing great!)
 2. **Save critical decisions to your local memory** (Engram, notes, etc.)
 3. **Check the branch:** Should be `features/sat-work-orders`
-4. **Start PostgreSQL:** `pnpm db:setup`
-5. **Seed demo data:** `pnpm db:seed:demo`
-6. **Run tests:** `pnpm test` (ensure 54 tests pass)
-7. **Start dev server:** `pnpm dev`
-8. **Login with:** dais@test.com / 12345678
+4. **Start PostgreSQL + MinIO:** `pnpm db:setup` (starts both containers)
+5. **Apply pending migrations:** `pnpm db:migrate`
+6. **Seed demo data:** `pnpm db:seed:demo`
+7. **Configure `.env.local`** with MinIO variables (see Environment Variables section above)
+8. **Make MinIO bucket public:**
+   ```bash
+   docker exec ribotflow-dev-minio mc alias set local http://127.0.0.1:9000 minioadmin minioadmin
+   docker exec ribotflow-dev-minio mc anonymous set public local/ribotflow
+   ```
+9. **Run tests:** `pnpm test` (ensure 54 tests pass)
+10. **Start dev server:** `pnpm dev`
+11. **Login with:** dais@test.com / 12345678
+
+> **Tip for agents:** If you see `[Storage] Environment variables missing for provider "supabase". Falling back to local filesystem storage.` in the console, it means `.env.local` does not have `STORAGE_PROVIDER=minio` set. Check the file and restart `pnpm dev`.
 
 ### Next Recommended Feature: Digital Signature (Phase C)
 The next priority is implementing the **digital signature** feature:
@@ -468,5 +541,5 @@ If any of the above fails, check the Known Issues section above, or ask the user
 
 ---
 
-*Last updated: 26/05/2026 by Agent OpenCode (kimi-k2.6) — Completed Phase B (Materials + Attachments). 54 tests passing. Next recommended step: Phase C (Digital Signature).*
+*Last updated: 26/05/2026 by Agent OpenCode (kimi-k2.6) — Completed FileStorage abstraction (Local + MinIO + Supabase). MinIO integrated into docker-compose.dev.yml. 54 tests passing. Next recommended step: Phase C (Digital Signature).*
 *Context stored in: docs/AGENT_CONTEXT.md (this file)*

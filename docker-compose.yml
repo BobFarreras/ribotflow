@@ -1,6 +1,6 @@
 # ==========================================
 # RIBOTFLOW - Docker Compose (Self-Hosted)
-# Data: 21/05/2026
+# Data: 26/05/2026
 # ==========================================
 
 services:
@@ -15,8 +15,18 @@ services:
       - DATABASE_URL=postgresql://postgres:postgres@db:5432/ribotflow
       - AUTH_SECRET=${AUTH_SECRET:-change-me}
       - NODE_ENV=production
+      - STORAGE_PROVIDER=minio
+      - MINIO_ENDPOINT=minio
+      - MINIO_PORT=9000
+      - MINIO_USE_SSL=false
+      - MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY:-minioadmin}
+      - MINIO_SECRET_KEY=${MINIO_SECRET_KEY:-minioadmin}
+      - MINIO_BUCKET=${MINIO_BUCKET:-ribotflow}
+      - MINIO_PUBLIC_URL_BASE=${MINIO_PUBLIC_URL_BASE:-http://localhost:9000/ribotflow}
     depends_on:
       db:
+        condition: service_healthy
+      minio:
         condition: service_healthy
     restart: unless-stopped
     volumes:
@@ -39,6 +49,25 @@ services:
       retries: 5
     restart: unless-stopped
 
+  minio:
+    image: minio/minio:latest
+    command: server /data --console-address ":9001"
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      - MINIO_ROOT_USER=${MINIO_ACCESS_KEY:-minioadmin}
+      - MINIO_ROOT_PASSWORD=${MINIO_SECRET_KEY:-minioadmin}
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
 volumes:
   postgres_data:
   app_data:
+  minio_data:

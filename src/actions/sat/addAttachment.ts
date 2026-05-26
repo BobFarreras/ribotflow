@@ -2,6 +2,7 @@
  * Creation/modification date: 26/05/2026
  * Path: src/actions/sat/addAttachment.ts
  * Description: Server Action to upload an attachment file and save metadata.
+ *              Delegates binary storage to the attachment service (FileStorage abstraction).
  */
 
 "use server";
@@ -9,9 +10,7 @@
 import { auth } from "@/lib/auth";
 import { attachmentService } from "@/services/sat/attachmentService";
 import { revalidatePath } from "next/cache";
-import { writeFile, mkdir } from "fs/promises";
-import { join, extname } from "path";
-import { existsSync } from "fs";
+import { extname } from "path";
 import { randomUUID } from "crypto";
 
 const ALLOWED_TYPES = {
@@ -42,13 +41,11 @@ export async function addAttachmentAction(formData: FormData) {
       return { success: false, error: "Missing file or work order ID" };
     }
 
-    // Validate file type
     const attachmentType = ALLOWED_TYPES[file.type as keyof typeof ALLOWED_TYPES];
     if (!attachmentType) {
       return { success: false, error: `File type not allowed: ${file.type}` };
     }
 
-    // Validate size
     if (file.size > MAX_SIZE_MB * 1024 * 1024) {
       return { success: false, error: `File too large (max ${MAX_SIZE_MB}MB)` };
     }
@@ -57,19 +54,9 @@ export async function addAttachmentAction(formData: FormData) {
     const ext = extname(file.name).toLowerCase() || ".bin";
     const uuid = randomUUID();
     const storageKey = `sat/${companyId}/${workOrderId}/${uuid}${ext}`;
-    const filePath = join(process.cwd(), "uploads", storageKey);
 
-    // Ensure directory exists
-    const dir = join(process.cwd(), "uploads", "sat", companyId, workOrderId);
-    if (!existsSync(dir)) {
-      await mkdir(dir, { recursive: true });
-    }
-
-    // Write file to disk
     const buffer = Buffer.from(await file.arrayBuffer());
-    await writeFile(filePath, buffer);
 
-    // Try to get image dimensions
     let width: number | undefined;
     let height: number | undefined;
     if (attachmentType === "photo") {
@@ -83,20 +70,19 @@ export async function addAttachmentAction(formData: FormData) {
       }
     }
 
-    // Save metadata to database
     const attachment = await attachmentService.create(companyId, {
       workOrderId,
       uploadedBy: session.user.id as string,
       type: attachmentType,
       fileName: file.name,
-      storageKey,
-      url: `/api/uploads/${storageKey}`,
       mimeType: file.type,
       sizeBytes: file.size,
       width,
       height,
       isBefore,
       caption: caption || undefined,
+      fileBuffer: buffer,
+      storageKey,
     });
 
     revalidatePath(`/sat/${workOrderId}`);

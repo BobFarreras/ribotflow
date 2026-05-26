@@ -1,7 +1,7 @@
 # ==========================================
 # RIBOTFLOW - Docker Compose (Development)
-# Description: PostgreSQL only for local development.
-#              Production uses Supabase, Self-Hosted uses full docker-compose.yml
+# Description: PostgreSQL + MinIO for realistic local development.
+#              Both services run via Docker Desktop; app runs with pnpm dev.
 # ==========================================
 
 services:
@@ -24,5 +24,25 @@ services:
       retries: 5
     restart: unless-stopped
 
+  minio:
+    image: minio/minio:latest
+    container_name: ribotflow-dev-minio
+    command: server /data --console-address ":9001"
+    ports:
+      - "9002:9000"
+      - "9003:9001"
+    environment:
+      - MINIO_ROOT_USER=minioadmin
+      - MINIO_ROOT_PASSWORD=minioadmin
+    volumes:
+      - ribotflow_dev_minio:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
 volumes:
   ribotflow_dev_data:
+  ribotflow_dev_minio:

@@ -1,7 +1,8 @@
 /**
  * Creation/modification date: 26/05/2026
  * Path: src/actions/sat/deleteAttachment.ts
- * Description: Server Action to delete an attachment and its file.
+ * Description: Server Action to delete an attachment and its binary file.
+ *              Delegates storage removal to the attachment service.
  */
 
 "use server";
@@ -9,8 +10,6 @@
 import { auth } from "@/lib/auth";
 import { attachmentService } from "@/services/sat/attachmentService";
 import { revalidatePath } from "next/cache";
-import { unlink } from "fs/promises";
-import { join } from "path";
 
 export async function deleteAttachmentAction(attachmentId: string, workOrderId: string) {
   try {
@@ -19,16 +18,7 @@ export async function deleteAttachmentAction(attachmentId: string, workOrderId: 
       return { success: false, error: "Unauthorized" };
     }
 
-    const result = await attachmentService.remove(session.user.companyId, attachmentId);
-
-    // Delete file from disk
-    if (result.storageKey) {
-      try {
-        await unlink(join(process.cwd(), "uploads", result.storageKey));
-      } catch {
-        // Ignore if file already deleted or not found
-      }
-    }
+    await attachmentService.remove(session.user.companyId, attachmentId);
 
     revalidatePath(`/sat/${workOrderId}`);
 

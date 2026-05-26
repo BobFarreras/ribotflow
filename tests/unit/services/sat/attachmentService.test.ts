@@ -55,6 +55,7 @@ describe("Attachment Service (Integration)", () => {
         height: 1080,
         isBefore: true,
         caption: "Before repair",
+        fileBuffer: Buffer.from("test-image-data"),
       });
 
       expect(attachment).toBeDefined();
@@ -78,6 +79,7 @@ describe("Attachment Service (Integration)", () => {
         storageKey: `sat/${testData.company.id}/${workOrderId}/doc-uuid.pdf`,
         mimeType: "application/pdf",
         sizeBytes: 45000,
+        fileBuffer: Buffer.from("test-document-data"),
       });
 
       expect(attachment.type).toBe("document");
@@ -123,6 +125,7 @@ describe("Attachment Service (Integration)", () => {
         storageKey: `sat/${testData.company.id}/${workOrderId}/remove-uuid.jpg`,
         mimeType: "image/jpeg",
         sizeBytes: 50000,
+        fileBuffer: Buffer.from("test-remove-data"),
       });
 
       await attachmentService.remove(testData.company.id, attachment.id);
