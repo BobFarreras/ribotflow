@@ -58,7 +58,20 @@
         "delete": "Eliminar"
       },
       "confirmDelete": "Estàs segur que vols eliminar aquesta ordre?"
-    },
+    }
+  },
+  "materials": {
+    "title": "Materials",
+    "addButton": "Afegir",
+    "namePlaceholder": "Nom del material",
+    "quantityPlaceholder": "Quantitat",
+    "unitPricePlaceholder": "Preu (€)",
+    "unitCostPlaceholder": "Cost (€)",
+    "submit": "Afegir",
+    "cancel": "Cancel·lar",
+    "empty": "No hi ha materials",
+    "total": "Total"
+  }
     "create": {
       "title": "Nova Ordre de Treball",
       "clientLabel": "Client",

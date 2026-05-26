@@ -73,3 +73,14 @@ export interface WorkOrder {
   createdAt: Date;
   updatedAt: Date;
 }
+
+export interface WorkOrderMaterial {
+  id: string;
+  workOrderId: string;
+  productId: string | null;
+  name: string;
+  quantity: string;
+  unitPrice: string | null;
+  unitCost: string | null;
+  createdAt: Date;
+}

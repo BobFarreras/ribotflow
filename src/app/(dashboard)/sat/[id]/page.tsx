@@ -12,6 +12,8 @@ import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { WorkOrderActions } from "@/components/sat/WorkOrderActions";
 import { TechnicianAssigner } from "@/components/sat/TechnicianAssigner";
+import { MaterialList } from "@/components/sat/MaterialList";
+import { materialService } from "@/services/sat/materialService";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -34,6 +36,7 @@ export default async function WorkOrderDetailPage({ params }: Props) {
 
   const history = await workOrderService.getStatusHistory(id);
   const technicians = await workOrderService.getTechniciansByCompany(companyId);
+  const materials = await materialService.getByWorkOrder(companyId, id);
   const userRole = session.user.role;
 
   function statusBadgeColor(status: string) {
@@ -166,6 +169,8 @@ export default async function WorkOrderDetailPage({ params }: Props) {
                 <span>{category.name}</span>
               </div>
             </div>
+
+            <MaterialList materials={materials} workOrderId={workOrder.id} />
 
             {userRole !== "TECHNICIAN" && (
               <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4">

@@ -337,6 +337,38 @@ NEXT_PUBLIC_APP_MODE=cloud
 | 25/05/2026 | Fixed DATABASE_URL port mismatch | Corrected `.env.local` from 5432 to 5433 to match docker-compose mapping |
 | 25/05/2026 | Adopted versioned migrations for team dev | `db:generate` + `db:migrate` replaces `db:push` for safe team schema evolution |
 | 25/05/2026 | Professional sidebar with sub-menus | Collapsible, responsive, theme/language toggle, multi-module navigation |
+| 26/05/2026 | Sidebar navigation uses `<Link>` not `<a>` | **CRITICAL:** `<a href>` causes full page reload, recreating DOM and causing sidebar flash/reset. `<Link>` preserves sidebar state (SPA navigation). |
+
+---
+
+## 🔴 CRITICAL BUG: Sidebar Flash on Navigation
+
+### The Problem
+When navigating between pages via the sidebar, the sidebar would "flash":
+- Closed sidebar would briefly appear open then snap closed
+- Open sub-menus would appear to re-open
+- Active selection would jump around
+
+### Root Cause
+**The sidebar navigation used `<a href="...">` instead of Next.js `<Link>`.**
+
+`<a href>` triggers a **full browser page reload** (HTTP request + new DOM). This destroys and recreates the entire React tree, including the sidebar. The `useEffect` hydration then reads `localStorage` and restores state, but the user sees the flash.
+
+### Why It Took So Long to Find
+Multiple agents (including this one) investigated the wrong causes:
+1. **localStorage persistence** — assumed state was lost between pages
+2. **`usePathname` re-renders** — thought pathname changes were resetting state
+3. **`isExpanded` local state** — moved it to global `SidebarContext` (helpful but not the root cause)
+4. **CSS transitions** — disabled all animations thinking that was the issue
+
+**The real fix was trivial:** replace `<a>` with `<Link>` from `next/link`. Nothing else needed to change.
+
+### Lesson Learned
+> **Always verify the navigation mechanism first.** If a React component "resets" on every page change, check if you're using `<a>` instead of `<Link>` before touching state management, localStorage, or context.
+
+### Files Changed
+- `src/components/layout/SidebarNav.tsx` — all `<a>` → `<Link>`
+- `src/components/layout/Sidebar.tsx` — header logo `<a>` → `<Link>`
 
 ---
 
@@ -361,5 +393,5 @@ If any of the above fails, check the Known Issues section above, or ask the user
 
 ---
 
-*Last updated: 25/05/2026 by Agent OpenCode (kimi-k2.6) — Added professional sidebar, fixed db:setup script, .env.local port, adopted versioned migrations*
+*Last updated: 26/05/2026 by Agent OpenCode (kimi-k2.6) — Fixed critical sidebar flash bug: root cause was `<a>` tags instead of `<Link>` causing full page reloads. Documented in Known Issues section.*
 *Context stored in: docs/AGENT_CONTEXT.md (this file)*
