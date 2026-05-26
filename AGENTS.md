@@ -107,6 +107,16 @@ Todos los archivos `.ts` y `.tsx` deben comenzar con:
 - **Mocks:** Factories en `/tests/factories/`
 - **Pre-push:** `pnpm tsc --noEmit` obliga a compilación sin errores
 
+## 🗄️ Migraciones de Base de Datos (Drizzle ORM)
+- **Nunca usar `db:push` en equipo:** Puede borrar datos. Solo para contenedores nuevos o CI.
+- **Flujo correcto:**
+  1. Modificar `src/db/schema/*.ts`
+  2. `pnpm db:generate` → crea migración versionada en `src/db/migrations/`
+  3. Hacer `git commit` del archivo SQL generado
+  4. Compañeros: `git pull && pnpm db:migrate`
+- **Setup diario:** `pnpm db:setup` (hace `db:up` + `db:migrate`)
+- **Reset completo (pierde datos):** `pnpm db:reset` + `pnpm db:setup:fresh`
+
 ## 🔒 Seguridad
 - **Cookies:** `httpOnly`, `secure`, `sameSite: "lax"`
 - **Sessions:** JWT firmado, nunca modificable desde el cliente

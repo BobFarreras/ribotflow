@@ -4,6 +4,7 @@
  * Description: Vitest setup file. Loads environment variables for integration tests.
  */
 
+import "@testing-library/jest-dom/vitest";
 import { existsSync } from "fs";
 import { resolve } from "path";
 import { config } from "dotenv";

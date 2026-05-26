@@ -1,7 +1,7 @@
 /**
- * Data de creació/modificació: 21/05/2026
- * Ruta: src/lib/auth/index.ts
- * Descripció: Configuració central d'Auth.js v5. Gestiona autenticació, sessions JWT i injecció de companyId + role.
+ * Creation/modification date: 21/05/2026
+ * Path: src/lib/auth/index.ts
+ * Description: Central Auth.js v5 configuration. Manages JWT sessions with companyId + role injection.
  */
 
 import NextAuth from "next-auth";
@@ -78,17 +78,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   pages: {
     signIn: "/login",
     error: "/login",
-  },
-  cookies: {
-    sessionToken: {
-      name: `__Secure-ribotflow-session`,
-      options: {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
-        path: "/",
-      },
-    },
   },
   secret: process.env.AUTH_SECRET,
 });

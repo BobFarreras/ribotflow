@@ -1,0 +1,78 @@
+{
+  "title": "SAT - Servicio de Asistencia Técnica",
+  "workOrder": {
+    "list": {
+      "title": "Órdenes de Trabajo",
+      "searchPlaceholder": "Buscar por número, título o cliente...",
+      "newButton": "Nueva Orden",
+      "status": {
+        "all": "Todos los estados",
+        "pending": "Pendiente",
+        "assigned": "Asignada",
+        "scheduled": "Programada",
+        "in_progress": "En curso",
+        "paused": "Pausada",
+        "completed": "Completada",
+        "closed": "Cerrada",
+        "cancelled": "Cancelada",
+        "waiting_parts": "Esperando piezas",
+        "waiting_client": "Esperando cliente"
+      },
+      "columns": {
+        "number": "Número",
+        "title": "Título",
+        "client": "Cliente",
+        "status": "Estado",
+        "priority": "Prioridad",
+        "scheduledDate": "Fecha prevista",
+        "actions": "Acciones"
+      },
+      "priority": {
+        "low": "Baja",
+        "medium": "Media",
+        "high": "Alta",
+        "urgent": "Urgente"
+      },
+      "emptyState": "No hay órdenes de trabajo. ¡Crea la primera!",
+      "viewDetails": "Ver detalle"
+    },
+    "detail": {
+      "backToList": "Volver al listado",
+      "edit": "Editar",
+      "statusHistory": "Historial de estados",
+      "materials": "Materiales",
+      "attachments": "Adjuntos",
+      "signature": "Firma",
+      "location": "Ubicación",
+      "actionsTitle": "Acciones",
+      "assignTitle": "Asignar técnico",
+      "unassigned": "Sin asignar",
+      "unassign": "Desasignar",
+      "actions": {
+        "start": "Iniciar",
+        "pause": "Pausar",
+        "resume": "Reanudar",
+        "complete": "Completar",
+        "invoice": "Facturar",
+        "cancel": "Cancelar",
+        "delete": "Eliminar"
+      },
+      "confirmDelete": "¿Estás seguro de que quieres eliminar esta orden?"
+    },
+    "create": {
+      "title": "Nueva Orden de Trabajo",
+      "clientLabel": "Cliente",
+      "categoryLabel": "Categoría",
+      "titleLabel": "Título",
+      "descriptionLabel": "Descripción",
+      "priorityLabel": "Prioridad",
+      "scheduledDateLabel": "Fecha programada",
+      "estimatedDurationLabel": "Duración estimada (minutos)",
+      "notesLabel": "Notas internas",
+      "submit": "Crear Orden",
+      "cancel": "Cancelar",
+      "success": "Orden de trabajo creada correctamente",
+      "error": "Error al crear la orden de trabajo"
+    }
+  }
+}
