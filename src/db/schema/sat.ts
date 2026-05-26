@@ -248,17 +248,18 @@ export const workOrderAttachments = pgTable(
 );
 
 /* ============================================================
-   FIRMA BIOMÈTRICA
+   FIRMA BIOMÈTRICA (Genèrica per a qualsevol entitat)
    ============================================================ */
 
-export const workOrderSignatures = pgTable(
-  "work_order_signatures",
+export const signatures = pgTable(
+  "signatures",
   {
     id: uuid("id").defaultRandom().primaryKey(),
-    workOrderId: uuid("work_order_id")
-      .references(() => workOrders.id, { onDelete: "cascade" })
-      .notNull()
-      .unique(),
+    companyId: uuid("company_id")
+      .references(() => companies.id, { onDelete: "cascade" })
+      .notNull(),
+    entityType: text("entity_type").notNull(),
+    entityId: uuid("entity_id").notNull(),
     signedBy: text("signed_by").notNull(),
     signatureSvg: text("signature_svg").notNull(),
     signaturePngUrl: text("signature_png_url"),
@@ -268,7 +269,11 @@ export const workOrderSignatures = pgTable(
     createdAt: timestamp("created_at").defaultNow().notNull(),
   },
   (table) => ({
-    woIdx: index("idx_wo_signatures_work_order").on(table.workOrderId),
+    companyEntityIdx: index("idx_signatures_company_entity").on(
+      table.companyId,
+      table.entityType,
+      table.entityId
+    ),
   })
 );
 
@@ -340,7 +345,6 @@ export const workOrdersRelations = relations(workOrders, ({ one, many }) => ({
   statusHistory: many(workOrderStatusHistory),
   materials: many(workOrderMaterials),
   attachments: many(workOrderAttachments),
-  signature: one(workOrderSignatures),
   locations: many(workOrderLocations),
 }));
 
@@ -365,12 +369,7 @@ export const workOrderAttachmentsRelations = relations(workOrderAttachments, ({ 
   }),
 }));
 
-export const workOrderSignaturesRelations = relations(workOrderSignatures, ({ one }) => ({
-  workOrder: one(workOrders, {
-    fields: [workOrderSignatures.workOrderId],
-    references: [workOrders.id],
-  }),
-}));
+
 
 export const workOrderLocationsRelations = relations(workOrderLocations, ({ one }) => ({
   workOrder: one(workOrders, {

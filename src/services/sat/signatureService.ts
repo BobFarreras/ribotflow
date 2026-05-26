@@ -1,19 +1,23 @@
 /**
  * Creation/modification date: 26/05/2026
  * Path: src/services/sat/signatureService.ts
- * Description: Business logic for work order digital signatures.
+ * Description: Generic digital signature business logic.
  *              Orchestrates FileStorage (PNG binary) and PostgreSQL (SVG + metadata).
+ *              Works for any entity type (work_order, quote, invoice, etc.).
  */
 
 import { db } from "@/db";
-import { workOrderSignatures, workOrders } from "@/db/schema/sat";
+import { signatures } from "@/db/schema/sat";
 import { eq, and } from "drizzle-orm";
 import { buildSignatureStorageKey } from "@/lib/utils/storageKeys";
 import type { FileStorage } from "@/services/storage/interface";
 import { createFileStorage } from "@/services/storage/factory";
 
-interface SaveSignatureInput {
-  workOrderId: string;
+export type SignatureEntityType = "work_order" | "quote" | "invoice";
+
+export interface SaveSignatureInput {
+  entityType: SignatureEntityType;
+  entityId: string;
   signedBy: string;
   signatureSvg: string;
   signaturePngBuffer?: Buffer;
@@ -25,56 +29,49 @@ interface SaveSignatureInput {
 export class SignatureService {
   constructor(private readonly storage: FileStorage) {}
 
-  async getByWorkOrder(companyId: string, workOrderId: string) {
-    const order = await db
-      .select({ id: workOrders.id })
-      .from(workOrders)
-      .where(and(eq(workOrders.id, workOrderId), eq(workOrders.companyId, companyId)))
-      .limit(1);
-
-    if (order.length === 0) {
-      throw new Error("Work order not found or access denied");
-    }
-
+  async getByEntity(
+    companyId: string,
+    entityType: SignatureEntityType,
+    entityId: string
+  ) {
     const result = await db
       .select()
-      .from(workOrderSignatures)
-      .where(eq(workOrderSignatures.workOrderId, workOrderId))
+      .from(signatures)
+      .where(
+        and(
+          eq(signatures.companyId, companyId),
+          eq(signatures.entityType, entityType),
+          eq(signatures.entityId, entityId)
+        )
+      )
       .limit(1);
 
     return result[0] ?? null;
   }
 
-  async save(companyId: string, input: SaveSignatureInput) {
-    // Verify work order exists and belongs to company
-    const order = await db
-      .select({ id: workOrders.id, status: workOrders.status, number: workOrders.number })
-      .from(workOrders)
-      .where(and(eq(workOrders.id, input.workOrderId), eq(workOrders.companyId, companyId)))
-      .limit(1);
-
-    if (order.length === 0) {
-      throw new Error("Work order not found or access denied");
-    }
-
-    // Only allow signature when status is completed or closed
-    const allowedStatuses = ["completed", "closed"];
-    if (!allowedStatuses.includes(order[0].status)) {
-      throw new Error("Signature can only be captured when work order is completed or closed");
-    }
-
-    // Check if signature already exists
+  async save(companyId: string, entityNumber: string, input: SaveSignatureInput) {
+    // Check if signature already exists for this entity
     const existing = await db
-      .select({ id: workOrderSignatures.id })
-      .from(workOrderSignatures)
-      .where(eq(workOrderSignatures.workOrderId, input.workOrderId))
+      .select({ id: signatures.id })
+      .from(signatures)
+      .where(
+        and(
+          eq(signatures.companyId, companyId),
+          eq(signatures.entityType, input.entityType),
+          eq(signatures.entityId, input.entityId)
+        )
+      )
       .limit(1);
 
     let pngUrl: string | null = null;
 
     // Upload PNG to storage if provided
     if (input.signaturePngBuffer) {
-      const storageKey = buildSignatureStorageKey("sat", companyId, order[0].number);
+      const storageKey = buildSignatureStorageKey(
+        input.entityType,
+        companyId,
+        entityNumber
+      );
       const uploadResult = await this.storage.upload({
         buffer: input.signaturePngBuffer,
         storageKey,
@@ -86,7 +83,7 @@ export class SignatureService {
     if (existing.length > 0) {
       // Update existing signature
       const [updated] = await db
-        .update(workOrderSignatures)
+        .update(signatures)
         .set({
           signedBy: input.signedBy,
           signatureSvg: input.signatureSvg,
@@ -95,7 +92,7 @@ export class SignatureService {
           userAgent: input.userAgent ?? null,
           location: input.location ?? null,
         })
-        .where(eq(workOrderSignatures.workOrderId, input.workOrderId))
+        .where(eq(signatures.id, existing[0].id))
         .returning();
 
       return updated;
@@ -103,9 +100,11 @@ export class SignatureService {
 
     // Create new signature
     const [signature] = await db
-      .insert(workOrderSignatures)
+      .insert(signatures)
       .values({
-        workOrderId: input.workOrderId,
+        companyId,
+        entityType: input.entityType,
+        entityId: input.entityId,
         signedBy: input.signedBy,
         signatureSvg: input.signatureSvg,
         signaturePngUrl: pngUrl,
@@ -118,28 +117,28 @@ export class SignatureService {
     return signature;
   }
 
-  async remove(companyId: string, workOrderId: string) {
-    const order = await db
-      .select({ id: workOrders.id })
-      .from(workOrders)
-      .where(and(eq(workOrders.id, workOrderId), eq(workOrders.companyId, companyId)))
-      .limit(1);
-
-    if (order.length === 0) {
-      throw new Error("Work order not found or access denied");
-    }
-
+  async remove(
+    companyId: string,
+    entityType: SignatureEntityType,
+    entityId: string
+  ) {
     const signature = await db
-      .select({ signaturePngUrl: workOrderSignatures.signaturePngUrl })
-      .from(workOrderSignatures)
-      .where(eq(workOrderSignatures.workOrderId, workOrderId))
+      .select({ signaturePngUrl: signatures.signaturePngUrl })
+      .from(signatures)
+      .where(
+        and(
+          eq(signatures.companyId, companyId),
+          eq(signatures.entityType, entityType),
+          eq(signatures.entityId, entityId)
+        )
+      )
       .limit(1);
 
     // Delete PNG from storage if exists
     if (signature.length > 0 && signature[0].signaturePngUrl) {
       // Extract storage key from public URL
       const url = signature[0].signaturePngUrl;
-      const storageKey = url.split("/").slice(-3).join("/"); // signatures/companyId/workOrderId.png
+      const storageKey = url.split("/").slice(-3).join("/");
       try {
         await this.storage.delete(storageKey);
       } catch {
@@ -148,8 +147,14 @@ export class SignatureService {
     }
 
     await db
-      .delete(workOrderSignatures)
-      .where(eq(workOrderSignatures.workOrderId, workOrderId));
+      .delete(signatures)
+      .where(
+        and(
+          eq(signatures.companyId, companyId),
+          eq(signatures.entityType, entityType),
+          eq(signatures.entityId, entityId)
+        )
+      );
 
     return { success: true };
   }

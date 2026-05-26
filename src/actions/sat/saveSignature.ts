@@ -1,12 +1,15 @@
 /**
  * Creation/modification date: 26/05/2026
  * Path: src/actions/sat/saveSignature.ts
- * Description: Server Action to save a digital signature (SVG + optional PNG).
+ * Description: Server Action to save a digital signature for a work order.
+ *              Validates work-order-specific rules before delegating to the
+ *              generic SignatureService.
  */
 
 "use server";
 
 import { auth } from "@/lib/auth";
+import { workOrderService } from "@/services/sat/workOrderService";
 import { signatureService } from "@/services/sat/signatureService";
 import { revalidatePath } from "next/cache";
 
@@ -32,17 +35,33 @@ export async function saveSignatureAction(formData: FormData) {
       return { success: false, error: "Signature data too large" };
     }
 
+    // Work-order-specific validations
+    const order = await workOrderService.getById(session.user.companyId, workOrderId);
+    if (!order) {
+      return { success: false, error: "Work order not found or access denied" };
+    }
+
+    const allowedStatuses = ["completed", "closed"];
+    if (!allowedStatuses.includes(order.status)) {
+      return { success: false, error: "Signature can only be captured when work order is completed or closed" };
+    }
+
     let pngBuffer: Buffer | undefined;
     if (signaturePng && signaturePng.size > 0) {
       pngBuffer = Buffer.from(await signaturePng.arrayBuffer());
     }
 
-    const signature = await signatureService.save(session.user.companyId, {
-      workOrderId,
-      signedBy,
-      signatureSvg,
-      signaturePngBuffer: pngBuffer,
-    });
+    const signature = await signatureService.save(
+      session.user.companyId,
+      order.number,
+      {
+        entityType: "work_order",
+        entityId: workOrderId,
+        signedBy,
+        signatureSvg,
+        signaturePngBuffer: pngBuffer,
+      }
+    );
 
     revalidatePath(`/sat/${workOrderId}`);
 

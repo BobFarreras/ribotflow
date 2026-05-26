@@ -15,6 +15,13 @@
       "when": 1779774463806,
       "tag": "0001_cynical_madame_hydra",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1779792706330,
+      "tag": "0002_eminent_blink",
+      "breakpoints": true
     }
   ]
 }

@@ -50,7 +50,7 @@ export default async function WorkOrderDetailPage({ params }: Props) {
   const materials = await materialService.getByWorkOrder(companyId, id);
   const products = await productService.getByCompany(companyId);
   const attachments = await attachmentService.getByWorkOrder(companyId, id);
-  const signature = await signatureService.getByWorkOrder(companyId, id);
+  const signature = await signatureService.getByEntity(companyId, "work_order", id);
   const userRole = session.user.role;
 
   const { workOrder, client, category } = order;

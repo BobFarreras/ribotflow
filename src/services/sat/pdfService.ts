@@ -478,7 +478,7 @@ export class PdfService {
 
     const materials = await materialService.getByWorkOrder(companyId, workOrderId);
     const attachments = await attachmentService.getByWorkOrder(companyId, workOrderId);
-    const signature = await signatureService.getByWorkOrder(companyId, workOrderId);
+    const signature = await signatureService.getByEntity(companyId, "work_order", workOrderId);
 
     const { workOrder, client, category } = orderData;
 

@@ -1,7 +1,8 @@
 /**
  * Creation/modification date: 26/05/2026
  * Path: tests/unit/services/sat/signatureService.test.ts
- * Description: Integration tests for signatureService with real database and storage.
+ * Description: Integration tests for generic SignatureService with real database
+ *              and storage. Entity-type agnostic.
  */
 
 import { describe, it, expect, beforeAll } from "vitest";
@@ -13,6 +14,7 @@ import { seedTestDatabase } from "../../../db-seed";
 let testData: Awaited<ReturnType<typeof seedTestDatabase>>;
 let hasDbConnection = false;
 let workOrderId: string;
+let workOrderNumber: string;
 
 async function createWorkOrder(status: string) {
   const categoryId = await workOrderService.getDefaultCategoryId(testData.company.id);
@@ -39,7 +41,7 @@ async function createWorkOrder(status: string) {
     await workOrderService.updateStatus(testData.company.id, order.id, testData.user.id, step as WorkOrderStatus);
   }
 
-  return order.id;
+  return order;
 }
 
 describe("Signature Service (Integration)", () => {
@@ -48,18 +50,21 @@ describe("Signature Service (Integration)", () => {
       testData = await seedTestDatabase();
       hasDbConnection = true;
 
-      workOrderId = await createWorkOrder("completed");
+      const order = await createWorkOrder("completed");
+      workOrderId = order.id;
+      workOrderNumber = order.number;
     } catch (err) {
       console.warn("⚠️ Skipping integration tests:", err);
     }
   });
 
   describe("save", () => {
-    it("should save a signature for a completed work order", async () => {
+    it("should save a signature for an entity", async () => {
       if (!hasDbConnection) return;
 
-      const signature = await signatureService.save(testData.company.id, {
-        workOrderId,
+      const signature = await signatureService.save(testData.company.id, workOrderNumber, {
+        entityType: "work_order",
+        entityId: workOrderId,
         signedBy: "John Doe",
         signatureSvg: "<svg><path d=\"M0 0 L10 10\"/></svg>",
         signaturePngBuffer: Buffer.from("test-png-data"),
@@ -69,40 +74,16 @@ describe("Signature Service (Integration)", () => {
       expect(signature.signedBy).toBe("John Doe");
       expect(signature.signatureSvg).toBe("<svg><path d=\"M0 0 L10 10\"/></svg>");
       expect(signature.signaturePngUrl).not.toBeNull();
-      expect(signature.workOrderId).toBe(workOrderId);
-    });
-
-    it("should reject saving signature for pending work order", async () => {
-      if (!hasDbConnection) return;
-
-      const pendingOrderId = await createWorkOrder("pending");
-
-      await expect(
-        signatureService.save(testData.company.id, {
-          workOrderId: pendingOrderId,
-          signedBy: "Jane Doe",
-          signatureSvg: "<svg></svg>",
-        })
-      ).rejects.toThrow("Signature can only be captured when work order is completed or closed");
-    });
-
-    it("should reject saving signature for another company", async () => {
-      if (!hasDbConnection) return;
-
-      await expect(
-        signatureService.save("00000000-0000-0000-0000-000000000000", {
-          workOrderId,
-          signedBy: "Hacker",
-          signatureSvg: "<svg></svg>",
-        })
-      ).rejects.toThrow("Work order not found or access denied");
+      expect(signature.entityType).toBe("work_order");
+      expect(signature.entityId).toBe(workOrderId);
     });
 
     it("should update existing signature", async () => {
       if (!hasDbConnection) return;
 
-      const updated = await signatureService.save(testData.company.id, {
-        workOrderId,
+      const updated = await signatureService.save(testData.company.id, workOrderNumber, {
+        entityType: "work_order",
+        entityId: workOrderId,
         signedBy: "John Updated",
         signatureSvg: "<svg><path d=\"M0 0 L20 20\"/></svg>",
       });
@@ -112,11 +93,11 @@ describe("Signature Service (Integration)", () => {
     });
   });
 
-  describe("getByWorkOrder", () => {
+  describe("getByEntity", () => {
     it("should retrieve a saved signature", async () => {
       if (!hasDbConnection) return;
 
-      const signature = await signatureService.getByWorkOrder(testData.company.id, workOrderId);
+      const signature = await signatureService.getByEntity(testData.company.id, "work_order", workOrderId);
 
       expect(signature).not.toBeNull();
       expect(signature?.signedBy).toBe("John Updated");
@@ -125,18 +106,22 @@ describe("Signature Service (Integration)", () => {
     it("should return null when no signature exists", async () => {
       if (!hasDbConnection) return;
 
-      const newOrderId = await createWorkOrder("completed");
-      const signature = await signatureService.getByWorkOrder(testData.company.id, newOrderId);
+      const newOrder = await createWorkOrder("completed");
+      const signature = await signatureService.getByEntity(testData.company.id, "work_order", newOrder.id);
 
       expect(signature).toBeNull();
     });
 
-    it("should reject retrieval from another company", async () => {
+    it("should return null for another company", async () => {
       if (!hasDbConnection) return;
 
-      await expect(
-        signatureService.getByWorkOrder("00000000-0000-0000-0000-000000000000", workOrderId)
-      ).rejects.toThrow("Work order not found or access denied");
+      const signature = await signatureService.getByEntity(
+        "00000000-0000-0000-0000-000000000000",
+        "work_order",
+        workOrderId
+      );
+
+      expect(signature).toBeNull();
     });
   });
 
@@ -144,25 +129,18 @@ describe("Signature Service (Integration)", () => {
     it("should remove a signature", async () => {
       if (!hasDbConnection) return;
 
-      const removeOrderId = await createWorkOrder("completed");
-      await signatureService.save(testData.company.id, {
-        workOrderId: removeOrderId,
+      const removeOrder = await createWorkOrder("completed");
+      await signatureService.save(testData.company.id, removeOrder.number, {
+        entityType: "work_order",
+        entityId: removeOrder.id,
         signedBy: "To Remove",
         signatureSvg: "<svg></svg>",
       });
 
-      await signatureService.remove(testData.company.id, removeOrderId);
+      await signatureService.remove(testData.company.id, "work_order", removeOrder.id);
 
-      const signature = await signatureService.getByWorkOrder(testData.company.id, removeOrderId);
+      const signature = await signatureService.getByEntity(testData.company.id, "work_order", removeOrder.id);
       expect(signature).toBeNull();
-    });
-
-    it("should reject removal from another company", async () => {
-      if (!hasDbConnection) return;
-
-      await expect(
-        signatureService.remove("00000000-0000-0000-0000-000000000000", workOrderId)
-      ).rejects.toThrow("Work order not found or access denied");
     });
   });
 });
