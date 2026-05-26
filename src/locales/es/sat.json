@@ -89,5 +89,17 @@
     "cancel": "Cancelar",
     "empty": "No hay materiales",
     "total": "Total"
+  },
+  "attachments": {
+    "title": "Adjuntos",
+    "uploadButton": "Subir foto",
+    "beforeLabel": "Antes",
+    "afterLabel": "Después",
+    "captionPlaceholder": "Descripción (opcional)",
+    "empty": "No hay adjuntos",
+    "previewAlt": "Vista previa",
+    "deleteConfirm": "¿Eliminar este adjunto?",
+    "fileTooLarge": "Archivo demasiado grande (máx 10MB)",
+    "invalidType": "Tipo de archivo no permitido"
   }
 }

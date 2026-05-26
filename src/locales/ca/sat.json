@@ -89,5 +89,17 @@
     "cancel": "Cancel·lar",
     "empty": "No hi ha materials",
     "total": "Total"
+  },
+  "attachments": {
+    "title": "Adjunts",
+    "uploadButton": "Pujar foto",
+    "beforeLabel": "Abans",
+    "afterLabel": "Després",
+    "captionPlaceholder": "Descripció (opcional)",
+    "empty": "No hi ha adjunts",
+    "previewAlt": "Vista prèvia",
+    "deleteConfirm": "Eliminar aquest adjunt?",
+    "fileTooLarge": "Fitxer massa gran (màx 10MB)",
+    "invalidType": "Tipus de fitxer no permès"
   }
 }

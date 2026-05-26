@@ -13,8 +13,10 @@ import { ArrowLeft } from "lucide-react";
 import { WorkOrderActions } from "@/components/sat/WorkOrderActions";
 import { TechnicianAssigner } from "@/components/sat/TechnicianAssigner";
 import { MaterialList } from "@/components/sat/MaterialList";
+import { AttachmentSection } from "@/components/sat/AttachmentSection";
 import { materialService } from "@/services/sat/materialService";
 import { productService } from "@/services/sat/productService";
+import { attachmentService } from "@/services/sat/attachmentService";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -39,6 +41,7 @@ export default async function WorkOrderDetailPage({ params }: Props) {
   const technicians = await workOrderService.getTechniciansByCompany(companyId);
   const materials = await materialService.getByWorkOrder(companyId, id);
   const products = await productService.getByCompany(companyId);
+  const attachments = await attachmentService.getByWorkOrder(companyId, id);
   const userRole = session.user.role;
 
   function statusBadgeColor(status: string) {
@@ -175,6 +178,8 @@ export default async function WorkOrderDetailPage({ params }: Props) {
             </div>
 
             <MaterialList materials={materials} workOrderId={workOrder.id} products={products} />
+
+            <AttachmentSection attachments={attachments} workOrderId={workOrder.id} />
 
             {userRole !== "TECHNICIAN" && (
               <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4">

@@ -97,3 +97,22 @@ export interface Product {
   createdAt: Date;
   updatedAt: Date;
 }
+
+export interface WorkOrderAttachment {
+  id: string;
+  workOrderId: string;
+  uploadedBy: string;
+  type: AttachmentType;
+  fileName: string;
+  storageKey: string;
+  url: string | null;
+  mimeType: string | null;
+  sizeBytes: number | null;
+  width: number | null;
+  height: number | null;
+  durationSeconds: number | null;
+  location: { lat: number; lng: number; accuracy?: number } | null;
+  isBefore: boolean;
+  caption: string | null;
+  createdAt: Date;
+}

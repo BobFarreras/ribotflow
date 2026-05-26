@@ -45,3 +45,6 @@ coverage/
 
 # Docker data
 docker/data/
+
+# Local uploads (SAT attachments, signatures, PDFs)
+uploads/
