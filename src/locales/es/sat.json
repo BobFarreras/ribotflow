@@ -74,6 +74,16 @@
       "cancel": "Cancelar",
       "success": "Orden de trabajo creada correctamente",
       "error": "Error al crear la orden de trabajo"
+    },
+    "pdf": {
+      "title": "Informe PDF",
+      "generate": "Generar PDF",
+      "generating": "Generando...",
+      "regenerate": "Regenerar PDF",
+      "download": "Descargar PDF",
+      "delete": "Eliminar PDF",
+      "deleteConfirm": "¿Estás seguro de que quieres eliminar este PDF?",
+      "error": "Error al generar el PDF"
     }
   },
   "materials": {
@@ -113,12 +123,5 @@
     "saved": "Firma guardada correctamente",
     "statusRequired": "Solo se puede firmar cuando la orden está completada o cerrada",
     "alreadySigned": "Esta orden ya tiene firma"
-  },
-  "pdf": {
-    "title": "Informe PDF",
-    "generate": "Generar PDF",
-    "generating": "Generando...",
-    "download": "Descargar PDF",
-    "error": "Error al generar el PDF"
   }
 }

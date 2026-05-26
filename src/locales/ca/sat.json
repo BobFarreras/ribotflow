@@ -74,6 +74,16 @@
       "cancel": "Cancel·lar",
       "success": "Ordre de treball creada correctament",
       "error": "Error en crear l'ordre de treball"
+    },
+    "pdf": {
+      "title": "Informe PDF",
+      "generate": "Generar PDF",
+      "generating": "Generant...",
+      "regenerate": "Regenerar PDF",
+      "download": "Descarregar PDF",
+      "delete": "Eliminar PDF",
+      "deleteConfirm": "Estàs segur que vols eliminar aquest PDF?",
+      "error": "Error en generar el PDF"
     }
   },
   "materials": {
@@ -113,12 +123,5 @@
     "saved": "Signatura guardada correctament",
     "statusRequired": "Només es pot signar quan l'ordre està completada o tancada",
     "alreadySigned": "Aquesta ordre ja té signatura"
-  },
-  "pdf": {
-    "title": "Informe PDF",
-    "generate": "Generar PDF",
-    "generating": "Generant...",
-    "download": "Descarregar PDF",
-    "error": "Error en generar el PDF"
   }
 }

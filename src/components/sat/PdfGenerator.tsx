@@ -27,7 +27,7 @@ const LANG_LABELS: Record<Lang, string> = {
 };
 
 export function PdfGenerator({ workOrderId, pdfUrl }: Props) {
-  const t = useTranslations("sat.pdf");
+  const t = useTranslations("sat.workOrder.pdf");
   const [isGenerating, setIsGenerating] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [currentUrl, setCurrentUrl] = useState(pdfUrl);
