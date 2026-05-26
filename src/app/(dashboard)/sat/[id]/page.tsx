@@ -1,11 +1,16 @@
 /**
- * Creation/modification date: 24/05/2026
+ * Creation/modification date: 26/05/2026
  * Path: src/app/(dashboard)/sat/[id]/page.tsx
- * Description: Work order detail page with status history and actions.
+ * Description: Work order detail page — orchestrates data fetching and delegates
+ *              presentation to focused components (SoC / SOLID).
  */
 
 import { auth } from "@/lib/auth";
 import { workOrderService } from "@/services/sat/workOrderService";
+import { materialService } from "@/services/sat/materialService";
+import { productService } from "@/services/sat/productService";
+import { attachmentService } from "@/services/sat/attachmentService";
+import { signatureService } from "@/services/sat/signatureService";
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -15,10 +20,10 @@ import { TechnicianAssigner } from "@/components/sat/TechnicianAssigner";
 import { MaterialList } from "@/components/sat/MaterialList";
 import { AttachmentSection } from "@/components/sat/AttachmentSection";
 import { SignatureCanvas } from "@/components/sat/SignatureCanvas";
-import { materialService } from "@/services/sat/materialService";
-import { productService } from "@/services/sat/productService";
-import { attachmentService } from "@/services/sat/attachmentService";
-import { signatureService } from "@/services/sat/signatureService";
+import { WorkOrderStatusBadge } from "@/components/sat/WorkOrderStatusBadge";
+import { StatusHistorySection } from "@/components/sat/StatusHistorySection";
+import { ClientInfoCard } from "@/components/sat/ClientInfoCard";
+import { CategoryInfoCard } from "@/components/sat/CategoryInfoCard";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -47,33 +52,12 @@ export default async function WorkOrderDetailPage({ params }: Props) {
   const signature = await signatureService.getByWorkOrder(companyId, id);
   const userRole = session.user.role;
 
-  function statusBadgeColor(status: string) {
-    switch (status) {
-      case "pending":
-        return "bg-amber-100 text-amber-700 border-amber-200";
-      case "assigned":
-        return "bg-blue-100 text-blue-700 border-blue-200";
-      case "in_progress":
-        return "bg-emerald-100 text-emerald-700 border-emerald-200";
-      case "paused":
-        return "bg-gray-100 text-gray-700 border-gray-200";
-      case "completed":
-        return "bg-teal-100 text-teal-700 border-teal-200";
-      case "closed":
-        return "bg-purple-100 text-purple-700 border-purple-200";
-      case "cancelled":
-        return "bg-red-100 text-red-700 border-red-200";
-      default:
-        return "bg-gray-100 text-gray-700 border-gray-200";
-    }
-  }
-
   const { workOrder, client, category } = order;
-
   const canSign = workOrder.status === "completed" || workOrder.status === "closed";
 
   return (
     <div className="flex-1 bg-[var(--bg)]">
+      {/* Header */}
       <header className="border-b border-[var(--border)] bg-[var(--surface)] px-4 py-4 sm:px-6">
         <div className="mx-auto flex max-w-7xl items-center justify-between">
           <div className="flex items-center gap-3">
@@ -90,61 +74,30 @@ export default async function WorkOrderDetailPage({ params }: Props) {
               <h1 className="text-lg font-semibold text-[var(--text)]">{workOrder.title}</h1>
             </div>
           </div>
-          <span
-            className={`rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-wide ${statusBadgeColor(workOrder.status)}`}
-          >
-            {t(`list.status.${workOrder.status}`)}
-          </span>
+          <WorkOrderStatusBadge status={workOrder.status} size="md" />
         </div>
       </header>
 
+      {/* Content */}
       <main className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6">
         <div className="grid gap-6 lg:grid-cols-12">
-          {/* Main info */}
+          {/* Main column */}
           <div className="space-y-4 lg:col-span-7">
+            {/* Status history */}
             <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4">
               <h2 className="mb-3 text-sm font-semibold text-[var(--text)]">
                 {t("detail.statusHistory")}
               </h2>
-              <div className="space-y-3">
-                {history.map((h) => (
-                  <div key={h.id} className="flex items-start gap-3">
-                    <div className="mt-1 h-2 w-2 shrink-0 rounded-full bg-[var(--module-sat)]" />
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm text-[var(--text)]">
-                          {h.statusFrom ? (
-                            <>
-                              <span className="capitalize">{h.statusFrom}</span>{" "}
-                              <span className="text-[var(--text-muted)]">→</span>{" "}
-                              <span className="capitalize">{h.statusTo}</span>
-                            </>
-                          ) : (
-                            <span className="capitalize">{h.statusTo}</span>
-                          )}
-                        </span>
-                        <span className="text-xs text-[var(--text-muted)]">
-                          {new Date(h.createdAt).toLocaleString("ca-ES")}
-                        </span>
-                      </div>
-                      {h.reason && (
-                        <p className="mt-0.5 text-xs text-[var(--text-muted)]">{h.reason}</p>
-                      )}
-                    </div>
-                  </div>
-                ))}
-                {history.length === 0 && (
-                  <p className="text-sm text-[var(--text-muted)]">Sense historial</p>
-                )}
-              </div>
+              <StatusHistorySection history={history} />
             </div>
 
+            {/* Description */}
             {workOrder.description && (
               <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4">
                 <h2 className="mb-2 text-sm font-semibold text-[var(--text)]">
                   {t("create.descriptionLabel")}
                 </h2>
-                <p className="text-sm text-[var(--text-muted)] whitespace-pre-wrap">
+                <p className="whitespace-pre-wrap text-sm text-[var(--text-muted)]">
                   {workOrder.description}
                 </p>
               </div>
@@ -154,38 +107,15 @@ export default async function WorkOrderDetailPage({ params }: Props) {
           {/* Sidebar */}
           <div className="space-y-4 lg:col-span-5">
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
-              <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4">
-                <h2 className="mb-3 text-sm font-semibold text-[var(--text)]">
-                  {t("list.columns.client")}
-                </h2>
-                <div className="text-sm text-[var(--text)]">
-                  <p className="font-medium">{client.name}</p>
-                  {client.phone && <p className="mt-1 text-[var(--text-muted)]">{client.phone}</p>}
-                  {client.email && <p className="text-[var(--text-muted)]">{client.email}</p>}
-                  {client.address && <p className="text-[var(--text-muted)]">{client.address}</p>}
-                </div>
-              </div>
-
-              <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4">
-                <h2 className="mb-3 text-sm font-semibold text-[var(--text)]">
-                  {t("list.columns.category")}
-                </h2>
-                <div className="flex items-center gap-2 text-sm text-[var(--text)]">
-                  {category.color && (
-                    <span
-                      className="inline-block h-3 w-3 rounded-full"
-                      style={{ backgroundColor: category.color }}
-                    />
-                  )}
-                  <span>{category.name}</span>
-                </div>
-              </div>
+              <ClientInfoCard client={client} />
+              <CategoryInfoCard category={category} />
             </div>
 
             <MaterialList materials={materials} workOrderId={workOrder.id} products={products} />
 
             <AttachmentSection attachments={attachments} workOrderId={workOrder.id} />
 
+            {/* Signature */}
             {canSign && (
               <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4">
                 <h2 className="mb-3 text-sm font-semibold text-[var(--text)]">
@@ -194,7 +124,8 @@ export default async function WorkOrderDetailPage({ params }: Props) {
                 {signature ? (
                   <div className="space-y-2">
                     <p className="text-sm text-[var(--text-muted)]">
-                      Signed by: <span className="font-medium text-[var(--text)]">{signature.signedBy}</span>
+                      Signed by:{" "}
+                      <span className="font-medium text-[var(--text)]">{signature.signedBy}</span>
                     </p>
                     {signature.signaturePngUrl ? (
                       <img
@@ -215,6 +146,7 @@ export default async function WorkOrderDetailPage({ params }: Props) {
               </div>
             )}
 
+            {/* Technician assignment */}
             {userRole !== "TECHNICIAN" && (
               <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4">
                 <h2 className="mb-3 text-sm font-semibold text-[var(--text)]">
@@ -228,6 +160,7 @@ export default async function WorkOrderDetailPage({ params }: Props) {
               </div>
             )}
 
+            {/* Actions */}
             <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4">
               <h2 className="mb-3 text-sm font-semibold text-[var(--text)]">
                 {t("detail.actionsTitle")}

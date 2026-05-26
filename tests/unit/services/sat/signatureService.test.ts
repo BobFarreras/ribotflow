@@ -7,6 +7,7 @@
 import { describe, it, expect, beforeAll } from "vitest";
 import { signatureService } from "@/services/sat/signatureService";
 import { workOrderService } from "@/services/sat/workOrderService";
+import type { WorkOrderStatus } from "@/types/sat";
 import { seedTestDatabase } from "../../../db-seed";
 
 let testData: Awaited<ReturnType<typeof seedTestDatabase>>;
@@ -35,7 +36,7 @@ async function createWorkOrder(status: string) {
 
   const path = transitions[status] ?? [];
   for (const step of path) {
-    await workOrderService.updateStatus(testData.company.id, order.id, testData.user.id, step);
+    await workOrderService.updateStatus(testData.company.id, order.id, testData.user.id, step as WorkOrderStatus);
   }
 
   return order.id;
