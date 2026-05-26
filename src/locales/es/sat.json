@@ -24,6 +24,7 @@
         "client": "Cliente",
         "status": "Estado",
         "priority": "Prioridad",
+        "category": "Categoría",
         "scheduledDate": "Fecha prevista",
         "actions": "Acciones"
       },
@@ -57,22 +58,22 @@
         "cancel": "Cancelar",
         "delete": "Eliminar"
       },
-      "confirmDelete": "¿Estás seguro de que quieres eliminar esta orden?",
-      "create": {
-        "title": "Nueva Orden de Trabajo",
-        "clientLabel": "Cliente",
-        "categoryLabel": "Categoría",
-        "titleLabel": "Título",
-        "descriptionLabel": "Descripción",
-        "priorityLabel": "Prioridad",
-        "scheduledDateLabel": "Fecha programada",
-        "estimatedDurationLabel": "Duración estimada (minutos)",
-        "notesLabel": "Notas internas",
-        "submit": "Crear Orden",
-        "cancel": "Cancelar",
-        "success": "Orden de trabajo creada correctamente",
-        "error": "Error al crear la orden de trabajo"
-      }
+      "confirmDelete": "¿Estás seguro de que quieres eliminar esta orden?"
+    },
+    "create": {
+      "title": "Nueva Orden de Trabajo",
+      "clientLabel": "Cliente",
+      "categoryLabel": "Categoría",
+      "titleLabel": "Título",
+      "descriptionLabel": "Descripción",
+      "priorityLabel": "Prioridad",
+      "scheduledDateLabel": "Fecha programada",
+      "estimatedDurationLabel": "Duración estimada (minutos)",
+      "notesLabel": "Notas internas",
+      "submit": "Crear Orden",
+      "cancel": "Cancelar",
+      "success": "Orden de trabajo creada correctamente",
+      "error": "Error al crear la orden de trabajo"
     }
   },
   "materials": {

@@ -67,7 +67,7 @@ export default async function WorkOrderDetailPage({ params }: Props) {
   return (
     <div className="flex-1 bg-[var(--bg)]">
       <header className="border-b border-[var(--border)] bg-[var(--surface)] px-4 py-4 sm:px-6">
-        <div className="mx-auto flex max-w-4xl items-center justify-between">
+        <div className="mx-auto flex max-w-7xl items-center justify-between">
           <div className="flex items-center gap-3">
             <Link
               href="/sat"
@@ -90,10 +90,10 @@ export default async function WorkOrderDetailPage({ params }: Props) {
         </div>
       </header>
 
-      <main className="mx-auto max-w-4xl px-4 py-6 sm:px-6">
-        <div className="grid gap-6 lg:grid-cols-3">
+      <main className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6">
+        <div className="grid gap-6 lg:grid-cols-12">
           {/* Main info */}
-          <div className="space-y-4 lg:col-span-2">
+          <div className="space-y-4 lg:col-span-7">
             <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4">
               <h2 className="mb-3 text-sm font-semibold text-[var(--text)]">
                 {t("detail.statusHistory")}
@@ -144,31 +144,33 @@ export default async function WorkOrderDetailPage({ params }: Props) {
           </div>
 
           {/* Sidebar */}
-          <div className="space-y-4">
-            <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4">
-              <h2 className="mb-3 text-sm font-semibold text-[var(--text)]">
-                {t("list.columns.client")}
-              </h2>
-              <div className="text-sm text-[var(--text)]">
-                <p className="font-medium">{client.name}</p>
-                {client.phone && <p className="mt-1 text-[var(--text-muted)]">{client.phone}</p>}
-                {client.email && <p className="text-[var(--text-muted)]">{client.email}</p>}
-                {client.address && <p className="text-[var(--text-muted)]">{client.address}</p>}
+          <div className="space-y-4 lg:col-span-5">
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
+              <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4">
+                <h2 className="mb-3 text-sm font-semibold text-[var(--text)]">
+                  {t("list.columns.client")}
+                </h2>
+                <div className="text-sm text-[var(--text)]">
+                  <p className="font-medium">{client.name}</p>
+                  {client.phone && <p className="mt-1 text-[var(--text-muted)]">{client.phone}</p>}
+                  {client.email && <p className="text-[var(--text-muted)]">{client.email}</p>}
+                  {client.address && <p className="text-[var(--text-muted)]">{client.address}</p>}
+                </div>
               </div>
-            </div>
 
-            <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4">
-              <h2 className="mb-3 text-sm font-semibold text-[var(--text)]">
-                {t("list.columns.category")}
-              </h2>
-              <div className="flex items-center gap-2 text-sm text-[var(--text)]">
-                {category.color && (
-                  <span
-                    className="inline-block h-3 w-3 rounded-full"
-                    style={{ backgroundColor: category.color }}
-                  />
-                )}
-                <span>{category.name}</span>
+              <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4">
+                <h2 className="mb-3 text-sm font-semibold text-[var(--text)]">
+                  {t("list.columns.category")}
+                </h2>
+                <div className="flex items-center gap-2 text-sm text-[var(--text)]">
+                  {category.color && (
+                    <span
+                      className="inline-block h-3 w-3 rounded-full"
+                      style={{ backgroundColor: category.color }}
+                    />
+                  )}
+                  <span>{category.name}</span>
+                </div>
               </div>
             </div>
 
