@@ -105,20 +105,25 @@ This document contains all critical context from previous development sessions i
 ## SAT Module Status
 
 ### Completed
-- [x] Database schema (9 tables: clients, categories, work_orders, status_history, materials, attachments, signatures, locations, **products**)
+- [x] Database schema (9 tables: clients, categories, work_orders, status_history, materials, attachments, **signatures**, locations, **products**)
 - [x] Work order service with status workflow transitions
 - [x] Material service with product catalog + free-text materials
 - [x] Attachment service with local file storage
+- [x] **Signature service** (generic `signatures` table for work_order/quote/invoice)
+- [x] **PDF generation service** (`pdf-lib`, multi-language ca/es/en, branded design)
 - [x] Product service (company catalog with SKU, unitPrice, unitCost, stock)
-- [x] Server Actions: createWorkOrder, updateStatus, assignTechnician, addMaterial, removeMaterial, getProducts, addAttachment, deleteAttachment
+- [x] Server Actions: createWorkOrder, updateStatus, assignTechnician, addMaterial, removeMaterial, getProducts, addAttachment, deleteAttachment, **saveSignature**, **generatePdf**, **deletePdf**
 - [x] UI pages: List (`/sat`), Detail (`/sat/[id]`), Create (`/sat/new`)
-- [x] Client components: WorkOrderForm, WorkOrderActions, TechnicianAssigner, **MaterialList**, **AttachmentSection**
-- [x] i18n translations (ca/es) for all SAT strings including materials and attachments
+- [x] Client components: WorkOrderForm, WorkOrderActions, TechnicianAssigner, MaterialList, AttachmentSection, **SignatureCanvas**, **PdfGenerator**
+- [x] i18n translations (ca/es) for all SAT strings including materials, attachments, signatures, PDF
 - [x] Auto-number generation: `OT-{YYYY}-{SEQ}` per company
 - [x] Technician assignment with RBAC guard
 - [x] Status history tracking
 - [x] Materials management UI (catalog selector + free-text + quantity + totals)
 - [x] Attachments/photos UI (upload with preview, before/after checkbox, caption, grid, lightbox, delete)
+- [x] **Digital signature UI** (canvas with mouse/touch, SVG + PNG export, name input, only visible when status is `completed` or `closed`)
+- [x] **PDF generation UI** (language selector ca/es/en, generate/download/regenerate/delete buttons)
+- [x] FileStorage abstraction (`LocalFileStorage`, `MinioStorage`, `SupabaseStorage`) with factory pattern
 - [x] Local file storage API (`/api/uploads/[...path]`) with mime type detection and security
 
 ### Work Order Statuses (All Implemented)
@@ -136,28 +141,30 @@ This document contains all critical context from previous development sessions i
 | waiting_client | Esperant client | Esperando cliente | → in_progress, cancelled |
 
 ### Pending / Next Features (Priority Order)
-1. **[NEXT] Digital signature** (`work_order_signatures` table exists, no UI)
-   - Canvas component for client to sign on screen (touch or mouse)
-   - Save signature SVG to `work_order_signatures`
-   - Display signature on order detail page
-   - Only allow signing when status is `WORK_DONE`
+1. **Geolocalització i Check-in GPS** (`work_order_locations` table exists, no UI)
+   - Botó "Check-in" que valida distància <100m de l'adreça del client
+   - Mapa incrustat (Leaflet / MapLibre)
+   - Enllaç extern a Google Maps / Waze
    
-2. **PDF generation**
-   - Downloadable PDF with company logo, order data, materials, photos, signature
-   - Digital delivery to client
+2. **Vista Kanban** per a oficina (`/sat?view=kanban`)
+   - Columnes: Pendent, Assignada, En Curs, Completada
+   - Drag & drop per a canviar estat (només ADMIN/OFFICE)
 
-3. **Geolocation tracking** (`work_order_locations` table exists, no UI)
-   - GPS capture when technician arrives
-   - Start/end work timestamps
-   - Route tracking
+3. **Mòdul Pressupostos i Albaranes** (Fase 2G)
+   - Esquemes `quotes`, `quote_items`, reutilitzar `signatures` genèrica
+   - Conversió quote → work_order → invoice
+   - PDF de pressupost amb `pdf-lib`
 
-4. **PWA offline mode for technicians**
-   - Service Worker for offline work
-   - Background sync when WiFi returns
-   - Cache assigned order data
+4. **Personalització de PDF i Company Settings** (Fase 2H)
+   - Mòdul de configuració d'empresa (logo, colors, text legal)
+   - `PdfBuilder` dinàmic amb branding per empresa
 
-5. **Email notifications on status changes**
-6. **Calendar integration for scheduled dates**
+5. **Mode PWA Offline** per a tècnics
+   - Service Worker per treballar sense connexió
+   - Sincronització en background quan recupera WiFi
+
+6. **Email notifications** on status changes
+7. **Calendar integration** for scheduled dates
 
 ---
 
@@ -170,7 +177,7 @@ This document contains all critical context from previous development sessions i
 - **Run tests:** `pnpm test`
 - **Full CI check:** `pnpm ci:check` (typecheck + lint + format + test + build)
 
-**Current Test Count:** 54 tests passing across 9 test files
+**Current Test Count:** 60 tests passing across 10 test files
 
 | Test File | Tests | Description |
 |-----------|-------|-------------|
@@ -180,6 +187,7 @@ This document contains all critical context from previous development sessions i
 | `workOrderService.test.ts` | 7 | CRUD + status workflow + security |
 | `materialService.test.ts` | 6 | Materials CRUD + catalog + free-text + security |
 | `attachmentService.test.ts` | 6 | Attachments CRUD + metadata + security |
+| `signatureService.test.ts` | 6 | Signature save/update/get/remove + multi-tenant security |
 | `DashboardShell.test.tsx` | 3 | Layout rendering |
 | `SidebarContext.test.tsx` | 9 | Sidebar state management |
 | `SidebarNav.test.tsx` | 11 | Navigation rendering + active states |
@@ -227,6 +235,22 @@ This document contains all critical context from previous development sessions i
 **Root Cause:** `.env.local` had `DATABASE_URL` pointing to port 5432, but Docker maps PostgreSQL to host port 5433.
 **Solution:** Verify `.env.local` uses `DATABASE_URL=postgresql://postgres:postgres@localhost:5433/ribotflow`.
 
+### Issue: Tests fail with "The specified bucket does not exist" (MinIO)
+**Root Cause:** MinIO bucket `ribotflow` was not created.
+**Solution:**
+```bash
+docker exec ribotflow-dev-minio mc alias set local http://127.0.0.1:9000 minioadmin minioadmin
+docker exec ribotflow-dev-minio mc mb local/ribotflow
+docker exec ribotflow-dev-minio mc anonymous set public local/ribotflow
+```
+
+### Issue: Tests fail with "relation 'signatures' does not exist"
+**Root Cause:** Migration `0002_eminent_blink.sql` was not applied to the database.
+**Solution:** If `drizzle-kit migrate` fails because `__drizzle_migrations` table is missing, apply the migration manually:
+```bash
+cat src/db/migrations/0002_eminent_blink.sql | docker exec -i ribotflow-dev-db psql -U postgres -d ribotflow
+```
+
 ---
 
 ## File Structure Quick Reference
@@ -255,17 +279,32 @@ src/
     getProducts.ts
     addAttachment.ts
     deleteAttachment.ts
+    saveSignature.ts        # Save digital signature (SVG + PNG)
+    generatePdf.ts          # Generate PDF report
+    deletePdf.ts            # Delete generated PDF
   components/sat/           # Client Components
     WorkOrderForm.tsx
     WorkOrderActions.tsx
     TechnicianAssigner.tsx
     MaterialList.tsx        # Product catalog + free-text materials
     AttachmentSection.tsx   # Upload + grid + lightbox
+    SignatureCanvas.tsx     # Canvas for digital signature (mouse/touch)
+    PdfGenerator.tsx        # Generate/download/regenerate/delete PDF
   services/sat/             # Business Logic
     workOrderService.ts
     materialService.ts
     productService.ts
     attachmentService.ts
+    signatureService.ts     # Generic signature CRUD + storage
+    pdfService.ts           # PdfBuilder class + PdfService
+  services/storage/         # File Storage Abstraction
+    interface.ts            # FileStorage contract
+    factory.ts              # Provider selector (local/minio/supabase)
+    localStorage.ts         # Local filesystem implementation
+    minioStorage.ts         # MinIO (S3-compatible) implementation
+    supabaseStorage.ts      # Supabase Storage implementation
+    index.ts                # Re-exports
+  lib/utils/storageKeys.ts  # Human-readable storage key builders
   lib/auth/index.ts         # NextAuth config (NO authorized callback!)
   proxy.ts                  # Auth proxy (SINGLE source of truth)
   db/schema/sat.ts          # Database schema (9 tables)
@@ -365,13 +404,7 @@ pnpm typecheck              # TypeScript check
 DATABASE_URL=postgresql://postgres:postgres@localhost:5433/ribotflow
 AUTH_SECRET=your-secret-key-here (minimum 32 characters)
 NEXT_PUBLIC_APP_MODE=cloud
-```
 
-### File Storage (MinIO — Development)
-
-**CRITICAL:** Starting this project now requires **MinIO** alongside PostgreSQL.
-
-```env
 # MinIO (Development via docker-compose.dev.yml)
 STORAGE_PROVIDER=minio
 MINIO_ENDPOINT=localhost
@@ -383,14 +416,24 @@ MINIO_BUCKET=ribotflow
 MINIO_PUBLIC_URL_BASE=http://localhost:9002/ribotflow
 ```
 
-> **Remember:** Next.js reads `.env.local` only at startup. If you change storage variables, **restart `pnpm dev`!**
-
 ### MinIO Ports Explained
 
 | Service | Dev Port | Used By |
 |---------|----------|---------|
 | MinIO API (S3) | **9002** | Next.js app uploads/downloads |
 | MinIO Console (Web UI) | **9003** | You (human) browse buckets |
+
+### Making MinIO Bucket Public (Dev Only)
+
+After starting containers, create and make public the `ribotflow` bucket:
+
+```bash
+docker exec ribotflow-dev-minio mc alias set local http://127.0.0.1:9000 minioadmin minioadmin
+docker exec ribotflow-dev-minio mc mb local/ribotflow
+docker exec ribotflow-dev-minio mc anonymous set public local/ribotflow
+```
+
+> Production uses **Signed URLs** (temporary, secure). Dev uses public bucket for simplicity.
 
 ---
 
@@ -414,19 +457,24 @@ The app uses a **framework-agnostic `FileStorage` interface** with three impleme
 ### What Each Service Does
 
 - **Business logic** (attachments, signatures, PDFs) → calls `FileStorage.upload()` / `delete()`
-- **Binary files** (images, videos, signatures) → go to MinIO/Supabase/Local
-- **Metadata** (filename, size, mime type, dimensions) → stored in PostgreSQL (`work_order_attachments`, `work_order_signatures`)
+- **Binary files** (images, videos, signatures, PDFs) → go to MinIO/Supabase/Local
+- **Metadata** (filename, size, mime type, dimensions) → stored in PostgreSQL
 
-### Making MinIO Bucket Public (Dev Only)
+### Storage Keys Human-Readable
 
-After creating the `ribotflow` bucket in MinIO Console, make it public:
+**Pattern:** `{module}/{companyFolder}/{entityNumber}/{fileName}-{suffix}.{ext}`
 
-```bash
-docker exec ribotflow-dev-minio mc alias set local http://127.0.0.1:9000 minioadmin minioadmin
-docker exec ribotflow-dev-minio mc anonymous set public local/ribotflow
+- `module`: `sat`, `quotes`, `invoices` (prefix per organitzar bucket)
+- `companyFolder`: Nom sanititzat de l'empresa (self-hosted) o UUID (cloud)
+- `entityNumber`: `OT-2026-0001`, `PRES-2026-0001` (human-readable)
+
+**Examples:**
 ```
-
-> Production uses **Signed URLs** (temporary, secure). Dev uses public bucket for simplicity.
+sat/Empresa_Test/OT-2026-0001/foto_pantalla-a1b2c3d4.jpg
+sat/Empresa_Test/OT-2026-0001-report-ca.pdf
+sat/Empresa_Test/OT-2026-0001-signature.png
+quotes/Empresa_Test/PRES-2026-0001-signature.png
+```
 
 ---
 
@@ -449,9 +497,11 @@ docker exec ribotflow-dev-minio mc anonymous set public local/ribotflow
 | 26/05/2026 | Product catalog per company | Materials can link to catalog products or be free-text. Enables inventory tracking. |
 | 26/05/2026 | Local file storage for attachments | `uploads/sat/{companyId}/{workOrderId}/` folder served via `/api/uploads/[...path]`. Gitignored. Simple, no external dependencies. |
 | 26/05/2026 | Attachment metadata stored in DB | File name, size, mime type, dimensions, isBefore flag, caption. Actual file stored on disk. |
-| 26/05/2026 | **FileStorage abstraction layer** | `FileStorage` interface with `LocalFileStorage`, `MinioStorage`, `SupabaseStorage`. Factory selects provider via `STORAGE_PROVIDER` env. Clean Architecture: business logic never knows where files live. |
-| 26/05/2026 | **MinIO in dev docker-compose** | `docker-compose.dev.yml` now includes MinIO (ports 9002 API, 9003 Console). All dev uploads go to real S3-compatible storage, not just local folders. |
-| 26/05/2026 | **Bucket public policy (dev only)** | `mc anonymous set public local/ribotflow` via CLI. In production, use signed URLs. |
+| 26/05/2026 | FileStorage abstraction layer | `FileStorage` interface with `LocalFileStorage`, `MinioStorage`, `SupabaseStorage`. Factory selects provider via `STORAGE_PROVIDER` env. Clean Architecture: business logic never knows where files live. |
+| 26/05/2026 | MinIO in dev docker-compose | `docker-compose.dev.yml` now includes MinIO (ports 9002 API, 9003 Console). All dev uploads go to real S3-compatible storage, not just local folders. |
+| 26/05/2026 | Bucket public policy (dev only) | `mc anonymous set public local/ribotflow` via CLI. In production, use signed URLs. |
+| 26/05/2026 | Generic `signatures` table | Replaced `work_order_signatures` with generic `signatures` (entity_type + entity_id). Reusable for work orders, quotes, invoices. Validation logic lives in Server Actions, not Service. |
+| 26/05/2026 | `pdf-lib` for PDF generation | Pure JS (~1MB), no Chromium binary. Generates professional PDFs with branded header, tables, photo grid 2x2, embedded signature. Multi-language (ca/es/en). |
 
 ---
 
@@ -493,53 +543,19 @@ When you start working on this project:
 1. **Read this file first** (you're doing great!)
 2. **Save critical decisions to your local memory** (Engram, notes, etc.)
 3. **Check the branch:** Should be `features/sat-work-orders`
-4. **Start PostgreSQL + MinIO:** `pnpm db:setup` (starts both containers)
+4. **Start PostgreSQL + MinIO:** `pnpm db:up` (starts both containers)
 5. **Apply pending migrations:** `pnpm db:migrate`
+   - If `__drizzle_migrations` table is missing, apply manually: `cat src/db/migrations/000X_*.sql | docker exec -i ribotflow-dev-db psql -U postgres -d ribotflow`
 6. **Seed demo data:** `pnpm db:seed:demo`
 7. **Configure `.env.local`** with MinIO variables (see Environment Variables section above)
 8. **Make MinIO bucket public:**
    ```bash
    docker exec ribotflow-dev-minio mc alias set local http://127.0.0.1:9000 minioadmin minioadmin
+   docker exec ribotflow-dev-minio mc mb local/ribotflow
    docker exec ribotflow-dev-minio mc anonymous set public local/ribotflow
    ```
-9. **Run tests:** `pnpm test` (ensure 54 tests pass)
+9. **Run tests:** `pnpm test` (ensure 60 tests pass)
 10. **Start dev server:** `pnpm dev`
 11. **Login with:** dais@test.com / 12345678
 
-> **Tip for agents:** If you see `[Storage] Environment variables missing for provider "supabase". Falling back to local filesystem storage.` in the console, it means `.env.local` does not have `STORAGE_PROVIDER=minio` set. Check the file and restart `pnpm dev`.
-
-### Next Recommended Feature: Digital Signature (Phase C)
-The next priority is implementing the **digital signature** feature:
-
-**What it is:**
-- A canvas component where the client signs on the technician's device (touch screen or mouse)
-- The signature is saved as SVG in `work_order_signatures` table
-- Displayed on the order detail page
-- Only allowed when order status is `WORK_DONE`
-
-**Tables already exist:** `work_order_signatures` in `src/db/schema/sat.ts`
-
-**Suggested approach:**
-1. Create `SignatureCanvas` component (React canvas with mouse/touch events)
-2. Create `signatureService.ts` (save SVG string to DB, retrieve, validate company_id)
-3. Create Server Action `saveSignature.ts`
-4. Add signature section to `/sat/[id]/page.tsx` (only visible when status is WORK_DONE or CLOSED)
-5. Add i18n keys for signature-related text
-6. Write integration tests for `signatureService`
-
-**Files to reference as templates:**
-- `src/components/sat/AttachmentSection.tsx` (client component with upload/interaction)
-- `src/services/sat/attachmentService.ts` (service pattern with company_id security)
-- `src/actions/sat/addAttachment.ts` (server action pattern)
-- `tests/unit/services/sat/attachmentService.test.ts` (integration test pattern)
-
-If any of the above fails, check the Known Issues section above, or ask the user for clarification.
-
-**Remember:** This project uses English for code, Catalan/Spanish for UI, and Spanish for team documentation (AGENTS.md, this file).
-
-**Privacy note:** Do not import/export Engram memories from this project to other projects or vice versa. Each project's context should remain isolated.
-
----
-
-*Last updated: 26/05/2026 by Agent OpenCode (kimi-k2.6) — Completed FileStorage abstraction (Local + MinIO + Supabase). MinIO integrated into docker-compose.dev.yml. 54 tests passing. Next recommended step: Phase C (Digital Signature).*
-*Context stored in: docs/AGENT_CONTEXT.md (this file)*
+> **Tip for agents:** If you see `[Storage] Environment variables missing for provider 
