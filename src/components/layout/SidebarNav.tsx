@@ -8,7 +8,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import {
@@ -207,16 +207,29 @@ function CollapsedNavItem({ item, pathname }: { item: NavItem; pathname: string 
   const [tooltipTop, setTooltipTop] = useState(0);
   const active = isParentActive(pathname, item);
   const hasSubItems = item.subItems && item.subItems.length > 0;
+  const leaveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleEnter = (e: React.MouseEvent) => {
+    if (leaveTimeoutRef.current) {
+      clearTimeout(leaveTimeoutRef.current);
+      leaveTimeoutRef.current = null;
+    }
+    const rect = e.currentTarget.getBoundingClientRect();
+    setTooltipTop(rect.top + rect.height / 2);
+    setShowTooltip(true);
+  };
+
+  const handleLeave = () => {
+    leaveTimeoutRef.current = setTimeout(() => {
+      setShowTooltip(false);
+    }, 150);
+  };
 
   return (
     <div
       className="relative flex items-center justify-center"
-      onMouseEnter={(e) => {
-        const rect = e.currentTarget.getBoundingClientRect();
-        setTooltipTop(rect.top + rect.height / 2);
-        setShowTooltip(true);
-      }}
-      onMouseLeave={() => setShowTooltip(false)}
+      onMouseEnter={handleEnter}
+      onMouseLeave={handleLeave}
     >
       <a
         href={item.href}
@@ -230,7 +243,9 @@ function CollapsedNavItem({ item, pathname }: { item: NavItem; pathname: string 
         <item.icon className="h-5 w-5" />
       </a>
       {showTooltip && hasSubItems && (
-        <CollapsedSubMenuPanel item={item} pathname={pathname} top={tooltipTop} />
+        <div onMouseEnter={() => leaveTimeoutRef.current && clearTimeout(leaveTimeoutRef.current)} onMouseLeave={handleLeave}>
+          <CollapsedSubMenuPanel item={item} pathname={pathname} top={tooltipTop} />
+        </div>
       )}
       {showTooltip && !hasSubItems && (
         <CollapsedTooltip label={t(`${item.key}.label`)} top={tooltipTop} />
@@ -245,22 +260,18 @@ function CollapsedNavItem({ item, pathname }: { item: NavItem; pathname: string 
 
 function ExpandedNavItem({ item, pathname }: { item: NavItem; pathname: string }) {
   const t = useTranslations("sidebar.modules");
+  const { expandedKeys, toggleExpanded } = useSidebar();
   const hasSubItems = item.subItems && item.subItems.length > 0;
   const isLeaf = !hasSubItems;
   const isActive = isParentActive(pathname, item);
   const hasActiveChild = item.subItems?.some((sub) => isChildActive(pathname, sub.href)) ?? false;
 
-  // Expanded state: initialize from localStorage, persist on toggle
-  const [isExpanded, setIsExpanded] = useState(() => {
-    if (typeof window === "undefined") return false;
-    return localStorage.getItem(`sidebar:expanded:${item.key}`) === "true";
-  });
+  // Global expanded state from context — survives navigation re-renders
+  const isExpanded = expandedKeys.has(item.key);
 
   const handleToggle = () => {
     if (!hasSubItems) return;
-    const next = !isExpanded;
-    setIsExpanded(next);
-    localStorage.setItem(`sidebar:expanded:${item.key}`, String(next));
+    toggleExpanded(item.key);
   };
 
   const baseItemClasses =

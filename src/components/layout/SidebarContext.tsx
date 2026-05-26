@@ -14,11 +14,13 @@ interface SidebarContextValue {
   isMobileOpen: boolean;
   isMobile: boolean;
   ready: boolean;
+  expandedKeys: Set<string>;
+  theme: "light" | "dark";
   toggleCollapse: () => void;
   toggleMobile: () => void;
   closeMobile: () => void;
-  theme: "light" | "dark";
   toggleTheme: () => void;
+  toggleExpanded: (key: string) => void;
 }
 
 const SidebarContext = createContext<SidebarContextValue | null>(null);
@@ -30,6 +32,7 @@ export function SidebarProvider({ children }: { children: React.ReactNode }) {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [theme, setTheme] = useState<"light" | "dark">("light");
+  const [expandedKeys, setExpandedKeys] = useState<Set<string>>(new Set());
 
   // Detect mobile viewport
   useEffect(() => {
@@ -50,6 +53,16 @@ export function SidebarProvider({ children }: { children: React.ReactNode }) {
     if (savedTheme) {
       setTheme(savedTheme);
       document.documentElement.classList.toggle("dark", savedTheme === "dark");
+    }
+
+    const savedExpanded = localStorage.getItem("sidebar:expanded");
+    if (savedExpanded) {
+      try {
+        const parsed = JSON.parse(savedExpanded) as string[];
+        setExpandedKeys(new Set(parsed));
+      } catch {
+        // ignore malformed JSON
+      }
     }
 
     setReady(true);
@@ -80,6 +93,19 @@ export function SidebarProvider({ children }: { children: React.ReactNode }) {
     });
   }, []);
 
+  const toggleExpanded = useCallback((key: string) => {
+    setExpandedKeys((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) {
+        next.delete(key);
+      } else {
+        next.add(key);
+      }
+      localStorage.setItem("sidebar:expanded", JSON.stringify(Array.from(next)));
+      return next;
+    });
+  }, []);
+
   return (
     <SidebarContext.Provider
       value={{
@@ -87,11 +113,13 @@ export function SidebarProvider({ children }: { children: React.ReactNode }) {
         isMobileOpen,
         isMobile,
         ready,
+        expandedKeys,
         toggleCollapse,
         toggleMobile,
         closeMobile,
         theme,
         toggleTheme,
+        toggleExpanded,
       }}
     >
       {children}
