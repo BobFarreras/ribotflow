@@ -101,5 +101,17 @@
     "deleteConfirm": "¿Eliminar este adjunto?",
     "fileTooLarge": "Archivo demasiado grande (máx 10MB)",
     "invalidType": "Tipo de archivo no permitido"
+  },
+  "signature": {
+    "title": "Firma del cliente",
+    "signerNameLabel": "Nombre de quien firma",
+    "signerNamePlaceholder": "Nombre del cliente...",
+    "clearButton": "Borrar",
+    "confirmButton": "Confirmar firma",
+    "saving": "Guardando...",
+    "drawHint": "Dibuja tu firma en el canvas",
+    "saved": "Firma guardada correctamente",
+    "statusRequired": "Solo se puede firmar cuando la orden está completada o cerrada",
+    "alreadySigned": "Esta orden ya tiene firma"
   }
 }

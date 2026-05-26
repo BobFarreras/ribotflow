@@ -101,5 +101,17 @@
     "deleteConfirm": "Eliminar aquest adjunt?",
     "fileTooLarge": "Fitxer massa gran (màx 10MB)",
     "invalidType": "Tipus de fitxer no permès"
+  },
+  "signature": {
+    "title": "Signatura del client",
+    "signerNameLabel": "Nom de qui signa",
+    "signerNamePlaceholder": "Nom del client...",
+    "clearButton": "Esborrar",
+    "confirmButton": "Confirmar signatura",
+    "saving": "Guardant...",
+    "drawHint": "Dibuixa la teva signatura al canvas",
+    "saved": "Signatura guardada correctament",
+    "statusRequired": "Només es pot signar quan l'ordre està completada o tancada",
+    "alreadySigned": "Aquesta ordre ja té signatura"
   }
 }

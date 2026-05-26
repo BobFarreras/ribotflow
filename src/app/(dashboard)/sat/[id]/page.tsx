@@ -14,9 +14,11 @@ import { WorkOrderActions } from "@/components/sat/WorkOrderActions";
 import { TechnicianAssigner } from "@/components/sat/TechnicianAssigner";
 import { MaterialList } from "@/components/sat/MaterialList";
 import { AttachmentSection } from "@/components/sat/AttachmentSection";
+import { SignatureCanvas } from "@/components/sat/SignatureCanvas";
 import { materialService } from "@/services/sat/materialService";
 import { productService } from "@/services/sat/productService";
 import { attachmentService } from "@/services/sat/attachmentService";
+import { signatureService } from "@/services/sat/signatureService";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -42,6 +44,7 @@ export default async function WorkOrderDetailPage({ params }: Props) {
   const materials = await materialService.getByWorkOrder(companyId, id);
   const products = await productService.getByCompany(companyId);
   const attachments = await attachmentService.getByWorkOrder(companyId, id);
+  const signature = await signatureService.getByWorkOrder(companyId, id);
   const userRole = session.user.role;
 
   function statusBadgeColor(status: string) {
@@ -66,6 +69,8 @@ export default async function WorkOrderDetailPage({ params }: Props) {
   }
 
   const { workOrder, client, category } = order;
+
+  const canSign = workOrder.status === "completed" || workOrder.status === "closed";
 
   return (
     <div className="flex-1 bg-[var(--bg)]">
@@ -180,6 +185,35 @@ export default async function WorkOrderDetailPage({ params }: Props) {
             <MaterialList materials={materials} workOrderId={workOrder.id} products={products} />
 
             <AttachmentSection attachments={attachments} workOrderId={workOrder.id} />
+
+            {canSign && (
+              <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4">
+                <h2 className="mb-3 text-sm font-semibold text-[var(--text)]">
+                  {t("detail.signature")}
+                </h2>
+                {signature ? (
+                  <div className="space-y-2">
+                    <p className="text-sm text-[var(--text-muted)]">
+                      Signed by: <span className="font-medium text-[var(--text)]">{signature.signedBy}</span>
+                    </p>
+                    {signature.signaturePngUrl ? (
+                      <img
+                        src={signature.signaturePngUrl}
+                        alt="Signature"
+                        className="max-h-32 rounded border border-[var(--border)] bg-white"
+                      />
+                    ) : (
+                      <div
+                        className="rounded border border-[var(--border)] bg-white p-2"
+                        dangerouslySetInnerHTML={{ __html: signature.signatureSvg }}
+                      />
+                    )}
+                  </div>
+                ) : (
+                  <SignatureCanvas workOrderId={workOrder.id} />
+                )}
+              </div>
+            )}
 
             {userRole !== "TECHNICIAN" && (
               <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4">
