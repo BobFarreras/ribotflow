@@ -116,3 +116,17 @@ export interface WorkOrderAttachment {
   caption: string | null;
   createdAt: Date;
 }
+
+export interface WorkOrderLocation {
+  id: string;
+  workOrderId: string;
+  userId: string;
+  eventType: LocationEventType;
+  lat: number;
+  lng: number;
+  accuracy: number | null;
+  altitude: number | null;
+  batteryLevel: number | null;
+  metadata: Record<string, unknown> | null;
+  createdAt: Date;
+}

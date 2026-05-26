@@ -45,6 +45,7 @@
       "attachments": "Adjuntos",
       "signature": "Firma",
       "location": "Ubicación",
+      "locationHistory": "Historial de ubicaciones",
       "actionsTitle": "Acciones",
       "assignTitle": "Asignar técnico",
       "unassigned": "Sin asignar",
@@ -123,5 +124,18 @@
     "saved": "Firma guardada correctamente",
     "statusRequired": "Solo se puede firmar cuando la orden está completada o cerrada",
     "alreadySigned": "Esta orden ya tiene firma"
+  },
+  "location": {
+    "checkInButton": "Hacer check-in",
+    "gettingLocation": "Obteniendo ubicación...",
+    "checkInError": "Error al hacer check-in",
+    "geoPermissionDenied": "Permiso de geolocalización denegado. Activa la ubicación en el navegador.",
+    "geoPositionUnavailable": "No se ha podido obtener la ubicación.",
+    "geoTimeout": "Tiempo de espera agotado para obtener la ubicación.",
+    "geoUnknownError": "Error desconocido al obtener la ubicación.",
+    "lastCheckIn": "Último check-in",
+    "clientHasLocation": "El cliente tiene ubicación registrada",
+    "withinRange": "Dentro del rango ({distance}m del cliente)",
+    "outOfRange": "Fuera de rango ({distance}m del cliente — máximo 100m)"
   }
 }

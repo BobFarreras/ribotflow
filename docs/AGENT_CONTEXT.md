@@ -121,10 +121,11 @@ This document contains all critical context from previous development sessions i
 - [x] Status history tracking
 - [x] Materials management UI (catalog selector + free-text + quantity + totals)
 - [x] Attachments/photos UI (upload with preview, before/after checkbox, caption, grid, lightbox, delete)
-- [x] **Digital signature UI** (canvas with mouse/touch, SVG + PNG export, name input, only visible when status is `completed` or `closed`)
-- [x] **PDF generation UI** (language selector ca/es/en, generate/download/regenerate/delete buttons)
-- [x] FileStorage abstraction (`LocalFileStorage`, `MinioStorage`, `SupabaseStorage`) with factory pattern
-- [x] Local file storage API (`/api/uploads/[...path]`) with mime type detection and security
+ - [x] **Digital signature UI** (canvas with mouse/touch, SVG + PNG export, name input, only visible when status is `completed` or `closed`)
+ - [x] **PDF generation UI** (language selector ca/es/en, generate/download/regenerate/delete buttons)
+ - [x] **Geolocation / Check-in GPS** (`CheckInButton.tsx`, distance validation <100m, auto-updates status to `in_progress`)
+ - [x] FileStorage abstraction (`LocalFileStorage`, `MinioStorage`, `SupabaseStorage`) with factory pattern
+ - [x] Local file storage API (`/api/uploads/[...path]`) with mime type detection and security
 
 ### Work Order Statuses (All Implemented)
 | Status | Catalan | Spanish | Transitions |
@@ -141,23 +142,22 @@ This document contains all critical context from previous development sessions i
 | waiting_client | Esperant client | Esperando cliente | → in_progress, cancelled |
 
 ### Pending / Next Features (Priority Order)
-1. **Geolocalització i Check-in GPS** (`work_order_locations` table exists, no UI)
-   - Botó "Check-in" que valida distància <100m de l'adreça del client
-   - Mapa incrustat (Leaflet / MapLibre)
-   - Enllaç extern a Google Maps / Waze
-   
-2. **Vista Kanban** per a oficina (`/sat?view=kanban`)
+1. **Vista Kanban** per a oficina (`/sat?view=kanban`)
    - Columnes: Pendent, Assignada, En Curs, Completada
    - Drag & drop per a canviar estat (només ADMIN/OFFICE)
 
-3. **Mòdul Pressupostos i Albaranes** (Fase 2G)
+2. **Mòdul Pressupostos i Albaranes** (Fase 2G)
    - Esquemes `quotes`, `quote_items`, reutilitzar `signatures` genèrica
    - Conversió quote → work_order → invoice
    - PDF de pressupost amb `pdf-lib`
 
-4. **Personalització de PDF i Company Settings** (Fase 2H)
+3. **Personalització de PDF i Company Settings** (Fase 2H)
    - Mòdul de configuració d'empresa (logo, colors, text legal)
    - `PdfBuilder` dinàmic amb branding per empresa
+
+4. **Mapa incrustat** (Leaflet / MapLibre) a la pàgina de detall
+   - Mostrar ubicació del client i ruta del tècnic
+   - Enllaç extern a Google Maps / Waze
 
 5. **Mode PWA Offline** per a tècnics
    - Service Worker per treballar sense connexió
@@ -177,7 +177,7 @@ This document contains all critical context from previous development sessions i
 - **Run tests:** `pnpm test`
 - **Full CI check:** `pnpm ci:check` (typecheck + lint + format + test + build)
 
-**Current Test Count:** 60 tests passing across 10 test files
+**Current Test Count:** 71 tests passing across 11 test files
 
 | Test File | Tests | Description |
 |-----------|-------|-------------|
@@ -188,6 +188,7 @@ This document contains all critical context from previous development sessions i
 | `materialService.test.ts` | 6 | Materials CRUD + catalog + free-text + security |
 | `attachmentService.test.ts` | 6 | Attachments CRUD + metadata + security |
 | `signatureService.test.ts` | 6 | Signature save/update/get/remove + multi-tenant security |
+| `locationService.test.ts` | 11 | GPS check-in + distance calculation + security |
 | `DashboardShell.test.tsx` | 3 | Layout rendering |
 | `SidebarContext.test.tsx` | 9 | Sidebar state management |
 | `SidebarNav.test.tsx` | 11 | Navigation rendering + active states |
@@ -282,6 +283,7 @@ src/
     saveSignature.ts        # Save digital signature (SVG + PNG)
     generatePdf.ts          # Generate PDF report
     deletePdf.ts            # Delete generated PDF
+    checkIn.ts              # GPS check-in with distance validation
   components/sat/           # Client Components
     WorkOrderForm.tsx
     WorkOrderActions.tsx
@@ -290,6 +292,7 @@ src/
     AttachmentSection.tsx   # Upload + grid + lightbox
     SignatureCanvas.tsx     # Canvas for digital signature (mouse/touch)
     PdfGenerator.tsx        # Generate/download/regenerate/delete PDF
+    CheckInButton.tsx       # GPS check-in with distance validation
   services/sat/             # Business Logic
     workOrderService.ts
     materialService.ts
@@ -297,6 +300,7 @@ src/
     attachmentService.ts
     signatureService.ts     # Generic signature CRUD + storage
     pdfService.ts           # PdfBuilder class + PdfService
+    locationService.ts      # GPS tracking + Haversine distance calculation
   services/storage/         # File Storage Abstraction
     interface.ts            # FileStorage contract
     factory.ts              # Provider selector (local/minio/supabase)
@@ -554,7 +558,7 @@ When you start working on this project:
    docker exec ribotflow-dev-minio mc mb local/ribotflow
    docker exec ribotflow-dev-minio mc anonymous set public local/ribotflow
    ```
-9. **Run tests:** `pnpm test` (ensure 60 tests pass)
+9. **Run tests:** `pnpm test` (ensure 71 tests pass)
 10. **Start dev server:** `pnpm dev`
 11. **Login with:** dais@test.com / 12345678
 

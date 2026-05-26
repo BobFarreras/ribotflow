@@ -11,6 +11,7 @@ import { materialService } from "@/services/sat/materialService";
 import { productService } from "@/services/sat/productService";
 import { attachmentService } from "@/services/sat/attachmentService";
 import { signatureService } from "@/services/sat/signatureService";
+import { locationService } from "@/services/sat/locationService";
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -20,6 +21,7 @@ import { TechnicianAssigner } from "@/components/sat/TechnicianAssigner";
 import { MaterialList } from "@/components/sat/MaterialList";
 import { AttachmentSection } from "@/components/sat/AttachmentSection";
 import { SignatureCanvas } from "@/components/sat/SignatureCanvas";
+import { CheckInButton } from "@/components/sat/CheckInButton";
 import { WorkOrderStatusBadge } from "@/components/sat/WorkOrderStatusBadge";
 import { StatusHistorySection } from "@/components/sat/StatusHistorySection";
 import { ClientInfoCard } from "@/components/sat/ClientInfoCard";
@@ -51,10 +53,13 @@ export default async function WorkOrderDetailPage({ params }: Props) {
   const products = await productService.getByCompany(companyId);
   const attachments = await attachmentService.getByWorkOrder(companyId, id);
   const signature = await signatureService.getByEntity(companyId, "work_order", id);
+  const locations = await locationService.getByWorkOrder(companyId, id);
+  const lastLocation = await locationService.getLastLocation(companyId, id);
   const userRole = session.user.role;
 
   const { workOrder, client, category } = order;
   const canSign = workOrder.status === "completed" || workOrder.status === "closed";
+  const canCheckIn = workOrder.status === "assigned" || workOrder.status === "in_progress";
 
   return (
     <div className="flex-1 bg-[var(--bg)]">
@@ -168,6 +173,51 @@ export default async function WorkOrderDetailPage({ params }: Props) {
               </h2>
               <PdfGenerator workOrderId={workOrder.id} pdfUrl={workOrder.pdfUrl} />
             </div>
+
+            {/* Geolocation / Check-in */}
+            {canCheckIn && userRole === "TECHNICIAN" && (
+              <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4">
+                <h2 className="mb-3 text-sm font-semibold text-[var(--text)]">
+                  {t("detail.location")}
+                </h2>
+                <CheckInButton
+                  workOrderId={workOrder.id}
+                  clientLocation={client.location}
+                  lastCheckIn={lastLocation ? { lat: Number(lastLocation.lat), lng: Number(lastLocation.lng), createdAt: lastLocation.createdAt } : null}
+                />
+              </div>
+            )}
+
+            {/* Location history (visible to all roles) */}
+            {locations.length > 0 && (
+              <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4">
+                <h2 className="mb-3 text-sm font-semibold text-[var(--text)]">
+                  {t("detail.locationHistory")}
+                </h2>
+                <div className="space-y-2">
+                  {locations.slice(0, 5).map((loc) => (
+                    <div key={loc.id} className="flex items-center justify-between text-sm">
+                      <div className="flex items-center gap-2">
+                        <span className={`inline-flex h-2 w-2 rounded-full ${
+                          loc.eventType === "check_in"
+                            ? "bg-emerald-500"
+                            : loc.eventType === "check_out"
+                            ? "bg-amber-500"
+                            : "bg-slate-400"
+                        }`} />
+                        <span className="text-[var(--text)] capitalize">{loc.eventType.replace("_", " ")}</span>
+                      </div>
+                      <span className="text-xs text-[var(--text-muted)]">
+                        {new Date(loc.createdAt).toLocaleTimeString("ca-ES", {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Actions */}
             <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4">

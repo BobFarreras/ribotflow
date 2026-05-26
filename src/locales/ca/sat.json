@@ -45,6 +45,7 @@
       "attachments": "Adjunts",
       "signature": "Signatura",
       "location": "Ubicació",
+      "locationHistory": "Historial d'ubicacions",
       "actionsTitle": "Accions",
       "assignTitle": "Assignar tècnic",
       "unassigned": "Sense assignar",
@@ -123,5 +124,18 @@
     "saved": "Signatura guardada correctament",
     "statusRequired": "Només es pot signar quan l'ordre està completada o tancada",
     "alreadySigned": "Aquesta ordre ja té signatura"
+  },
+  "location": {
+    "checkInButton": "Fer check-in",
+    "gettingLocation": "Obtenint ubicació...",
+    "checkInError": "Error en fer check-in",
+    "geoPermissionDenied": "Permís de geolocalització denegat. Activa la ubicació al navegador.",
+    "geoPositionUnavailable": "No s'ha pogut obtenir la ubicació.",
+    "geoTimeout": "Temps d'espera esgotat per obtenir la ubicació.",
+    "geoUnknownError": "Error desconegut en obtenir la ubicació.",
+    "lastCheckIn": "Últim check-in",
+    "clientHasLocation": "El client té ubicació registrada",
+    "withinRange": "Dins del rang ({distance}m del client)",
+    "outOfRange": "Fora de rang ({distance}m del client — màxim 100m)"
   }
 }
