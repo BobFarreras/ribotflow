@@ -57,7 +57,22 @@
         "cancel": "Cancel·lar",
         "delete": "Eliminar"
       },
-      "confirmDelete": "Estàs segur que vols eliminar aquesta ordre?"
+      "confirmDelete": "Estàs segur que vols eliminar aquesta ordre?",
+      "create": {
+        "title": "Nova Ordre de Treball",
+        "clientLabel": "Client",
+        "categoryLabel": "Categoria",
+        "titleLabel": "Títol",
+        "descriptionLabel": "Descripció",
+        "priorityLabel": "Prioritat",
+        "scheduledDateLabel": "Data programada",
+        "estimatedDurationLabel": "Durada estimada (minuts)",
+        "notesLabel": "Notes internes",
+        "submit": "Crear Ordre",
+        "cancel": "Cancel·lar",
+        "success": "Ordre de treball creada correctament",
+        "error": "Error en crear l'ordre de treball"
+      }
     }
   },
   "materials": {
@@ -71,21 +86,5 @@
     "cancel": "Cancel·lar",
     "empty": "No hi ha materials",
     "total": "Total"
-  }
-    "create": {
-      "title": "Nova Ordre de Treball",
-      "clientLabel": "Client",
-      "categoryLabel": "Categoria",
-      "titleLabel": "Títol",
-      "descriptionLabel": "Descripció",
-      "priorityLabel": "Prioritat",
-      "scheduledDateLabel": "Data programada",
-      "estimatedDurationLabel": "Durada estimada (minuts)",
-      "notesLabel": "Notes internes",
-      "submit": "Crear Ordre",
-      "cancel": "Cancel·lar",
-      "success": "Ordre de treball creada correctament",
-      "error": "Error en crear l'ordre de treball"
-    }
   }
 }
