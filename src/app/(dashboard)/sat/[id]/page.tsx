@@ -24,6 +24,7 @@ import { WorkOrderStatusBadge } from "@/components/sat/WorkOrderStatusBadge";
 import { StatusHistorySection } from "@/components/sat/StatusHistorySection";
 import { ClientInfoCard } from "@/components/sat/ClientInfoCard";
 import { CategoryInfoCard } from "@/components/sat/CategoryInfoCard";
+import { PdfGenerator } from "@/components/sat/PdfGenerator";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -159,6 +160,14 @@ export default async function WorkOrderDetailPage({ params }: Props) {
                 />
               </div>
             )}
+
+            {/* PDF Report */}
+            <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4">
+              <h2 className="mb-3 text-sm font-semibold text-[var(--text)]">
+                {t("pdf.title")}
+              </h2>
+              <PdfGenerator workOrderId={workOrder.id} pdfUrl={workOrder.pdfUrl} />
+            </div>
 
             {/* Actions */}
             <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4">

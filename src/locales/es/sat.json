@@ -113,5 +113,12 @@
     "saved": "Firma guardada correctamente",
     "statusRequired": "Solo se puede firmar cuando la orden está completada o cerrada",
     "alreadySigned": "Esta orden ya tiene firma"
+  },
+  "pdf": {
+    "title": "Informe PDF",
+    "generate": "Generar PDF",
+    "generating": "Generando...",
+    "download": "Descargar PDF",
+    "error": "Error al generar el PDF"
   }
 }

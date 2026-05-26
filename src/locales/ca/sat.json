@@ -113,5 +113,12 @@
     "saved": "Signatura guardada correctament",
     "statusRequired": "Només es pot signar quan l'ordre està completada o tancada",
     "alreadySigned": "Aquesta ordre ja té signatura"
+  },
+  "pdf": {
+    "title": "Informe PDF",
+    "generate": "Generar PDF",
+    "generating": "Generant...",
+    "download": "Descarregar PDF",
+    "error": "Error en generar el PDF"
   }
 }
