@@ -10,6 +10,7 @@ import { PDFDocument, PDFPage, PDFFont, PDFImage, rgb, StandardFonts } from "pdf
 import { db } from "@/db";
 import { workOrders } from "@/db/schema/sat";
 import { eq } from "drizzle-orm";
+import { buildPdfStorageKey } from "@/lib/utils/storageKeys";
 import { workOrderService } from "./workOrderService";
 import { materialService } from "./materialService";
 import { attachmentService } from "./attachmentService";
@@ -259,11 +260,11 @@ class PdfBuilder {
   }
 
   drawSectionTitle(title: string) {
-    this.ensureSpace(28);
+    this.ensureSpace(32);
     this.drawText(title, MARGIN, this.y, { bold: true, size: 11, color: COLORS.primaryDark });
-    this.addSpace(4);
+    this.addSpace(6);
     this.drawLine(this.y, COLORS.primary, 1.5);
-    this.addSpace(10);
+    this.addSpace(16);
   }
 
   drawKeyValueRow(label: string, value: string, yPos?: number) {
@@ -498,7 +499,7 @@ export class PdfService {
       builder.y,
       { size: 9, color: COLORS.textMuted }
     );
-    builder.addSpace(20);
+    builder.addSpace(28);
 
     // Client section
     builder.drawSectionTitle(LABELS[lang].client);
@@ -508,7 +509,7 @@ export class PdfService {
       ...(client.email ? [{ label: LABELS[lang].email, value: client.email }] : []),
       ...(client.address ? [{ label: LABELS[lang].address, value: client.address }] : []),
     ]);
-    builder.addSpace(8);
+    builder.addSpace(20);
 
     // Work order details
     builder.drawSectionTitle(LABELS[lang].workOrderDetails);
@@ -524,20 +525,20 @@ export class PdfService {
         ? [{ label: LABELS[lang].completed, value: fmtDate(workOrder.completedAt) }]
         : []),
     ]);
-    builder.addSpace(8);
+    builder.addSpace(20);
 
     // Description
     if (workOrder.description) {
       builder.drawSectionTitle(LABELS[lang].description);
       builder.drawDescription(workOrder.description);
-      builder.addSpace(8);
+      builder.addSpace(20);
     }
 
     // Materials
     if (materials.length > 0) {
       builder.drawSectionTitle(LABELS[lang].materials);
       builder.drawMaterialsTable(materials);
-      builder.addSpace(8);
+      builder.addSpace(20);
     }
 
     // Photos
@@ -553,7 +554,7 @@ export class PdfService {
     if (photos.length > 0) {
       builder.drawSectionTitle(LABELS[lang].attachments);
       await builder.drawPhotoGrid(photos);
-      builder.addSpace(8);
+      builder.addSpace(20);
     }
 
     // Signature
@@ -569,7 +570,7 @@ export class PdfService {
     const pdfBytes = await pdfDoc.save();
     const buffer = Buffer.from(pdfBytes);
 
-    const storageKey = `pdfs/${companyId}/${workOrderId}.pdf`;
+    const storageKey = buildPdfStorageKey(companyId, workOrder.number, lang);
     const uploadResult = await this.storage.upload({
       buffer,
       storageKey,
@@ -582,6 +583,32 @@ export class PdfService {
       .where(eq(workOrders.id, workOrderId));
 
     return { url: uploadResult.publicUrl };
+  }
+
+  async deletePdf(companyId: string, workOrderId: string) {
+    const order = await workOrderService.getById(companyId, workOrderId);
+    if (!order) {
+      throw new Error("Work order not found or access denied");
+    }
+
+    // Delete from storage (try all language variants)
+    const langs: Lang[] = ["ca", "es", "en"];
+    for (const lang of langs) {
+      const storageKey = buildPdfStorageKey(companyId, order.number, lang);
+      try {
+        await this.storage.delete(storageKey);
+      } catch {
+        // Ignore if file doesn't exist
+      }
+    }
+
+    // Clear pdfUrl in database
+    await db
+      .update(workOrders)
+      .set({ pdfUrl: null })
+      .where(eq(workOrders.id, workOrderId));
+
+    return { success: true };
   }
 }
 

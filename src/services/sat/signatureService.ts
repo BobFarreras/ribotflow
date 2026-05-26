@@ -8,6 +8,7 @@
 import { db } from "@/db";
 import { workOrderSignatures, workOrders } from "@/db/schema/sat";
 import { eq, and } from "drizzle-orm";
+import { buildSignatureStorageKey } from "@/lib/utils/storageKeys";
 import type { FileStorage } from "@/services/storage/interface";
 import { createFileStorage } from "@/services/storage/factory";
 
@@ -47,7 +48,7 @@ export class SignatureService {
   async save(companyId: string, input: SaveSignatureInput) {
     // Verify work order exists and belongs to company
     const order = await db
-      .select({ id: workOrders.id, status: workOrders.status })
+      .select({ id: workOrders.id, status: workOrders.status, number: workOrders.number })
       .from(workOrders)
       .where(and(eq(workOrders.id, input.workOrderId), eq(workOrders.companyId, companyId)))
       .limit(1);
@@ -73,7 +74,7 @@ export class SignatureService {
 
     // Upload PNG to storage if provided
     if (input.signaturePngBuffer) {
-      const storageKey = `signatures/${companyId}/${input.workOrderId}.png`;
+      const storageKey = buildSignatureStorageKey(companyId, order[0].number);
       const uploadResult = await this.storage.upload({
         buffer: input.signaturePngBuffer,
         storageKey,

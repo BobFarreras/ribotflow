@@ -2,16 +2,16 @@
  * Creation/modification date: 26/05/2026
  * Path: src/actions/sat/addAttachment.ts
  * Description: Server Action to upload an attachment file and save metadata.
- *              Delegates binary storage to the attachment service (FileStorage abstraction).
+ *              Uses human-readable storage keys (workOrderNumber + fileName).
  */
 
 "use server";
 
 import { auth } from "@/lib/auth";
 import { attachmentService } from "@/services/sat/attachmentService";
+import { workOrderService } from "@/services/sat/workOrderService";
+import { buildAttachmentStorageKey } from "@/lib/utils/storageKeys";
 import { revalidatePath } from "next/cache";
-import { extname } from "path";
-import { randomUUID } from "crypto";
 
 const ALLOWED_TYPES = {
   "image/jpeg": "photo",
@@ -51,9 +51,18 @@ export async function addAttachmentAction(formData: FormData) {
     }
 
     const companyId = session.user.companyId;
-    const ext = extname(file.name).toLowerCase() || ".bin";
-    const uuid = randomUUID();
-    const storageKey = `sat/${companyId}/${workOrderId}/${uuid}${ext}`;
+
+    // Fetch work order number for human-readable storage key
+    const order = await workOrderService.getById(companyId, workOrderId);
+    if (!order) {
+      return { success: false, error: "Work order not found" };
+    }
+
+    const storageKey = buildAttachmentStorageKey(
+      companyId,
+      order.number,
+      file.name
+    );
 
     const buffer = Buffer.from(await file.arrayBuffer());
 
