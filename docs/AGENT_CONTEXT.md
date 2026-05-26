@@ -19,19 +19,19 @@ This document contains all critical context from previous development sessions i
 
 ## Project Overview
 
-**Name:** RIBOTFLOW  
-**Type:** Enterprise Operating System (ERP, SAT, CRM, Billing, Access Control)  
-**Stack:** Next.js 16 + React 19 + TypeScript + PostgreSQL + Drizzle ORM + Auth.js v5  
-**Language:** English code, Catalan/Spanish UI via i18n  
-**Branch:** `features/sat-work-orders` (active development)  
+**Name:** RIBOTFLOW
+**Type:** Enterprise Operating System (ERP, SAT, CRM, Billing, Access Control)
+**Stack:** Next.js 16 + React 19 + TypeScript + PostgreSQL + Drizzle ORM + Auth.js v5
+**Language:** English code, Catalan/Spanish UI via i18n
+**Branch:** `features/sat-work-orders` (active development)
 
 ---
 
 ## Critical Architecture Decisions (Do Not Break These!)
 
 ### 1. Next-Auth v5 + Next.js 16 Proxy Pattern
-**File:** `src/proxy.ts`  
-**Pattern:** `export const proxy = auth((req) => { ... })`  
+**File:** `src/proxy.ts`
+**Pattern:** `export const proxy = auth((req) => { ... })`
 
 **CRITICAL RULES:**
 - NEVER use `await auth()` without request context in proxy/middleware
@@ -83,7 +83,8 @@ This document contains all critical context from previous development sessions i
 ### Demo Data Created by `pnpm db:seed:demo`
 - **5 categories:** Repair, Maintenance, Installation, Assembly, Inspection
 - **8 clients:** Restaurant, Gym, Dental Clinic, Hotel, School, Supermarket, Offices, Mechanic
-- **12 work orders:** Various statuses (pending, scheduled, in_progress, paused, completed, closed, cancelled, waiting_parts)
+- **10 products:** Cable 3x1.5mm, Circuit breaker 16A, PVC tube, Condensing boiler, etc.
+- **12 work orders:** Various statuses (pending, scheduled, in_progress, paused, completed, closed, cancelled, waiting_parts, waiting_client)
 
 ---
 
@@ -95,8 +96,8 @@ This document contains all critical context from previous development sessions i
 - **Database:** ribotflow
 - **URL:** `postgresql://postgres:postgres@localhost:5433/ribotflow`
 
-**Docker Compose:** `docker-compose.dev.yml`  
-**Start:** `pnpm db:setup` (starts container + applies migrations)  
+**Docker Compose:** `docker-compose.dev.yml`
+**Start:** `pnpm db:setup` (starts container + applies migrations)
 **View UI:** `pnpm db:studio` → http://localhost:4983 (use Firefox, not Chrome)
 
 ---
@@ -104,15 +105,21 @@ This document contains all critical context from previous development sessions i
 ## SAT Module Status
 
 ### Completed
-- [x] Database schema (8 tables: clients, categories, work_orders, status_history, materials, attachments, signatures, locations)
+- [x] Database schema (9 tables: clients, categories, work_orders, status_history, materials, attachments, signatures, locations, **products**)
 - [x] Work order service with status workflow transitions
-- [x] Server Actions: createWorkOrder, updateStatus, assignTechnician
+- [x] Material service with product catalog + free-text materials
+- [x] Attachment service with local file storage
+- [x] Product service (company catalog with SKU, unitPrice, unitCost, stock)
+- [x] Server Actions: createWorkOrder, updateStatus, assignTechnician, addMaterial, removeMaterial, getProducts, addAttachment, deleteAttachment
 - [x] UI pages: List (`/sat`), Detail (`/sat/[id]`), Create (`/sat/new`)
-- [x] Client components: WorkOrderForm, WorkOrderActions, TechnicianAssigner
-- [x] i18n translations (ca/es) for all SAT strings
+- [x] Client components: WorkOrderForm, WorkOrderActions, TechnicianAssigner, **MaterialList**, **AttachmentSection**
+- [x] i18n translations (ca/es) for all SAT strings including materials and attachments
 - [x] Auto-number generation: `OT-{YYYY}-{SEQ}` per company
 - [x] Technician assignment with RBAC guard
 - [x] Status history tracking
+- [x] Materials management UI (catalog selector + free-text + quantity + totals)
+- [x] Attachments/photos UI (upload with preview, before/after checkbox, caption, grid, lightbox, delete)
+- [x] Local file storage API (`/api/uploads/[...path]`) with mime type detection and security
 
 ### Work Order Statuses (All Implemented)
 | Status | Catalan | Spanish | Transitions |
@@ -128,14 +135,29 @@ This document contains all critical context from previous development sessions i
 | waiting_parts | Esperant peces | Esperando piezas | → in_progress, cancelled |
 | waiting_client | Esperant client | Esperando cliente | → in_progress, cancelled |
 
-### Pending / Next Features
-- [ ] Materials management (work_order_materials table exists, no UI)
-- [ ] Attachments/photos (work_order_attachments table exists, no UI)
-- [ ] Digital signature (work_order_signatures table exists, no UI)
-- [ ] Geolocation tracking (work_order_locations table exists, no UI)
-- [ ] PWA offline mode for technicians
-- [ ] Email notifications on status changes
-- [ ] Calendar integration for scheduled dates
+### Pending / Next Features (Priority Order)
+1. **[NEXT] Digital signature** (`work_order_signatures` table exists, no UI)
+   - Canvas component for client to sign on screen (touch or mouse)
+   - Save signature SVG to `work_order_signatures`
+   - Display signature on order detail page
+   - Only allow signing when status is `WORK_DONE`
+   
+2. **PDF generation**
+   - Downloadable PDF with company logo, order data, materials, photos, signature
+   - Digital delivery to client
+
+3. **Geolocation tracking** (`work_order_locations` table exists, no UI)
+   - GPS capture when technician arrives
+   - Start/end work timestamps
+   - Route tracking
+
+4. **PWA offline mode for technicians**
+   - Service Worker for offline work
+   - Background sync when WiFi returns
+   - Cache assigned order data
+
+5. **Email notifications on status changes**
+6. **Calendar integration for scheduled dates**
 
 ---
 
@@ -147,6 +169,20 @@ This document contains all critical context from previous development sessions i
 - **Test DB seed:** `tests/db-seed.ts` creates test company + user + categories + client
 - **Run tests:** `pnpm test`
 - **Full CI check:** `pnpm ci:check` (typecheck + lint + format + test + build)
+
+**Current Test Count:** 54 tests passing across 9 test files
+
+| Test File | Tests | Description |
+|-----------|-------|-------------|
+| `crypto.test.ts` | 5 | Password hashing (bcryptjs) |
+| `authorize.test.ts` | 3 | RBAC role checks |
+| `auth.test.ts` | 4 | Registration, login, company creation |
+| `workOrderService.test.ts` | 7 | CRUD + status workflow + security |
+| `materialService.test.ts` | 6 | Materials CRUD + catalog + free-text + security |
+| `attachmentService.test.ts` | 6 | Attachments CRUD + metadata + security |
+| `DashboardShell.test.tsx` | 3 | Layout rendering |
+| `SidebarContext.test.tsx` | 9 | Sidebar state management |
+| `SidebarNav.test.tsx` | 11 | Navigation rendering + active states |
 
 **WARNING:** Running tests creates temporary users in the database. To clean up:
 ```bash
@@ -203,6 +239,7 @@ src/
     sat/page.tsx            # List orders → URL: /sat
     sat/[id]/page.tsx       # Order detail → URL: /sat/:id
     sat/new/page.tsx        # Create order → URL: /sat/new
+    api/uploads/[...path]/route.ts  # Local file serving API
   components/layout/        # Layout Components
     SidebarContext.tsx      # React context for sidebar state
     Sidebar.tsx             # Main sidebar (collapsible, responsive)
@@ -213,15 +250,25 @@ src/
     createWorkOrder.ts
     updateStatus.ts
     assignTechnician.ts
+    addMaterial.ts
+    removeMaterial.ts
+    getProducts.ts
+    addAttachment.ts
+    deleteAttachment.ts
   components/sat/           # Client Components
     WorkOrderForm.tsx
     WorkOrderActions.tsx
     TechnicianAssigner.tsx
+    MaterialList.tsx        # Product catalog + free-text materials
+    AttachmentSection.tsx   # Upload + grid + lightbox
   services/sat/             # Business Logic
     workOrderService.ts
+    materialService.ts
+    productService.ts
+    attachmentService.ts
   lib/auth/index.ts         # NextAuth config (NO authorized callback!)
   proxy.ts                  # Auth proxy (SINGLE source of truth)
-  db/schema/sat.ts          # Database schema
+  db/schema/sat.ts          # Database schema (9 tables)
   locales/ca/*.json         # Catalan translations (common + sat)
   locales/es/*.json         # Spanish translations (common + sat)
 ```
@@ -338,6 +385,9 @@ NEXT_PUBLIC_APP_MODE=cloud
 | 25/05/2026 | Adopted versioned migrations for team dev | `db:generate` + `db:migrate` replaces `db:push` for safe team schema evolution |
 | 25/05/2026 | Professional sidebar with sub-menus | Collapsible, responsive, theme/language toggle, multi-module navigation |
 | 26/05/2026 | Sidebar navigation uses `<Link>` not `<a>` | **CRITICAL:** `<a href>` causes full page reload, recreating DOM and causing sidebar flash/reset. `<Link>` preserves sidebar state (SPA navigation). |
+| 26/05/2026 | Product catalog per company | Materials can link to catalog products or be free-text. Enables inventory tracking. |
+| 26/05/2026 | Local file storage for attachments | `uploads/sat/{companyId}/{workOrderId}/` folder served via `/api/uploads/[...path]`. Gitignored. Simple, no external dependencies. |
+| 26/05/2026 | Attachment metadata stored in DB | File name, size, mime type, dimensions, isBefore flag, caption. Actual file stored on disk. |
 
 ---
 
@@ -381,9 +431,34 @@ When you start working on this project:
 3. **Check the branch:** Should be `features/sat-work-orders`
 4. **Start PostgreSQL:** `pnpm db:setup`
 5. **Seed demo data:** `pnpm db:seed:demo`
-6. **Run tests:** `pnpm test` (ensure 19 tests pass)
+6. **Run tests:** `pnpm test` (ensure 54 tests pass)
 7. **Start dev server:** `pnpm dev`
 8. **Login with:** dais@test.com / 12345678
+
+### Next Recommended Feature: Digital Signature (Phase C)
+The next priority is implementing the **digital signature** feature:
+
+**What it is:**
+- A canvas component where the client signs on the technician's device (touch screen or mouse)
+- The signature is saved as SVG in `work_order_signatures` table
+- Displayed on the order detail page
+- Only allowed when order status is `WORK_DONE`
+
+**Tables already exist:** `work_order_signatures` in `src/db/schema/sat.ts`
+
+**Suggested approach:**
+1. Create `SignatureCanvas` component (React canvas with mouse/touch events)
+2. Create `signatureService.ts` (save SVG string to DB, retrieve, validate company_id)
+3. Create Server Action `saveSignature.ts`
+4. Add signature section to `/sat/[id]/page.tsx` (only visible when status is WORK_DONE or CLOSED)
+5. Add i18n keys for signature-related text
+6. Write integration tests for `signatureService`
+
+**Files to reference as templates:**
+- `src/components/sat/AttachmentSection.tsx` (client component with upload/interaction)
+- `src/services/sat/attachmentService.ts` (service pattern with company_id security)
+- `src/actions/sat/addAttachment.ts` (server action pattern)
+- `tests/unit/services/sat/attachmentService.test.ts` (integration test pattern)
 
 If any of the above fails, check the Known Issues section above, or ask the user for clarification.
 
@@ -393,5 +468,5 @@ If any of the above fails, check the Known Issues section above, or ask the user
 
 ---
 
-*Last updated: 26/05/2026 by Agent OpenCode (kimi-k2.6) — Fixed critical sidebar flash bug: root cause was `<a>` tags instead of `<Link>` causing full page reloads. Documented in Known Issues section.*
+*Last updated: 26/05/2026 by Agent OpenCode (kimi-k2.6) — Completed Phase B (Materials + Attachments). 54 tests passing. Next recommended step: Phase C (Digital Signature).*
 *Context stored in: docs/AGENT_CONTEXT.md (this file)*
