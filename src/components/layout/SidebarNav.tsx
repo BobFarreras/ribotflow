@@ -8,8 +8,9 @@
 
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, memo } from "react";
 import { usePathname } from "next/navigation";
+import Link from "next/link";
 import { useTranslations } from "next-intl";
 import {
   LayoutDashboard,
@@ -178,7 +179,7 @@ function CollapsedSubMenuPanel({
       {item.subItems.map((sub) => {
         const subActive = isChildActive(pathname, sub.href);
         return (
-          <a
+          <Link
             key={sub.key}
             href={sub.href}
             data-nav-target={sub.href}
@@ -190,7 +191,7 @@ function CollapsedSubMenuPanel({
           >
             <sub.icon className="h-4 w-4 shrink-0" />
             <span className="truncate">{t(`${item.key}.subItems.${sub.key}`)}</span>
-          </a>
+          </Link>
         );
       })}
     </div>
@@ -231,7 +232,7 @@ function CollapsedNavItem({ item, pathname }: { item: NavItem; pathname: string 
       onMouseEnter={handleEnter}
       onMouseLeave={handleLeave}
     >
-      <a
+      <Link
         href={item.href}
         data-nav-target={item.href}
         className={`flex items-center justify-center rounded-lg p-2.5 ${
@@ -241,7 +242,7 @@ function CollapsedNavItem({ item, pathname }: { item: NavItem; pathname: string 
         }`}
       >
         <item.icon className="h-5 w-5" />
-      </a>
+      </Link>
       {showTooltip && hasSubItems && (
         <div onMouseEnter={() => leaveTimeoutRef.current && clearTimeout(leaveTimeoutRef.current)} onMouseLeave={handleLeave}>
           <CollapsedSubMenuPanel item={item} pathname={pathname} top={tooltipTop} />
@@ -286,14 +287,14 @@ function ExpandedNavItem({ item, pathname }: { item: NavItem; pathname: string }
   return (
     <div>
       {isLeaf ? (
-        <a
+        <Link
           href={item.href}
           data-nav-target={item.href}
           className={`${baseItemClasses} ${parentClasses}`}
         >
           <item.icon className="h-5 w-5 shrink-0" />
           <span className="flex-1 text-left truncate">{t(`${item.key}.label`)}</span>
-        </a>
+        </Link>
       ) : (
         <button
           onClick={handleToggle}
@@ -318,7 +319,7 @@ function ExpandedNavItem({ item, pathname }: { item: NavItem; pathname: string }
           {item.subItems!.map((sub) => {
             const subActive = isChildActive(pathname, sub.href);
             return (
-              <a
+              <Link
                 key={sub.key}
                 href={sub.href}
                 data-nav-target={sub.href}
@@ -332,7 +333,7 @@ function ExpandedNavItem({ item, pathname }: { item: NavItem; pathname: string }
                 <span className="truncate">
                   {t(`${item.key}.subItems.${sub.key}`)}
                 </span>
-              </a>
+              </Link>
             );
           })}
         </div>

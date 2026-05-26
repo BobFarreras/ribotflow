@@ -8,6 +8,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import Link from "next/link";
 import { PanelLeft } from "lucide-react";
 import { useSidebar } from "./SidebarContext";
 import SidebarNav from "./SidebarNav";
@@ -42,7 +43,7 @@ function SidebarHeader() {
 
   return (
     <div className="flex h-14 shrink-0 items-center border-b border-[var(--border)] px-3">
-      <a
+      <Link
         href="/dashboard"
         className={`flex items-center gap-2 overflow-hidden whitespace-nowrap ${
           isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100"
@@ -52,16 +53,16 @@ function SidebarHeader() {
           RF
         </div>
         <span className="text-sm font-semibold text-[var(--text)]">{t("brand")}</span>
-      </a>
+      </Link>
 
       {isCollapsed && (
-        <a
+        <Link
           href="/dashboard"
           className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--primary)] text-white font-bold text-sm"
           title={t("brand")}
         >
           RF
-        </a>
+        </Link>
       )}
     </div>
   );
