@@ -74,7 +74,7 @@ export class SignatureService {
 
     // Upload PNG to storage if provided
     if (input.signaturePngBuffer) {
-      const storageKey = buildSignatureStorageKey(companyId, order[0].number);
+      const storageKey = buildSignatureStorageKey("sat", companyId, order[0].number);
       const uploadResult = await this.storage.upload({
         buffer: input.signaturePngBuffer,
         storageKey,

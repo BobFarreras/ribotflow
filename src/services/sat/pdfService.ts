@@ -570,7 +570,7 @@ export class PdfService {
     const pdfBytes = await pdfDoc.save();
     const buffer = Buffer.from(pdfBytes);
 
-    const storageKey = buildPdfStorageKey(companyId, workOrder.number, lang);
+    const storageKey = buildPdfStorageKey("sat", companyId, workOrder.number, lang);
     const uploadResult = await this.storage.upload({
       buffer,
       storageKey,
@@ -594,7 +594,7 @@ export class PdfService {
     // Delete from storage (try all language variants)
     const langs: Lang[] = ["ca", "es", "en"];
     for (const lang of langs) {
-      const storageKey = buildPdfStorageKey(companyId, order.number, lang);
+      const storageKey = buildPdfStorageKey("sat", companyId, order.number, lang);
       try {
         await this.storage.delete(storageKey);
       } catch {

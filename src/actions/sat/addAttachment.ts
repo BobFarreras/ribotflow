@@ -59,6 +59,7 @@ export async function addAttachmentAction(formData: FormData) {
     }
 
     const storageKey = buildAttachmentStorageKey(
+      "sat",
       companyId,
       order.number,
       file.name

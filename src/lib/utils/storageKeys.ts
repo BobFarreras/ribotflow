@@ -3,6 +3,8 @@
  * Path: src/lib/utils/storageKeys.ts
  * Description: Helpers for generating human-readable but unique storage keys.
  *              Balances readability in MinIO/S3 consoles with uniqueness.
+ *              Supports module-based sub-routes (sat, quotes, invoices) and
+ *              self-hosted mode (company name folder) vs cloud (company ID folder).
  */
 
 import { randomUUID } from "crypto";
@@ -22,6 +24,19 @@ export function sanitizeFileName(name: string): string {
 }
 
 /**
+ * Determine the company folder name based on deployment mode.
+ * - Cloud (multi-tenant): uses companyId (immutable, safe).
+ * - Self-hosted (single tenant): uses sanitized companyName for readability.
+ */
+function getCompanyFolder(companyId: string, companyName?: string): string {
+  const mode = process.env.NEXT_PUBLIC_APP_MODE;
+  if (mode === "self-hosted" && companyName) {
+    return sanitizeFileName(companyName);
+  }
+  return companyId;
+}
+
+/**
  * Generate a short random suffix for uniqueness.
  */
 function shortSuffix(): string {
@@ -29,14 +44,17 @@ function shortSuffix(): string {
 }
 
 /**
- * Build a storage key for a work order attachment (photo/video).
- * Pattern: sat/{companyId}/{workOrderNumber}/{sanitizedFileName}-{shortSuffix}.{ext}
+ * Build a storage key for an attachment (photo/video/document).
+ * Pattern: {module}/{companyFolder}/{entityNumber}/{sanitizedFileName}-{shortSuffix}.{ext}
  */
 export function buildAttachmentStorageKey(
+  module: string, // e.g. "sat", "quotes", "invoices"
   companyId: string,
-  workOrderNumber: string,
-  originalFileName: string
+  entityNumber: string,
+  originalFileName: string,
+  companyName?: string
 ): string {
+  const folder = getCompanyFolder(companyId, companyName);
   const ext = originalFileName.includes(".")
     ? originalFileName.slice(originalFileName.lastIndexOf("."))
     : "";
@@ -45,28 +63,34 @@ export function buildAttachmentStorageKey(
     : originalFileName;
   const cleanName = sanitizeFileName(baseName);
   const suffix = shortSuffix();
-  return `sat/${companyId}/${sanitizeFileName(workOrderNumber)}/${cleanName}-${suffix}${ext}`;
+  return `${module}/${folder}/${sanitizeFileName(entityNumber)}/${cleanName}-${suffix}${ext}`;
 }
 
 /**
- * Build a storage key for a work order PDF.
- * Pattern: pdfs/{companyId}/{workOrderNumber}-report-{lang}.pdf
+ * Build a storage key for a PDF report.
+ * Pattern: {module}/{companyFolder}/{entityNumber}-report-{lang}.pdf
  */
 export function buildPdfStorageKey(
+  module: string, // e.g. "sat", "quotes"
   companyId: string,
-  workOrderNumber: string,
-  lang: string
+  entityNumber: string,
+  lang: string,
+  companyName?: string
 ): string {
-  return `pdfs/${companyId}/${sanitizeFileName(workOrderNumber)}-report-${lang}.pdf`;
+  const folder = getCompanyFolder(companyId, companyName);
+  return `${module}/${folder}/${sanitizeFileName(entityNumber)}-report-${lang}.pdf`;
 }
 
 /**
  * Build a storage key for a signature PNG.
- * Pattern: signatures/{companyId}/{workOrderNumber}-signature.png
+ * Pattern: {module}/{companyFolder}/{entityNumber}-signature.png
  */
 export function buildSignatureStorageKey(
+  module: string, // e.g. "sat", "quotes"
   companyId: string,
-  workOrderNumber: string
+  entityNumber: string,
+  companyName?: string
 ): string {
-  return `signatures/${companyId}/${sanitizeFileName(workOrderNumber)}-signature.png`;
+  const folder = getCompanyFolder(companyId, companyName);
+  return `${module}/${folder}/${sanitizeFileName(entityNumber)}-signature.png`;
 }
