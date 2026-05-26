@@ -10,7 +10,7 @@ import { auth } from "@/lib/auth";
 import { pdfService } from "@/services/sat/pdfService";
 import { revalidatePath } from "next/cache";
 
-export async function generatePdfAction(workOrderId: string) {
+export async function generatePdfAction(workOrderId: string, lang: "ca" | "es" | "en" = "ca") {
   try {
     const session = await auth();
     if (!session?.user?.companyId) {
@@ -19,7 +19,8 @@ export async function generatePdfAction(workOrderId: string) {
 
     const result = await pdfService.generateWorkOrderPdf(
       session.user.companyId,
-      workOrderId
+      workOrderId,
+      lang
     );
 
     revalidatePath(`/sat/${workOrderId}`);

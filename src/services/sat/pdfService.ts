@@ -1,12 +1,12 @@
 /**
  * Creation/modification date: 26/05/2026
  * Path: src/services/sat/pdfService.ts
- * Description: PDF generation for work orders using pdf-lib.
- *              Creates professional A4 PDFs with order data, materials,
- *              attachments count and signature image.
+ * Description: Professional PDF generation for work orders using pdf-lib.
+ *              Multi-language support (ca/es/en), embedded photos,
+ *              branded design with RIBOTFLOW colors.
  */
 
-import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
+import { PDFDocument, PDFPage, PDFFont, PDFImage, rgb, StandardFonts } from "pdf-lib";
 import { db } from "@/db";
 import { workOrders } from "@/db/schema/sat";
 import { eq } from "drizzle-orm";
@@ -18,26 +18,441 @@ import type { FileStorage } from "@/services/storage/interface";
 import { createFileStorage } from "@/services/storage/factory";
 
 /* ================================================================
-   CONSTANTS
+   CONSTANTS & DESIGN TOKENS
    ================================================================ */
 const PAGE_W = 595.28; // A4 width (points)
 const PAGE_H = 841.89; // A4 height (points)
-const MARGIN = 50;
+const MARGIN = 48;
 const CONTENT_W = PAGE_W - MARGIN * 2;
+
+const COLORS = {
+  primary: rgb(0.11, 0.63, 0.57), // teal-500
+  primaryLight: rgb(0.85, 0.96, 0.94), // teal-50
+  primaryDark: rgb(0.05, 0.42, 0.38), // teal-700
+  text: rgb(0.11, 0.11, 0.11),
+  textMuted: rgb(0.4, 0.4, 0.4),
+  border: rgb(0.88, 0.88, 0.9),
+  bgHeader: rgb(0.03, 0.27, 0.25),
+  white: rgb(1, 1, 1),
+};
+
+/* ================================================================
+   TRANSLATIONS
+   ================================================================ */
+type Lang = "ca" | "es" | "en";
+
+const LABELS: Record<Lang, Record<string, string>> = {
+  ca: {
+    headerTitle: "RIBOTFLOW",
+    headerSubtitle: "Informe d'Ordre de Treball",
+    client: "CLIENT",
+    workOrderDetails: "DETALLS DE L'ORDRE",
+    description: "DESCRIPCIÓ",
+    materials: "MATERIALS",
+    attachments: "IMATGES ADJUNTES",
+    signature: "SIGNATURA DIGITAL",
+    total: "TOTAL",
+    generated: "Generat",
+    reportFooter: "RIBOTFLOW — Informe generat automàticament",
+    name: "Nom",
+    phone: "Telèfon",
+    email: "Correu",
+    address: "Adreça",
+    status: "Estat",
+    priority: "Prioritat",
+    category: "Categoria",
+    scheduled: "Programada",
+    started: "Iniciada",
+    completed: "Completada",
+    qty: "Qt.",
+    unitPrice: "Preu Unit.",
+    lineTotal: "Import",
+    before: "Abans",
+    after: "Després",
+    signedBy: "Signada per",
+    none: "—",
+  },
+  es: {
+    headerTitle: "RIBOTFLOW",
+    headerSubtitle: "Informe de Orden de Trabajo",
+    client: "CLIENTE",
+    workOrderDetails: "DETALLES DE LA ORDEN",
+    description: "DESCRIPCIÓN",
+    materials: "MATERIALES",
+    attachments: "IMÁGENES ADJUNTAS",
+    signature: "FIRMA DIGITAL",
+    total: "TOTAL",
+    generated: "Generado",
+    reportFooter: "RIBOTFLOW — Informe generado automáticamente",
+    name: "Nombre",
+    phone: "Teléfono",
+    email: "Correo",
+    address: "Dirección",
+    status: "Estado",
+    priority: "Prioridad",
+    category: "Categoría",
+    scheduled: "Programada",
+    started: "Iniciada",
+    completed: "Completada",
+    qty: "Cant.",
+    unitPrice: "Precio Unit.",
+    lineTotal: "Importe",
+    before: "Antes",
+    after: "Después",
+    signedBy: "Firmada por",
+    none: "—",
+  },
+  en: {
+    headerTitle: "RIBOTFLOW",
+    headerSubtitle: "Work Order Report",
+    client: "CLIENT",
+    workOrderDetails: "WORK ORDER DETAILS",
+    description: "DESCRIPTION",
+    materials: "MATERIALS",
+    attachments: "ATTACHED IMAGES",
+    signature: "DIGITAL SIGNATURE",
+    total: "TOTAL",
+    generated: "Generated",
+    reportFooter: "RIBOTFLOW — Automatically generated report",
+    name: "Name",
+    phone: "Phone",
+    email: "Email",
+    address: "Address",
+    status: "Status",
+    priority: "Priority",
+    category: "Category",
+    scheduled: "Scheduled",
+    started: "Started",
+    completed: "Completed",
+    qty: "Qty",
+    unitPrice: "Unit Price",
+    lineTotal: "Line Total",
+    before: "Before",
+    after: "After",
+    signedBy: "Signed by",
+    none: "—",
+  },
+};
 
 /* ================================================================
    HELPERS
    ================================================================ */
-function formatDate(date: Date | null): string {
+function fmtDate(date: Date | null): string {
   if (!date) return "—";
   return new Date(date).toLocaleDateString("ca-ES");
 }
 
-function formatCurrency(value: string | null): string {
+function fmtCurrency(value: string | null): string {
   if (!value) return "—";
   const num = parseFloat(value);
   if (Number.isNaN(num)) return "—";
   return `${num.toFixed(2)} €`;
+}
+
+async function embedImage(pdfDoc: PDFDocument, imageUrl: string) {
+  const res = await fetch(imageUrl);
+  if (!res.ok) throw new Error(`Failed to fetch image: ${imageUrl}`);
+  const buf = Buffer.from(await res.arrayBuffer());
+  const ct = res.headers.get("content-type") ?? "";
+  if (ct.includes("png")) return pdfDoc.embedPng(buf);
+  if (ct.includes("jpg") || ct.includes("jpeg")) return pdfDoc.embedJpg(buf);
+  throw new Error(`Unsupported image type: ${ct}`);
+}
+
+/* ================================================================
+   PDF BUILDER — handles layout, pages, drawing primitives
+   ================================================================ */
+class PdfBuilder {
+  pdfDoc: PDFDocument;
+  page: PDFPage;
+  font: PDFFont;
+  fontBold: PDFFont;
+  y: number;
+  lang: Lang;
+
+  constructor(pdfDoc: PDFDocument, font: PDFFont, fontBold: PDFFont, lang: Lang) {
+    this.pdfDoc = pdfDoc;
+    this.font = font;
+    this.fontBold = fontBold;
+    this.lang = lang;
+    this.page = pdfDoc.addPage([PAGE_W, PAGE_H]);
+    this.y = PAGE_H - MARGIN;
+  }
+
+  /* ---------- Low-level primitives ---------- */
+  drawText(
+    text: string,
+    x: number,
+    yPos: number,
+    opts: { bold?: boolean; size?: number; color?: ReturnType<typeof rgb> } = {}
+  ) {
+    this.page.drawText(text, {
+      x,
+      y: yPos,
+      font: opts.bold ? this.fontBold : this.font,
+      size: opts.size ?? 10,
+      color: opts.color ?? COLORS.text,
+    });
+  }
+
+  measureWidth(text: string, size = 10, bold = false): number {
+    const f = bold ? this.fontBold : this.font;
+    return f.widthOfTextAtSize(text, size);
+  }
+
+  drawRect(x: number, y: number, w: number, h: number, color: ReturnType<typeof rgb>) {
+    this.page.drawRectangle({ x, y: y - h, width: w, height: h, color });
+  }
+
+  drawLine(yPos: number, color = COLORS.border, thickness = 0.5) {
+    this.page.drawLine({
+      start: { x: MARGIN, y: yPos },
+      end: { x: PAGE_W - MARGIN, y: yPos },
+      thickness,
+      color,
+    });
+  }
+
+  /* ---------- Layout helpers ---------- */
+  addSpace(n: number) {
+    this.y -= n;
+  }
+
+  ensureSpace(needed: number) {
+    if (this.y - needed < MARGIN + 40) {
+      // Footer on current page
+      this.drawFooter();
+      // New page
+      this.page = this.pdfDoc.addPage([PAGE_W, PAGE_H]);
+      this.y = PAGE_H - MARGIN;
+    }
+  }
+
+  /* ---------- Sections ---------- */
+  drawHeader(workOrderNumber: string) {
+    // Dark teal banner
+    this.drawRect(0, this.y + 16, PAGE_W, 80, COLORS.bgHeader);
+
+    // Logo text
+    this.drawText(LABELS[this.lang].headerTitle, MARGIN, this.y - 10, {
+      bold: true,
+      size: 22,
+      color: COLORS.white,
+    });
+
+    // Subtitle
+    this.drawText(LABELS[this.lang].headerSubtitle, MARGIN, this.y - 34, {
+      size: 11,
+      color: rgb(0.6, 0.85, 0.82),
+    });
+
+    // Work order number on right
+    const numText = workOrderNumber;
+    const numW = this.measureWidth(numText, 14, true);
+    this.drawText(numText, PAGE_W - MARGIN - numW, this.y - 10, {
+      bold: true,
+      size: 14,
+      color: COLORS.white,
+    });
+
+    this.y -= 88;
+  }
+
+  drawSectionTitle(title: string) {
+    this.ensureSpace(28);
+    this.drawText(title, MARGIN, this.y, { bold: true, size: 11, color: COLORS.primaryDark });
+    this.addSpace(4);
+    this.drawLine(this.y, COLORS.primary, 1.5);
+    this.addSpace(10);
+  }
+
+  drawKeyValueRow(label: string, value: string, yPos?: number) {
+    const y = yPos ?? this.y;
+    this.drawText(`${label}:`, MARGIN, y, { size: 9, color: COLORS.textMuted });
+    this.drawText(value, MARGIN + 90, y, { size: 10 });
+  }
+
+  drawFooter() {
+    const footerY = MARGIN + 10;
+    this.drawLine(footerY + 14, COLORS.border, 0.5);
+    this.drawText(LABELS[this.lang].reportFooter, MARGIN, footerY, {
+      size: 8,
+      color: COLORS.textMuted,
+    });
+  }
+
+  /* ---------- Content blocks ---------- */
+  drawInfoGrid(items: { label: string; value: string }[]) {
+    this.ensureSpace(items.length * 14 + 10);
+    for (const item of items) {
+      this.drawKeyValueRow(item.label, item.value);
+      this.addSpace(14);
+    }
+  }
+
+  drawDescription(text: string) {
+    const maxW = CONTENT_W;
+    const words = text.split(" ");
+    let line = "";
+
+    for (const word of words) {
+      const test = `${line}${word} `;
+      if (this.measureWidth(test, 10) > maxW) {
+        this.drawText(line.trim(), MARGIN, this.y, { size: 10 });
+        this.addSpace(12);
+        line = `${word} `;
+      } else {
+        line = test;
+      }
+    }
+    if (line.trim()) {
+      this.drawText(line.trim(), MARGIN, this.y, { size: 10 });
+      this.addSpace(12);
+    }
+  }
+
+  drawMaterialsTable(
+    materials: { name: string; quantity: string; unitPrice: string | null }[]
+  ) {
+    if (materials.length === 0) return;
+
+    const cols = [MARGIN, MARGIN + 230, MARGIN + 310, MARGIN + 390, MARGIN + 460];
+    const rowH = 18;
+
+    // Header row background
+    this.ensureSpace(materials.length * rowH + 34);
+    this.drawRect(MARGIN, this.y + 4, CONTENT_W, rowH, COLORS.primaryLight);
+
+    // Headers
+    this.drawText(LABELS[this.lang].name, cols[0] + 4, this.y, { bold: true, size: 9, color: COLORS.primaryDark });
+    this.drawText(LABELS[this.lang].qty, cols[1] + 4, this.y, { bold: true, size: 9, color: COLORS.primaryDark });
+    this.drawText(LABELS[this.lang].unitPrice, cols[2] + 4, this.y, { bold: true, size: 9, color: COLORS.primaryDark });
+    this.drawText(LABELS[this.lang].lineTotal, cols[3] + 4, this.y, { bold: true, size: 9, color: COLORS.primaryDark });
+    this.addSpace(rowH);
+
+    let grandTotal = 0;
+    for (const mat of materials) {
+      // Alternate row background
+      const idx = materials.indexOf(mat);
+      if (idx % 2 !== 0) {
+        this.drawRect(MARGIN, this.y + 4, CONTENT_W, rowH, rgb(0.97, 0.97, 0.98));
+      }
+
+      const qty = parseFloat(String(mat.quantity));
+      const price = mat.unitPrice ? parseFloat(mat.unitPrice) : 0;
+      const lineTotal = qty * price;
+      grandTotal += lineTotal;
+
+      this.drawText(mat.name, cols[0] + 4, this.y, { size: 9 });
+      this.drawText(String(mat.quantity), cols[1] + 4, this.y, { size: 9 });
+      this.drawText(fmtCurrency(mat.unitPrice), cols[2] + 4, this.y, { size: 9 });
+      this.drawText(`${lineTotal.toFixed(2)} €`, cols[3] + 4, this.y, { size: 9 });
+
+      this.addSpace(rowH);
+    }
+
+    // Total row
+    this.drawLine(this.y + 4, COLORS.border, 0.5);
+    this.addSpace(6);
+    this.drawText(`${LABELS[this.lang].total}:`, cols[2] + 4, this.y, { bold: true, size: 10 });
+    this.drawText(`${grandTotal.toFixed(2)} €`, cols[3] + 4, this.y, { bold: true, size: 10, color: COLORS.primaryDark });
+    this.addSpace(14);
+  }
+
+  async drawPhotoGrid(
+    photos: { url: string; fileName: string; isBefore: boolean; caption: string | null }[]
+  ) {
+    if (photos.length === 0) return;
+
+    const imgWidth = (CONTENT_W - 12) / 2;
+
+    for (let i = 0; i < photos.length; i += 2) {
+      const row = photos.slice(i, i + 2);
+      let maxH = 0;
+
+      // Pre-embed to get dimensions
+      const embeds = await Promise.all(
+        row.map(async (p) => {
+          try {
+            const img = await embedImage(this.pdfDoc, p.url);
+            const h = imgWidth * (img.height / img.width);
+            return { img, h, photo: p };
+          } catch {
+            return null;
+          }
+        })
+      );
+
+      const valid = embeds.filter(Boolean) as { img: PDFImage; h: number; photo: typeof row[0] }[];
+      if (valid.length === 0) continue;
+
+      // Calculate max height of this row
+      maxH = Math.max(...valid.map((v) => v.h));
+      this.ensureSpace(maxH + 28);
+
+      for (let j = 0; j < valid.length; j++) {
+        const { img, h, photo } = valid[j];
+        const x = MARGIN + j * (imgWidth + 12);
+        const yImg = this.y - h;
+
+        // Border box
+        this.page.drawRectangle({
+          x: x - 2,
+          y: yImg - 2,
+          width: imgWidth + 4,
+          height: h + 4,
+          borderColor: COLORS.border,
+          borderWidth: 0.5,
+          color: rgb(0.98, 0.98, 0.98),
+        });
+
+        this.page.drawImage(img, { x, y: yImg, width: imgWidth, height: h });
+
+        // Label (Before / After)
+        const label = photo.isBefore ? LABELS[this.lang].before : photo.caption ? photo.caption : photo.fileName;
+        this.drawText(label, x, yImg - 14, { size: 8, color: COLORS.textMuted });
+      }
+
+      this.y -= maxH + 24;
+    }
+  }
+
+  async drawSignature(pngUrl: string | null, signedBy: string | null) {
+    if (pngUrl) {
+      try {
+        const img = await embedImage(this.pdfDoc, pngUrl);
+        const imgW = 180;
+        const imgH = imgW * (img.height / img.width);
+
+        this.ensureSpace(imgH + 30);
+        this.drawText(`${LABELS[this.lang].signedBy}: ${signedBy ?? ""}`, MARGIN, this.y, {
+          size: 10,
+          color: COLORS.textMuted,
+        });
+        this.addSpace(16);
+
+        // Border box
+        this.page.drawRectangle({
+          x: MARGIN - 2,
+          y: this.y - imgH - 2,
+          width: imgW + 4,
+          height: imgH + 4,
+          borderColor: COLORS.border,
+          borderWidth: 0.5,
+          color: COLORS.white,
+        });
+
+        this.page.drawImage(img, { x: MARGIN, y: this.y - imgH, width: imgW, height: imgH });
+        this.y -= imgH + 10;
+      } catch {
+        // Ignore signature embedding errors
+      }
+    } else if (signedBy) {
+      this.ensureSpace(20);
+      this.drawText(`${LABELS[this.lang].signedBy}: ${signedBy}`, MARGIN, this.y, { size: 10 });
+      this.addSpace(16);
+    }
+  }
 }
 
 /* ================================================================
@@ -46,7 +461,11 @@ function formatCurrency(value: string | null): string {
 export class PdfService {
   constructor(private readonly storage: FileStorage) {}
 
-  async generateWorkOrderPdf(companyId: string, workOrderId: string) {
+  async generateWorkOrderPdf(
+    companyId: string,
+    workOrderId: string,
+    lang: Lang = "ca"
+  ) {
     /* ---------- Fetch data ---------- */
     const orderData = await workOrderService.getByIdWithRelations(
       companyId,
@@ -62,195 +481,89 @@ export class PdfService {
 
     const { workOrder, client, category } = orderData;
 
-    /* ---------- Create PDF document ---------- */
+    /* ---------- Build PDF ---------- */
     const pdfDoc = await PDFDocument.create();
-    const page = pdfDoc.addPage([PAGE_W, PAGE_H]);
     const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
     const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
 
-    let y = PAGE_H - MARGIN;
+    const builder = new PdfBuilder(pdfDoc, font, fontBold, lang);
 
-    const drawText = (
-      text: string,
-      x: number,
-      yPos: number,
-      opts?: { bold?: boolean; size?: number; color?: { r: number; g: number; b: number } }
-    ) => {
-      page.drawText(text, {
-        x,
-        y: yPos,
-        font: opts?.bold ? fontBold : font,
-        size: opts?.size ?? 10,
-        color: opts?.color ? rgb(opts.color.r, opts.color.g, opts.color.b) : rgb(0.2, 0.2, 0.2),
-      });
-    };
+    // Header
+    builder.drawHeader(workOrder.number);
 
-    const drawLine = (yPos: number) => {
-      page.drawLine({
-        start: { x: MARGIN, y: yPos },
-        end: { x: PAGE_W - MARGIN, y: yPos },
-        thickness: 0.5,
-        color: rgb(0.75, 0.75, 0.75),
-      });
-    };
+    // Meta
+    builder.drawText(
+      `${LABELS[lang].generated}: ${new Date().toLocaleDateString("ca-ES")}`,
+      MARGIN,
+      builder.y,
+      { size: 9, color: COLORS.textMuted }
+    );
+    builder.addSpace(20);
 
-    /* ---------- Header ---------- */
-    drawText("RIBOTFLOW", MARGIN, y, { bold: true, size: 20, color: { r: 0.1, g: 0.1, b: 0.1 } });
-    y -= 22;
-    drawText(`${workOrder.number}`, MARGIN, y, { bold: true, size: 14, color: { r: 0.15, g: 0.15, b: 0.15 } });
-    y -= 14;
-    drawText(`Generated: ${formatDate(new Date())}`, MARGIN, y, { size: 9, color: { r: 0.45, g: 0.45, b: 0.45 } });
-    y -= 28;
-    drawLine(y + 8);
-    y -= 16;
+    // Client section
+    builder.drawSectionTitle(LABELS[lang].client);
+    builder.drawInfoGrid([
+      { label: LABELS[lang].name, value: client.name },
+      ...(client.phone ? [{ label: LABELS[lang].phone, value: client.phone }] : []),
+      ...(client.email ? [{ label: LABELS[lang].email, value: client.email }] : []),
+      ...(client.address ? [{ label: LABELS[lang].address, value: client.address }] : []),
+    ]);
+    builder.addSpace(8);
 
-    /* ---------- Client ---------- */
-    drawText("CLIENT", MARGIN, y, { bold: true, size: 11, color: { r: 0.1, g: 0.1, b: 0.1 } });
-    y -= 14;
-    drawText(`Name: ${client.name}`, MARGIN, y);
-    y -= 12;
-    if (client.phone) {
-      drawText(`Phone: ${client.phone}`, MARGIN, y);
-      y -= 12;
-    }
-    if (client.email) {
-      drawText(`Email: ${client.email}`, MARGIN, y);
-      y -= 12;
-    }
-    if (client.address) {
-      drawText(`Address: ${client.address}`, MARGIN, y);
-      y -= 12;
-    }
-    y -= 8;
+    // Work order details
+    builder.drawSectionTitle(LABELS[lang].workOrderDetails);
+    builder.drawInfoGrid([
+      { label: LABELS[lang].status, value: workOrder.status },
+      { label: LABELS[lang].priority, value: workOrder.priority },
+      { label: LABELS[lang].category, value: category.name },
+      { label: LABELS[lang].scheduled, value: fmtDate(workOrder.scheduledDate) },
+      ...(workOrder.startedAt
+        ? [{ label: LABELS[lang].started, value: fmtDate(workOrder.startedAt) }]
+        : []),
+      ...(workOrder.completedAt
+        ? [{ label: LABELS[lang].completed, value: fmtDate(workOrder.completedAt) }]
+        : []),
+    ]);
+    builder.addSpace(8);
 
-    /* ---------- Work order details ---------- */
-    drawText("WORK ORDER DETAILS", MARGIN, y, { bold: true, size: 11, color: { r: 0.1, g: 0.1, b: 0.1 } });
-    y -= 14;
-    drawText(`Status: ${workOrder.status}`, MARGIN, y);
-    y -= 12;
-    drawText(`Priority: ${workOrder.priority}`, MARGIN, y);
-    y -= 12;
-    drawText(`Category: ${category.name}`, MARGIN, y);
-    y -= 12;
-    drawText(`Scheduled: ${formatDate(workOrder.scheduledDate)}`, MARGIN, y);
-    y -= 12;
-    if (workOrder.startedAt) {
-      drawText(`Started: ${formatDate(workOrder.startedAt)}`, MARGIN, y);
-      y -= 12;
-    }
-    if (workOrder.completedAt) {
-      drawText(`Completed: ${formatDate(workOrder.completedAt)}`, MARGIN, y);
-      y -= 12;
-    }
-    y -= 8;
-
-    /* ---------- Description ---------- */
+    // Description
     if (workOrder.description) {
-      drawText("DESCRIPTION", MARGIN, y, { bold: true, size: 11, color: { r: 0.1, g: 0.1, b: 0.1 } });
-      y -= 14;
-
-      const words = workOrder.description.split(" ");
-      let line = "";
-      for (const word of words) {
-        const test = `${line}${word} `;
-        if (font.widthOfTextAtSize(test, 10) > CONTENT_W) {
-          drawText(line.trim(), MARGIN, y);
-          y -= 12;
-          line = `${word} `;
-        } else {
-          line = test;
-        }
-      }
-      if (line.trim()) {
-        drawText(line.trim(), MARGIN, y);
-        y -= 12;
-      }
-      y -= 8;
+      builder.drawSectionTitle(LABELS[lang].description);
+      builder.drawDescription(workOrder.description);
+      builder.addSpace(8);
     }
 
-    /* ---------- Materials table ---------- */
+    // Materials
     if (materials.length > 0) {
-      drawText("MATERIALS", MARGIN, y, { bold: true, size: 11, color: { r: 0.1, g: 0.1, b: 0.1 } });
-      y -= 14;
-
-      const cols = [MARGIN, MARGIN + 240, MARGIN + 320, MARGIN + 400];
-      drawText("Name", cols[0], y, { bold: true, size: 9 });
-      drawText("Qty", cols[1], y, { bold: true, size: 9 });
-      drawText("Unit Price", cols[2], y, { bold: true, size: 9 });
-      drawText("Total", cols[3], y, { bold: true, size: 9 });
-      y -= 4;
-      drawLine(y);
-      y -= 12;
-
-      let grandTotal = 0;
-      for (const mat of materials) {
-        drawText(mat.name, cols[0], y, { size: 9 });
-        drawText(String(mat.quantity), cols[1], y, { size: 9 });
-        drawText(formatCurrency(mat.unitPrice), cols[2], y, { size: 9 });
-
-        const qty = parseFloat(String(mat.quantity));
-        const price = mat.unitPrice ? parseFloat(mat.unitPrice) : 0;
-        const lineTotal = qty * price;
-        grandTotal += lineTotal;
-        drawText(`${lineTotal.toFixed(2)} €`, cols[3], y, { size: 9 });
-        y -= 12;
-      }
-
-      y -= 4;
-      drawLine(y);
-      y -= 12;
-      drawText(`Total: ${grandTotal.toFixed(2)} €`, MARGIN, y, { bold: true, size: 10 });
-      y -= 16;
+      builder.drawSectionTitle(LABELS[lang].materials);
+      builder.drawMaterialsTable(materials);
+      builder.addSpace(8);
     }
 
-    /* ---------- Attachments ---------- */
-    if (attachments.length > 0) {
-      drawText(`ATTACHMENTS: ${attachments.length} file(s)`, MARGIN, y, {
-        size: 10,
-        color: { r: 0.4, g: 0.4, b: 0.4 },
-      });
-      y -= 14;
+    // Photos
+    const photos = attachments
+      .filter((a) => a.type === "photo" && a.url)
+      .map((a) => ({
+        url: a.url!,
+        fileName: a.fileName,
+        isBefore: a.isBefore,
+        caption: a.caption,
+      }));
+
+    if (photos.length > 0) {
+      builder.drawSectionTitle(LABELS[lang].attachments);
+      await builder.drawPhotoGrid(photos);
+      builder.addSpace(8);
     }
 
-    /* ---------- Signature ---------- */
-    if (signature?.signaturePngUrl) {
-      try {
-        const response = await fetch(signature.signaturePngUrl);
-        if (response.ok) {
-          const pngBuffer = Buffer.from(await response.arrayBuffer());
-          const pngImage = await pdfDoc.embedPng(pngBuffer);
-
-          y -= 10;
-          drawText("SIGNATURE", MARGIN, y, { bold: true, size: 11 });
-          y -= 5;
-
-          const imgW = 160;
-          const imgH = (pngImage.height / pngImage.width) * imgW;
-          page.drawImage(pngImage, {
-            x: MARGIN,
-            y: y - imgH,
-            width: imgW,
-            height: imgH,
-          });
-          y -= imgH + 10;
-        }
-      } catch {
-        // Ignore signature embedding errors
-      }
-    } else if (signature?.signedBy) {
-      y -= 10;
-      drawText("SIGNATURE", MARGIN, y, { bold: true, size: 11 });
-      y -= 14;
-      drawText(`Signed by: ${signature.signedBy}`, MARGIN, y);
-      y -= 12;
+    // Signature
+    if (signature) {
+      builder.drawSectionTitle(LABELS[lang].signature);
+      await builder.drawSignature(signature.signaturePngUrl, signature.signedBy);
     }
 
-    /* ---------- Footer ---------- */
-    drawLine(MARGIN + 20);
-    drawText("RIBOTFLOW - Work Order Report", MARGIN, MARGIN + 5, {
-      size: 8,
-      color: { r: 0.5, g: 0.5, b: 0.5 },
-    });
+    // Footer on last page
+    builder.drawFooter();
 
     /* ---------- Save ---------- */
     const pdfBytes = await pdfDoc.save();
