@@ -338,4 +338,23 @@ export const workOrderService = {
       .where(eq(workOrderStatusHistory.workOrderId, workOrderId))
       .orderBy(desc(workOrderStatusHistory.createdAt));
   },
+
+  async updateTravelMetrics(
+    companyId: string,
+    workOrderId: string,
+    distanceKm: number,
+    durationMinutes: number
+  ) {
+    const [updated] = await db
+      .update(workOrders)
+      .set({
+        travelDistanceKm: String(distanceKm),
+        travelDurationMinutes: durationMinutes,
+        updatedAt: new Date(),
+      })
+      .where(and(eq(workOrders.id, workOrderId), eq(workOrders.companyId, companyId)))
+      .returning();
+
+    return updated;
+  },
 };

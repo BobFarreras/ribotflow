@@ -125,6 +125,16 @@
     "statusRequired": "Només es pot signar quan l'ordre està completada o tancada",
     "alreadySigned": "Aquesta ordre ja té signatura"
   },
+  "map": {
+    "title": "Mapa d'Ordres",
+    "subtitle": "{count} ordres amb ubicació",
+    "noLocations": "Cap client té ubicació registrada. Afegeix coordenades als clients per veure'ls al mapa.",
+    "legend": {
+      "pending": "Pendent",
+      "in_progress": "En curs",
+      "completed": "Completada"
+    }
+  },
   "location": {
     "checkInButton": "Fer check-in",
     "gettingLocation": "Obtenint ubicació...",

@@ -149,6 +149,8 @@ export const workOrders = pgTable(
     signatureUrl: text("signature_url"),
     signatureAt: timestamp("signature_at"),
     pdfUrl: text("pdf_url"),
+    travelDistanceKm: numeric("travel_distance_km", { precision: 10, scale: 2 }),
+    travelDurationMinutes: integer("travel_duration_minutes"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
   },

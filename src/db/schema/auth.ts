@@ -4,7 +4,7 @@
  * Descripció: Esquema de dades relacional per al control de Multi-tenancy i Rols (RBAC).
  */
 
-import { pgTable, uuid, text, timestamp, index } from "drizzle-orm/pg-core";
+import { pgTable, uuid, text, timestamp, index, jsonb, numeric } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 
 export const companies = pgTable(
@@ -14,6 +14,9 @@ export const companies = pgTable(
     name: text("name").notNull(),
     tenantSlug: text("tenant_slug").notNull().unique(),
     plan: text("plan").$type<"free" | "plus" | "enterprise">().default("free").notNull(),
+    companyAddress: text("company_address"),
+    companyLocation: jsonb("company_location").$type<{ lat: number; lng: number }>(),
+    travelRatePerKm: numeric("travel_rate_per_km", { precision: 10, scale: 2 }),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
   },

@@ -34,6 +34,9 @@ async function seedDemo() {
         name: "DigitAIStudios",
         tenantSlug: "ditaistudios",
         plan: "plus",
+        companyAddress: "Carrer de la Tecnologia 42, Barcelona",
+        companyLocation: { lat: 41.3851, lng: 2.1734 },
+        travelRatePerKm: "0.45",
       })
       .returning();
     console.log(`✅ Created company: ${company.name} (${company.id})`);
@@ -142,14 +145,14 @@ async function seedDemo() {
 
   // 5. Seed clients
   const demoClients = [
-    { name: "Restaurant La Taula", email: "contact@lataula.cat", phone: "933112233", address: "Carrer Major 45, Barcelona" },
-    { name: "Gimnàs FitPro", email: "info@fitpro.es", phone: "934445566", address: "Avinguda Diagonal 220, Barcelona" },
-    { name: "Clínica Dental Smile", email: "hola@smiledental.cat", phone: "935556677", address: "Carrer Aragó 88, Barcelona" },
-    { name: "Hotel Marina", email: "recepcio@hotelmarina.com", phone: "936667788", address: "Passeig Marítim 12, Castelldefels" },
-    { name: "Escola Creativa", email: "direccio@escolacreativa.cat", phone: "937778899", address: "Carrer València 156, Barcelona" },
-    { name: "Supermercat Fresc", email: "admin@superfresc.es", phone: "938889900", address: "Carrer Sants 77, Barcelona" },
-    { name: "Oficines Nexus", email: "contacte@oficinesnexus.com", phone: "931234567", address: "Gran Via 340, Barcelona" },
-    { name: "Taller Mecànic Ràpid", email: "taller@mecanicrapid.cat", phone: "932345678", address: "Carrer Industria 12, Hospitalet" },
+    { name: "Restaurant La Taula", email: "contact@lataula.cat", phone: "933112233", address: "Carrer Major 45, Barcelona", location: { lat: 41.3879, lng: 2.1699 } },
+    { name: "Gimnàs FitPro", email: "info@fitpro.es", phone: "934445566", address: "Avinguda Diagonal 220, Barcelona", location: { lat: 41.3895, lng: 2.1778 } },
+    { name: "Clínica Dental Smile", email: "hola@smiledental.cat", phone: "935556677", address: "Carrer Aragó 88, Barcelona", location: { lat: 41.3908, lng: 2.1654 } },
+    { name: "Hotel Marina", email: "recepcio@hotelmarina.com", phone: "936667788", address: "Passeig Marítim 12, Castelldefels", location: { lat: 41.2804, lng: 1.9769 } },
+    { name: "Escola Creativa", email: "direccio@escolacreativa.cat", phone: "937778899", address: "Carrer València 156, Barcelona", location: { lat: 41.3943, lng: 2.1602 } },
+    { name: "Supermercat Fresc", email: "admin@superfresc.es", phone: "938889900", address: "Carrer Sants 77, Barcelona", location: { lat: 41.3759, lng: 2.1356 } },
+    { name: "Oficines Nexus", email: "contacte@oficinesnexus.com", phone: "931234567", address: "Gran Via 340, Barcelona", location: { lat: 41.3853, lng: 2.1682 } },
+    { name: "Taller Mecànic Ràpid", email: "taller@mecanicrapid.cat", phone: "932345678", address: "Carrer Industria 12, Hospitalet", location: { lat: 41.3596, lng: 2.0998 } },
   ];
 
   const existingClients = await db

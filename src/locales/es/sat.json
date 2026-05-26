@@ -125,6 +125,16 @@
     "statusRequired": "Solo se puede firmar cuando la orden está completada o cerrada",
     "alreadySigned": "Esta orden ya tiene firma"
   },
+  "map": {
+    "title": "Mapa de Órdenes",
+    "subtitle": "{count} órdenes con ubicación",
+    "noLocations": "Ningún cliente tiene ubicación registrada. Añade coordenadas a los clientes para verlos en el mapa.",
+    "legend": {
+      "pending": "Pendiente",
+      "in_progress": "En curso",
+      "completed": "Completada"
+    }
+  },
   "location": {
     "checkInButton": "Hacer check-in",
     "gettingLocation": "Obteniendo ubicación...",

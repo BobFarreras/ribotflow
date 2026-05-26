@@ -70,6 +70,8 @@ export interface WorkOrder {
   signatureUrl: string | null;
   signatureAt: Date | null;
   pdfUrl: string | null;
+  travelDistanceKm: string | null;
+  travelDurationMinutes: number | null;
   createdAt: Date;
   updatedAt: Date;
 }
