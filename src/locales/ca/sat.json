@@ -147,5 +147,18 @@
     "clientHasLocation": "El client té ubicació registrada",
     "withinRange": "Dins del rang ({distance}m del client)",
     "outOfRange": "Fora de rang ({distance}m del client — màxim 100m)"
+  },
+  "routes": {
+    "title": "Planificació de Rutes",
+    "subtitle": "Optimitza l'ordre de visites del dia",
+    "selectOrders": "Selecciona ordres per a la ruta",
+    "noOrders": "No hi ha ordres assignades per a aquest dia.",
+    "noLocation": "Sense ubicació",
+    "optimizeRoute": "Optimitzar Ruta",
+    "optimizedRoute": "Ruta Optimitzada",
+    "selectAndOptimize": "Selecciona ordres i prem 'Optimitzar Ruta' per veure la ruta recomanada.",
+    "stops": "Parades",
+    "totalDistance": "Distància Total",
+    "totalTime": "Temps Total"
   }
 }

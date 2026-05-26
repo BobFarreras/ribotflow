@@ -11,6 +11,7 @@ import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { locationService, calculateDistance } from "@/services/sat/locationService";
 import { workOrderService } from "@/services/sat/workOrderService";
+import { notificationService } from "@/services/notifications/notificationService";
 import { revalidatePath } from "next/cache";
 
 const checkInSchema = z.object({
@@ -98,6 +99,20 @@ export async function checkInAction(formData: FormData) {
     // Update work order status to in_progress if it was assigned
     if (workOrder.status === "assigned") {
       await workOrderService.updateStatus(companyId, workOrderId, userId, "in_progress");
+    }
+
+    // Send notification to admins
+    try {
+      await notificationService.notifyCheckIn(companyId, {
+        workOrderNumber: workOrder.number,
+        workOrderTitle: workOrder.title,
+        technicianName: session.user.name ?? "Technician",
+        clientName: client.name,
+        checkInTime: new Date(),
+        distanceToClient,
+      });
+    } catch (notifyErr) {
+      console.warn("[checkInAction] Notification failed:", notifyErr);
     }
 
     revalidatePath(`/sat/${workOrderId}`);

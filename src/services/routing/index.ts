@@ -6,6 +6,7 @@
 
 export * from "./interface";
 export * from "./factory";
+export * from "./routeOptimizer";
 export { HaversineEngine } from "./haversineEngine";
 export { OpenRouteServiceEngine } from "./orsEngine";
 export { GoogleMapsEngine } from "./googleMapsEngine";

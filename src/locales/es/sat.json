@@ -147,5 +147,18 @@
     "clientHasLocation": "El cliente tiene ubicación registrada",
     "withinRange": "Dentro del rango ({distance}m del cliente)",
     "outOfRange": "Fuera de rango ({distance}m del cliente — máximo 100m)"
+  },
+  "routes": {
+    "title": "Planificación de Rutas",
+    "subtitle": "Optimiza el orden de visitas del día",
+    "selectOrders": "Selecciona órdenes para la ruta",
+    "noOrders": "No hay órdenes asignadas para este día.",
+    "noLocation": "Sin ubicación",
+    "optimizeRoute": "Optimizar Ruta",
+    "optimizedRoute": "Ruta Optimizada",
+    "selectAndOptimize": "Selecciona órdenes y presiona 'Optimizar Ruta' para ver la ruta recomendada.",
+    "stops": "Paradas",
+    "totalDistance": "Distancia Total",
+    "totalTime": "Tiempo Total"
   }
 }
