@@ -124,14 +124,18 @@ function CalendarIcon({ className }: { className?: string }) {
    HELPERS
    ================================================================ */
 
-function isLinkActive(pathname: string, href: string): boolean {
-  if (pathname === href) return true;
-  if (href !== "/" && pathname.startsWith(href + "/")) return true;
+function isParentActive(pathname: string, item: NavItem): boolean {
+  if (pathname === item.href) return true;
+  if (item.href !== "/" && pathname.startsWith(item.href + "/")) return true;
   return false;
 }
 
+function isChildActive(pathname: string, href: string): boolean {
+  return pathname === href;
+}
+
 /* ================================================================
-   COLLAPSED TOOLTIP
+   COLLAPSED TOOLTIP / PANEL
    ================================================================ */
 
 function CollapsedTooltip({
@@ -151,6 +155,48 @@ function CollapsedTooltip({
   );
 }
 
+function CollapsedSubMenuPanel({
+  item,
+  pathname,
+  top,
+}: {
+  item: NavItem;
+  pathname: string;
+  top: number;
+}) {
+  const t = useTranslations("sidebar.modules");
+  if (!item.subItems || item.subItems.length === 0) return null;
+
+  return (
+    <div
+      className="fixed z-[100] rounded-lg bg-[var(--surface)] shadow-lg border border-[var(--border)] py-2 min-w-[180px]"
+      style={{ top: top - 8, left: 80 }}
+    >
+      <div className="px-3 py-1.5 text-xs font-semibold text-[var(--text-muted)] border-b border-[var(--border)] mb-1">
+        {t(`${item.key}.label`)}
+      </div>
+      {item.subItems.map((sub) => {
+        const subActive = isChildActive(pathname, sub.href);
+        return (
+          <a
+            key={sub.key}
+            href={sub.href}
+            data-nav-target={sub.href}
+            className={`flex items-center gap-2 px-3 py-2 text-sm mx-1 rounded-md ${
+              subActive
+                ? "bg-[var(--primary)]/10 text-[var(--primary)]"
+                : "text-[var(--text)] hover:bg-[var(--surface-hover)]"
+            }`}
+          >
+            <sub.icon className="h-4 w-4 shrink-0" />
+            <span className="truncate">{t(`${item.key}.subItems.${sub.key}`)}</span>
+          </a>
+        );
+      })}
+    </div>
+  );
+}
+
 /* ================================================================
    COLLAPSED ITEM
    ================================================================ */
@@ -159,7 +205,8 @@ function CollapsedNavItem({ item, pathname }: { item: NavItem; pathname: string 
   const t = useTranslations("sidebar.modules");
   const [showTooltip, setShowTooltip] = useState(false);
   const [tooltipTop, setTooltipTop] = useState(0);
-  const active = isLinkActive(pathname, item.href);
+  const active = isParentActive(pathname, item);
+  const hasSubItems = item.subItems && item.subItems.length > 0;
 
   return (
     <div
@@ -182,7 +229,12 @@ function CollapsedNavItem({ item, pathname }: { item: NavItem; pathname: string 
       >
         <item.icon className="h-5 w-5" />
       </a>
-      {showTooltip && <CollapsedTooltip label={t(`${item.key}.label`)} top={tooltipTop} />}
+      {showTooltip && hasSubItems && (
+        <CollapsedSubMenuPanel item={item} pathname={pathname} top={tooltipTop} />
+      )}
+      {showTooltip && !hasSubItems && (
+        <CollapsedTooltip label={t(`${item.key}.label`)} top={tooltipTop} />
+      )}
     </div>
   );
 }
@@ -195,8 +247,8 @@ function ExpandedNavItem({ item, pathname }: { item: NavItem; pathname: string }
   const t = useTranslations("sidebar.modules");
   const hasSubItems = item.subItems && item.subItems.length > 0;
   const isLeaf = !hasSubItems;
-  const isActive = isLinkActive(pathname, item.href);
-  const hasActiveChild = item.subItems?.some((sub) => isLinkActive(pathname, sub.href)) ?? false;
+  const isActive = isParentActive(pathname, item);
+  const hasActiveChild = item.subItems?.some((sub) => isChildActive(pathname, sub.href)) ?? false;
 
   // Expanded state: initialize from localStorage, persist on toggle
   const [isExpanded, setIsExpanded] = useState(() => {
@@ -253,7 +305,7 @@ function ExpandedNavItem({ item, pathname }: { item: NavItem; pathname: string }
           }`}
         >
           {item.subItems!.map((sub) => {
-            const subActive = isLinkActive(pathname, sub.href);
+            const subActive = isChildActive(pathname, sub.href);
             return (
               <a
                 key={sub.key}
