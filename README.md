@@ -76,12 +76,21 @@ RIBOTFLOW s'adapta a dos modes sense canviar una sola línia de lògica de negoc
 |------|-------------|----------------------|
 | **Target** | Multi-empresa (SaaS) | Una sola empresa |
 | **Base de Dades** | PostgreSQL compartit + PgBouncer | PostgreSQL dedicat |
+| **File Storage** | Supabase Storage | MinIO (S3-compatible) |
 | **Queue** | BullMQ + Redis | pg-boss (PostgreSQL) |
 | **Sentry** | SaaS activat | Desactivat / local |
 | **Billing** | Stripe integrat | Llicència directa |
 | **Deploy** | Vercel / Kubernetes | `docker compose up` |
 
 > 🔑 **Variable clau:** `NEXT_PUBLIC_APP_MODE=cloud|self_hosted`
+
+### FileStorage Abstraction
+El mateix codi funciona per a Cloud i Self-Hosted gràcies a la interfície `FileStorage`:
+- **Local** → `./uploads/` (dev fallback)
+- **MinIO** → Self-hosted S3-compatible (Docker)
+- **Supabase** → Cloud object storage
+
+Factory: `createFileStorage()` llegeix `STORAGE_PROVIDER` de `.env.local`.
 
 ---
 
@@ -160,8 +169,10 @@ ribotflow/
 ## 🧩 Mòduls i Roadmap
 
 ### 🛠️ SAT (Servei d'Assistència Tècnica)
-- [x] **[FREE]** Ordres de treball digitals
-- [x] **[FREE]** Signatura biomètrica + PDF instantani
+- [x] **[FREE]** Ordres de treball digitals (CRUD, estats, materials, adjunts)
+- [x] **[FREE]** Signatura biomètrica genèrica (work_order/quote/invoice)
+- [x] **[FREE]** Generació de PDFs professionals (pdf-lib, multi-idioma ca/es/en)
+- [x] **[FREE]** FileStorage abstraction (Local, MinIO, Supabase)
 - [ ] **[PLUS]** Sincronització Google Calendar & Maps
 - [ ] **[PLUS]** Mode PWA Offline (IndexedDB)
 - [ ] **[ENTERPRISE]** Optimitzador de rutes intel·ligent
@@ -221,9 +232,23 @@ docker compose up -d
 # Això aixeca:
 #   - App Next.js (port 3000)
 #   - PostgreSQL 16 (port 5432)
+#   - MinIO (ports 9000 API / 9001 Console)
 ```
 
 Imatge final: **< 200 MB** (multi-stage build amb `output: "standalone"`).
+
+### Desenvolupament amb Docker Compose
+
+```bash
+# Només DB + MinIO (per dev)
+docker compose -f docker-compose.dev.yml up -d
+
+# Això aixeca:
+#   - PostgreSQL 16 (port 5433)
+#   - MinIO API (port 9002)
+#   - MinIO Console (port 9003)
+#   - Redis (opcional, per a queues)
+```
 
 ---
 
@@ -281,11 +306,21 @@ Aquest projecte inclou skills especialitzades a `.skills/` perquè els agents IA
 - [ ] CI/CD GitHub Actions
 - [ ] Pre-push hooks (lint + typecheck + test)
 
-### **Fase 2: Mòdul SAT (FREE)**
-- [ ] Esquema Drizzle: `work_orders`, `clients`, `materials`
-- [ ] Server Actions: create, assign, close
-- [ ] Tests TDD per a les accions
-- [ ] UI Mobile-First: llistat i formulari d'ordres
+### **Fase 2: Mòdul SAT (FREE)** — Completada (Maig 2026)
+- [x] Esquema Drizzle: `work_orders`, `clients`, `materials`, `attachments`, `signatures` (genèrica)
+- [x] Server Actions: create, assign, close, status transitions, materials, attachments, signatures
+- [x] Tests TDD per a serveis i accions (60 tests passant)
+- [x] UI Mobile-First: llistat, detall, formulari, firma, PDF
+- [x] FileStorage abstraction amb MinIO per a dev
+
+### **Fase 2.5: Mòdul Pressupostos i Albaranes (FREE)** — Pendent
+- [ ] Esquema: `quotes`, `quote_items`
+- [ ] Reutilitzar `signatures` genèrica per a pressupostos
+- [ ] Conversió quote → work_order → invoice
+
+### **Fase 2.6: Personalització de PDF i Company Settings** — Pendent
+- [ ] Mòdul de configuració d'empresa (logo, colors, text legal)
+- [ ] PdfBuilder dinàmic amb branding per empresa
 
 ### **Fase 3: Mòdul ERP & Estocs (FREE)**
 - [ ] Esquema: `products`, `warehouses`, `stock_movements`
