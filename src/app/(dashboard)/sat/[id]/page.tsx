@@ -14,6 +14,7 @@ import { WorkOrderActions } from "@/components/sat/WorkOrderActions";
 import { TechnicianAssigner } from "@/components/sat/TechnicianAssigner";
 import { MaterialList } from "@/components/sat/MaterialList";
 import { materialService } from "@/services/sat/materialService";
+import { productService } from "@/services/sat/productService";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -37,6 +38,7 @@ export default async function WorkOrderDetailPage({ params }: Props) {
   const history = await workOrderService.getStatusHistory(id);
   const technicians = await workOrderService.getTechniciansByCompany(companyId);
   const materials = await materialService.getByWorkOrder(companyId, id);
+  const products = await productService.getByCompany(companyId);
   const userRole = session.user.role;
 
   function statusBadgeColor(status: string) {
@@ -170,7 +172,7 @@ export default async function WorkOrderDetailPage({ params }: Props) {
               </div>
             </div>
 
-            <MaterialList materials={materials} workOrderId={workOrder.id} />
+            <MaterialList materials={materials} workOrderId={workOrder.id} products={products} />
 
             {userRole !== "TECHNICIAN" && (
               <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4">

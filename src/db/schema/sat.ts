@@ -73,6 +73,32 @@ export const workOrderCategories = pgTable(
 );
 
 /* ============================================================
+   PRODUCTES (catàleg mínim per a SAT i futur ERP)
+   ============================================================ */
+
+export const products = pgTable(
+  "products",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    companyId: uuid("company_id")
+      .references(() => companies.id, { onDelete: "cascade" })
+      .notNull(),
+    name: text("name").notNull(),
+    sku: text("sku"),
+    unitPrice: numeric("unit_price", { precision: 10, scale: 2 }),
+    unitCost: numeric("unit_cost", { precision: 10, scale: 2 }),
+    stock: integer("stock"),
+    isActive: boolean("is_active").default(true).notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (table) => ({
+    companySkuIdx: index("idx_products_company_sku").on(table.companyId, table.sku),
+    companyActiveIdx: index("idx_products_company_active").on(table.companyId, table.isActive),
+  })
+);
+
+/* ============================================================
    ORDRES DE TREBALL (nucli del SAT)
    ============================================================ */
 
@@ -170,7 +196,7 @@ export const workOrderMaterials = pgTable(
     workOrderId: uuid("work_order_id")
       .references(() => workOrders.id, { onDelete: "cascade" })
       .notNull(),
-    productId: uuid("product_id"),
+    productId: uuid("product_id").references(() => products.id, { onDelete: "set null" }),
     name: text("name").notNull(),
     quantity: numeric("quantity", { precision: 10, scale: 2 }).notNull(),
     unitPrice: numeric("unit_price", { precision: 10, scale: 2 }),

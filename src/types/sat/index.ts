@@ -84,3 +84,16 @@ export interface WorkOrderMaterial {
   unitCost: string | null;
   createdAt: Date;
 }
+
+export interface Product {
+  id: string;
+  companyId: string;
+  name: string;
+  sku: string | null;
+  unitPrice: string | null;
+  unitCost: string | null;
+  stock: number | null;
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}

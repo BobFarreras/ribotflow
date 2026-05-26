@@ -5,7 +5,7 @@
  */
 
 import { db } from "@/db";
-import { workOrderMaterials, workOrders } from "@/db/schema/sat";
+import { workOrderMaterials, workOrders, products } from "@/db/schema/sat";
 import { eq, and } from "drizzle-orm";
 import type { AddMaterialInput } from "@/lib/validators/sat/materialSchema";
 
@@ -48,15 +48,35 @@ export const materialService = {
       throw new Error("Work order not found or access denied");
     }
 
+    let name = input.name;
+    let unitPrice = input.unitPrice ? String(input.unitPrice) : null;
+    let unitCost = input.unitCost ? String(input.unitCost) : null;
+    let productId = input.productId;
+
+    // If productId is provided, auto-fill from catalog
+    if (productId) {
+      const product = await db
+        .select()
+        .from(products)
+        .where(and(eq(products.id, productId), eq(products.companyId, companyId)))
+        .limit(1);
+
+      if (product.length > 0) {
+        name = product[0].name;
+        unitPrice = product[0].unitPrice;
+        unitCost = product[0].unitCost;
+      }
+    }
+
     const [material] = await db
       .insert(workOrderMaterials)
       .values({
         workOrderId: input.workOrderId,
-        productId: input.productId,
-        name: input.name,
+        productId: productId ?? null,
+        name: name ?? "Unknown",
         quantity: String(input.quantity),
-        unitPrice: input.unitPrice ? String(input.unitPrice) : null,
-        unitCost: input.unitCost ? String(input.unitCost) : null,
+        unitPrice,
+        unitCost,
       })
       .returning();
 

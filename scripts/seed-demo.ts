@@ -11,6 +11,7 @@ import {
   workOrderCategories,
   workOrders,
   workOrderStatusHistory,
+  products,
 } from "../src/db/schema/sat";
 import { eq } from "drizzle-orm";
 import { hashPassword } from "../src/lib/utils/crypto";
@@ -104,7 +105,42 @@ async function seedDemo() {
     .from(workOrderCategories)
     .where(eq(workOrderCategories.companyId, companyId));
 
-  // 4. Seed clients
+  // 4. Seed products (demo catalog)
+  const demoProducts = [
+    { name: "Cable elèctric H07RN-F 3x2.5mm", sku: "CAB-001", unitPrice: 3.5, unitCost: 1.8, stock: 150 },
+    { name: "Disjuntor magnetotèrmic 16A", sku: "DIS-016", unitPrice: 12.9, unitCost: 6.5, stock: 45 },
+    { name: "Tomada industrial 32A 3P+N+T", sku: "TOM-32A", unitPrice: 28.5, unitCost: 14.2, stock: 20 },
+    { name: "Tub PVC rigit Ø32mm (3m)", sku: "TUB-032", unitPrice: 4.2, unitCost: 2.1, stock: 200 },
+    { name: "Caixa de derivació estanca IP65", sku: "CAJ-IP65", unitPrice: 8.75, unitCost: 4.3, stock: 60 },
+    { name: "Font d'alimentació LED 24V 100W", sku: "FON-24V", unitPrice: 35.0, unitCost: 18.5, stock: 12 },
+    { name: "Règim luminós LED panel 60x60", sku: "PAN-6060", unitPrice: 45.9, unitCost: 22.0, stock: 8 },
+    { name: "Interruptor horari digital", sku: "INT-HOR", unitPrice: 22.0, unitCost: 11.5, stock: 25 },
+    { name: "Sonda de temperatura PT100", sku: "SON-PT100", unitPrice: 18.5, unitCost: 9.2, stock: 15 },
+    { name: "Relé de nivell per cisterna", sku: "REL-NIV", unitPrice: 32.0, unitCost: 16.0, stock: 10 },
+  ];
+
+  const existingProducts = await db
+    .select()
+    .from(products)
+    .where(eq(products.companyId, companyId));
+
+  if (existingProducts.length === 0) {
+    await db.insert(products).values(
+      demoProducts.map((p) => ({
+        companyId,
+        name: p.name,
+        sku: p.sku,
+        unitPrice: String(p.unitPrice),
+        unitCost: String(p.unitCost),
+        stock: p.stock,
+      }))
+    );
+    console.log(`✅ Created ${demoProducts.length} demo products`);
+  } else {
+    console.log(`♻️  Reusing ${existingProducts.length} products`);
+  }
+
+  // 5. Seed clients
   const demoClients = [
     { name: "Restaurant La Taula", email: "contact@lataula.cat", phone: "933112233", address: "Carrer Major 45, Barcelona" },
     { name: "Gimnàs FitPro", email: "info@fitpro.es", phone: "934445566", address: "Avinguda Diagonal 220, Barcelona" },

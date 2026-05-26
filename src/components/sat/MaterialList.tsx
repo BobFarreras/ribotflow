@@ -2,7 +2,7 @@
  * Creation/modification date: 26/05/2026
  * Path: src/components/sat/MaterialList.tsx
  * Description: Client component for managing work order materials.
- *              Displays list with totals and inline add form.
+ *              Supports catalog product selection + free-text materials.
  */
 
 "use client";
@@ -12,19 +12,22 @@ import { useTranslations } from "next-intl";
 import { useTransition } from "react";
 import { addMaterialAction } from "@/actions/sat/addMaterial";
 import { removeMaterialAction } from "@/actions/sat/removeMaterial";
-import type { WorkOrderMaterial } from "@/types/sat";
-import { Plus, Trash2, Package } from "lucide-react";
+import type { WorkOrderMaterial, Product } from "@/types/sat";
+import { Plus, Trash2, Package, ShoppingCart } from "lucide-react";
 
 interface Props {
   materials: WorkOrderMaterial[];
   workOrderId: string;
+  products: Product[];
 }
 
-export function MaterialList({ materials: initialMaterials, workOrderId }: Props) {
+export function MaterialList({ materials: initialMaterials, workOrderId, products }: Props) {
   const t = useTranslations("sat.materials");
   const [materials, setMaterials] = useState(initialMaterials);
   const [isPending, startTransition] = useTransition();
   const [showForm, setShowForm] = useState(false);
+  const [selectedProductId, setSelectedProductId] = useState<string>("");
+  const [isFreeText, setIsFreeText] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     quantity: "",
@@ -32,21 +35,44 @@ export function MaterialList({ materials: initialMaterials, workOrderId }: Props
     unitCost: "",
   });
 
+  const handleProductSelect = (productId: string) => {
+    setSelectedProductId(productId);
+    if (productId === "__free__") {
+      setIsFreeText(true);
+      setFormData({ name: "", quantity: "", unitPrice: "", unitCost: "" });
+    } else {
+      setIsFreeText(false);
+      const product = products.find((p) => p.id === productId);
+      if (product) {
+        setFormData({
+          name: product.name,
+          quantity: "",
+          unitPrice: product.unitPrice ?? "",
+          unitCost: product.unitCost ?? "",
+        });
+      }
+    }
+  };
+
   const handleAdd = () => {
-    if (!formData.name || !formData.quantity) return;
+    if (!formData.quantity) return;
+    if (isFreeText && !formData.name) return;
 
     startTransition(async () => {
       const result = await addMaterialAction({
         workOrderId,
-        name: formData.name,
+        productId: isFreeText ? null : selectedProductId,
+        name: isFreeText ? formData.name : undefined,
         quantity: formData.quantity,
-        unitPrice: formData.unitPrice || null,
-        unitCost: formData.unitCost || null,
+        unitPrice: isFreeText ? formData.unitPrice || null : undefined,
+        unitCost: isFreeText ? formData.unitCost || null : undefined,
       });
 
       if (result.success && result.data) {
         setMaterials((prev) => [...prev, result.data]);
         setFormData({ name: "", quantity: "", unitPrice: "", unitCost: "" });
+        setSelectedProductId("");
+        setIsFreeText(false);
         setShowForm(false);
       }
     });
@@ -83,49 +109,77 @@ export function MaterialList({ materials: initialMaterials, workOrderId }: Props
 
       {showForm && (
         <div className="mb-3 space-y-2 rounded-md border border-[var(--border)] bg-[var(--bg)] p-3">
+          {/* Product selector */}
+          <div className="flex items-center gap-2">
+            <ShoppingCart className="h-4 w-4 text-[var(--text-muted)]" />
+            <select
+              value={selectedProductId}
+              onChange={(e) => handleProductSelect(e.target.value)}
+              className="flex-1 rounded-md border border-[var(--border)] bg-[var(--surface)] px-2.5 py-1.5 text-sm text-[var(--text)] focus:border-[var(--primary)] focus:outline-none"
+            >
+              <option value="">{t("selectProduct")}</option>
+              {products.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.name} {p.sku ? `(${p.sku})` : ""}
+                </option>
+              ))}
+              <option value="__free__">{t("freeMaterial")}</option>
+            </select>
+          </div>
+
+          {/* Free text fields */}
+          {isFreeText && (
+            <input
+              type="text"
+              placeholder={t("namePlaceholder")}
+              value={formData.name}
+              onChange={(e) => setFormData((d) => ({ ...d, name: e.target.value }))}
+              className="w-full rounded-md border border-[var(--border)] bg-[var(--surface)] px-2.5 py-1.5 text-sm text-[var(--text)] placeholder:text-[var(--text-muted)] focus:border-[var(--primary)] focus:outline-none"
+            />
+          )}
+
+          {/* Quantity (always required) */}
           <input
-            type="text"
-            placeholder={t("namePlaceholder")}
-            value={formData.name}
-            onChange={(e) => setFormData((d) => ({ ...d, name: e.target.value }))}
+            type="number"
+            step="0.01"
+            placeholder={t("quantityPlaceholder")}
+            value={formData.quantity}
+            onChange={(e) => setFormData((d) => ({ ...d, quantity: e.target.value }))}
             className="w-full rounded-md border border-[var(--border)] bg-[var(--surface)] px-2.5 py-1.5 text-sm text-[var(--text)] placeholder:text-[var(--text-muted)] focus:border-[var(--primary)] focus:outline-none"
           />
-          <div className="grid grid-cols-3 gap-2">
-            <input
-              type="number"
-              step="0.01"
-              placeholder={t("quantityPlaceholder")}
-              value={formData.quantity}
-              onChange={(e) => setFormData((d) => ({ ...d, quantity: e.target.value }))}
-              className="w-full rounded-md border border-[var(--border)] bg-[var(--surface)] px-2.5 py-1.5 text-sm text-[var(--text)] placeholder:text-[var(--text-muted)] focus:border-[var(--primary)] focus:outline-none"
-            />
-            <input
-              type="number"
-              step="0.01"
-              placeholder={t("unitPricePlaceholder")}
-              value={formData.unitPrice}
-              onChange={(e) => setFormData((d) => ({ ...d, unitPrice: e.target.value }))}
-              className="w-full rounded-md border border-[var(--border)] bg-[var(--surface)] px-2.5 py-1.5 text-sm text-[var(--text)] placeholder:text-[var(--text-muted)] focus:border-[var(--primary)] focus:outline-none"
-            />
-            <input
-              type="number"
-              step="0.01"
-              placeholder={t("unitCostPlaceholder")}
-              value={formData.unitCost}
-              onChange={(e) => setFormData((d) => ({ ...d, unitCost: e.target.value }))}
-              className="w-full rounded-md border border-[var(--border)] bg-[var(--surface)] px-2.5 py-1.5 text-sm text-[var(--text)] placeholder:text-[var(--text-muted)] focus:border-[var(--primary)] focus:outline-none"
-            />
-          </div>
+
+          {/* Price fields (only for free text) */}
+          {isFreeText && (
+            <div className="grid grid-cols-2 gap-2">
+              <input
+                type="number"
+                step="0.01"
+                placeholder={t("unitPricePlaceholder")}
+                value={formData.unitPrice}
+                onChange={(e) => setFormData((d) => ({ ...d, unitPrice: e.target.value }))}
+                className="w-full rounded-md border border-[var(--border)] bg-[var(--surface)] px-2.5 py-1.5 text-sm text-[var(--text)] placeholder:text-[var(--text-muted)] focus:border-[var(--primary)] focus:outline-none"
+              />
+              <input
+                type="number"
+                step="0.01"
+                placeholder={t("unitCostPlaceholder")}
+                value={formData.unitCost}
+                onChange={(e) => setFormData((d) => ({ ...d, unitCost: e.target.value }))}
+                className="w-full rounded-md border border-[var(--border)] bg-[var(--surface)] px-2.5 py-1.5 text-sm text-[var(--text)] placeholder:text-[var(--text-muted)] focus:border-[var(--primary)] focus:outline-none"
+              />
+            </div>
+          )}
+
           <div className="flex justify-end gap-2">
             <button
-              onClick={() => setShowForm(false)}
+              onClick={() => { setShowForm(false); setSelectedProductId(""); setIsFreeText(false); }}
               className="rounded-md px-3 py-1.5 text-xs text-[var(--text-muted)] hover:bg-[var(--surface-hover)]"
             >
               {t("cancel")}
             </button>
             <button
               onClick={handleAdd}
-              disabled={isPending || !formData.name || !formData.quantity}
+              disabled={isPending || !formData.quantity || (!isFreeText && !selectedProductId) || (isFreeText && !formData.name)}
               className="rounded-md bg-[var(--primary)] px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-[var(--primary)]/90 disabled:opacity-50"
             >
               {t("submit")}

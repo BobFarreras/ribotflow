@@ -78,6 +78,8 @@
   "materials": {
     "title": "Materiales",
     "addButton": "Añadir",
+    "selectProduct": "Selecciona un producto del catálogo...",
+    "freeMaterial": "+ Material libre (no en catálogo)",
     "namePlaceholder": "Nombre del material",
     "quantityPlaceholder": "Cantidad",
     "unitPricePlaceholder": "Precio (€)",
