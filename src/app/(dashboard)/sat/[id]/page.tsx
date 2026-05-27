@@ -94,7 +94,12 @@ export default async function WorkOrderDetailPage({ params }: Props) {
         <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-4 gap-y-1 text-sm text-[var(--text-muted)]">
           <span className="flex items-center gap-1">
             <User className="h-3 w-3" />
-            {client.name}
+            <Link
+              href={`/sat/clients/${client.id}`}
+              className="transition-colors hover:text-[var(--module-sat)] hover:underline"
+            >
+              {client.name}
+            </Link>
             {client.phone && (
               <a href={`tel:${client.phone}`} className="ml-1 text-[var(--module-sat)] hover:underline">
                 <Phone className="inline h-3 w-3" />

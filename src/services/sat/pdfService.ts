@@ -409,9 +409,11 @@ class PdfBuilder {
 
         this.page.drawImage(img, { x, y: yImg, width: imgWidth, height: h });
 
-        // Label (Before / After)
-        const label = photo.isBefore ? LABELS[this.lang].before : photo.caption ? photo.caption : photo.fileName;
-        this.drawText(label, x, yImg - 14, { size: 8, color: COLORS.textMuted });
+        // Label (Before / caption only — no fileName)
+        const label = photo.isBefore ? LABELS[this.lang].before : (photo.caption ?? "");
+        if (label) {
+          this.drawText(label, x, yImg - 14, { size: 8, color: COLORS.textMuted });
+        }
       }
 
       this.y -= maxH + 24;
