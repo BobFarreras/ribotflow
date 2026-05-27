@@ -89,13 +89,13 @@ export function AttachmentSection({ attachments: initialAttachments, workOrderId
   return (
     <div className="flex h-full flex-col">
       <div className="mb-2 flex items-center justify-between">
-        <h2 className="text-[11px] font-semibold uppercase tracking-wide text-[var(--text-muted)]">{t("title")}</h2>
+        <h2 className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">{t("title")}</h2>
         <button
           onClick={() => fileInputRef.current?.click()}
           disabled={isPending}
-          className="flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] font-medium text-[var(--primary)] transition-colors hover:bg-[var(--primary)]/10 disabled:opacity-50"
+          className="flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-[var(--primary)] transition-colors hover:bg-[var(--primary)]/10 disabled:opacity-50"
         >
-          <Upload className="h-3 w-3" />
+          <Upload className="h-3.5 w-3.5" />
           {t("uploadButton")}
         </button>
         <input
@@ -138,8 +138,8 @@ export function AttachmentSection({ attachments: initialAttachments, workOrderId
       {/* Grid */}
       {attachments.length === 0 ? (
         <div className="flex flex-1 flex-col items-center justify-center text-[var(--text-muted)]">
-          <ImageIcon className="mb-1 h-4 w-4 opacity-50" />
-          <p className="text-[10px]">{t("empty")}</p>
+          <ImageIcon className="mb-1 h-5 w-5 opacity-50" />
+          <p className="text-xs">{t("empty")}</p>
         </div>
       ) : (
         <div className="grid grid-cols-4 gap-1.5">
@@ -161,7 +161,7 @@ export function AttachmentSection({ attachments: initialAttachments, workOrderId
                 </div>
               )}
               {a.isBefore && (
-                <span className="absolute left-1 top-1 rounded bg-black/60 px-1.5 py-0.5 text-[10px] font-medium text-white">
+                <span className="absolute left-1 top-1 rounded bg-black/60 px-1.5 py-0.5 text-xs font-medium text-white">
                   {t("beforeLabel")}
                 </span>
               )}

@@ -56,6 +56,9 @@
         "pause": "Pausar",
         "resume": "Reprendre",
         "complete": "Completar",
+        "close": "Tancar",
+        "reopen": "Reobrir",
+        "restore": "Restaurar",
         "invoice": "Facturar",
         "cancel": "Cancel·lar",
         "delete": "Eliminar"

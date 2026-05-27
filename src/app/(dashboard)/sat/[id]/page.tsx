@@ -76,10 +76,10 @@ export default async function WorkOrderDetailPage({ params }: Props) {
               <ArrowLeft className="h-3.5 w-3.5" />
             </Link>
             <div className="flex items-center gap-2">
-              <span className="rounded bg-[var(--bg)] px-1.5 py-0.5 text-[10px] font-mono font-medium text-[var(--text-muted)]">
+              <span className="rounded bg-[var(--bg)] px-1.5 py-0.5 text-xs font-mono font-medium text-[var(--text-muted)]">
                 {workOrder.number}
               </span>
-              <h1 className="text-base font-semibold text-[var(--text)]">{workOrder.title}</h1>
+              <h1 className="text-lg font-semibold text-[var(--text)]">{workOrder.title}</h1>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -91,7 +91,7 @@ export default async function WorkOrderDetailPage({ params }: Props) {
 
       {/* ── Info strip ── */}
       <div className="shrink-0 border-b border-[var(--border)] bg-[var(--surface)] px-4 py-2">
-        <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-4 gap-y-1 text-xs text-[var(--text-muted)]">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-4 gap-y-1 text-sm text-[var(--text-muted)]">
           <span className="flex items-center gap-1">
             <User className="h-3 w-3" />
             {client.name}
@@ -144,21 +144,21 @@ export default async function WorkOrderDetailPage({ params }: Props) {
         <div className="flex min-h-0 w-[34%] flex-col gap-3">
           {/* Description */}
           <div className="shrink-0 rounded-lg border border-[var(--border)] bg-[var(--surface)] p-3">
-            <h2 className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-[var(--text-muted)]">
+            <h2 className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
               {t("create.descriptionLabel")}
             </h2>
             {workOrder.description ? (
-              <p className="text-xs leading-relaxed text-[var(--text)]">
+              <p className="text-sm leading-relaxed text-[var(--text)]">
                 {workOrder.description}
               </p>
             ) : (
-              <p className="text-xs italic text-[var(--text-muted)]">Sense descripció</p>
+              <p className="text-sm italic text-[var(--text-muted)]">Sense descripció</p>
             )}
           </div>
 
           {/* Status history */}
           <div className="flex min-h-0 flex-1 flex-col rounded-lg border border-[var(--border)] bg-[var(--surface)] p-3">
-            <h2 className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-[var(--text-muted)]">
+            <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
               {t("detail.statusHistory")}
             </h2>
             <div className="min-h-0 overflow-y-auto pr-1">
@@ -181,7 +181,7 @@ export default async function WorkOrderDetailPage({ params }: Props) {
         <div className="flex min-h-0 w-[33%] flex-col gap-3">
           {/* Actions */}
           <div className="shrink-0 rounded-lg border border-[var(--border)] bg-[var(--surface)] p-3">
-            <h2 className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-[var(--text-muted)]">
+            <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
               {t("detail.actionsTitle")}
             </h2>
             <WorkOrderActions workOrderId={workOrder.id} currentStatus={workOrder.status} />
@@ -190,7 +190,7 @@ export default async function WorkOrderDetailPage({ params }: Props) {
           {/* Technician */}
           {userRole !== "TECHNICIAN" && (
             <div className="shrink-0 rounded-lg border border-[var(--border)] bg-[var(--surface)] p-3">
-              <h2 className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-[var(--text-muted)]">
+              <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
                 {t("detail.assignTitle")}
               </h2>
               <TechnicianAssigner
@@ -204,13 +204,13 @@ export default async function WorkOrderDetailPage({ params }: Props) {
           {/* Signature */}
           {canSign && (
             <div className="shrink-0 rounded-lg border border-[var(--border)] bg-[var(--surface)] p-3">
-              <h2 className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-[var(--text-muted)]">
+              <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
                 {t("detail.signature")}
               </h2>
               {signature ? (
                 <div className="flex items-center gap-2">
                   <FileCheck className="h-4 w-4 text-emerald-500" />
-                  <span className="text-xs text-[var(--text)]">
+                  <span className="text-sm text-[var(--text)]">
                     Signat per <span className="font-medium">{signature.signedBy}</span>
                   </span>
                 </div>
@@ -222,7 +222,7 @@ export default async function WorkOrderDetailPage({ params }: Props) {
 
           {/* PDF */}
           <div className="shrink-0 rounded-lg border border-[var(--border)] bg-[var(--surface)] p-3">
-            <h2 className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-[var(--text-muted)]">
+            <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
               {t("pdf.title")}
             </h2>
             <PdfGenerator workOrderId={workOrder.id} pdfUrl={workOrder.pdfUrl} />
@@ -230,16 +230,16 @@ export default async function WorkOrderDetailPage({ params }: Props) {
 
           {/* Quote (placeholder) */}
           <div className="shrink-0 rounded-lg border border-[var(--border)] bg-[var(--surface)] p-3">
-            <h2 className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-[var(--text-muted)]">
+            <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
               Pressupost
             </h2>
             <div className="flex items-center gap-2">
               <FilePlus className="h-4 w-4 text-[var(--module-sat)]" />
-              <span className="text-xs text-[var(--text-muted)]">Sense pressupost associat</span>
+              <span className="text-sm text-[var(--text-muted)]">Sense pressupost associat</span>
             </div>
             <Link
               href="#"
-              className="mt-2 inline-flex items-center gap-1 rounded-md bg-[var(--module-sat)]/10 px-2 py-1 text-[10px] font-medium text-[var(--module-sat)] transition-colors hover:bg-[var(--module-sat)]/20"
+              className="mt-2 inline-flex items-center gap-1 rounded-md bg-[var(--module-sat)]/10 px-2 py-1 text-xs font-medium text-[var(--module-sat)] transition-colors hover:bg-[var(--module-sat)]/20"
             >
               <FileText className="h-3 w-3" />
               Crear pressupost
@@ -249,7 +249,7 @@ export default async function WorkOrderDetailPage({ params }: Props) {
           {/* Check-in / Location */}
           {(canCheckIn || locations.length > 0) && (
             <div className="shrink-0 rounded-lg border border-[var(--border)] bg-[var(--surface)] p-3">
-              <h2 className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-[var(--text-muted)]">
+              <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
                 Localització
               </h2>
               {canCheckIn && userRole === "TECHNICIAN" && (
@@ -262,9 +262,9 @@ export default async function WorkOrderDetailPage({ params }: Props) {
               {locations.length > 0 && (
                 <div className="mt-2 space-y-1">
                   {locations.slice(0, 3).map((loc) => (
-                    <div key={loc.id} className="flex items-center justify-between text-xs">
+                    <div key={loc.id} className="flex items-center justify-between text-sm">
                       <span className="capitalize text-[var(--text)]">{loc.eventType.replace("_", " ")}</span>
-                      <span className="text-[10px] text-[var(--text-muted)]">
+                      <span className="text-xs text-[var(--text-muted)]">
                         {new Date(loc.createdAt).toLocaleTimeString("ca-ES", { hour: "2-digit", minute: "2-digit" })}
                       </span>
                     </div>

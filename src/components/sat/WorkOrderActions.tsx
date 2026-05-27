@@ -110,9 +110,9 @@ export function WorkOrderActions({ workOrderId, currentStatus }: Props) {
             key={status}
             onClick={() => handleTransition(status)}
             disabled={isLoading !== null}
-            className={`flex items-center gap-1 rounded-md px-2 py-1 text-[10px] font-medium transition-all disabled:opacity-50 ${variantClasses[variant]}`}
+            className={`flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium transition-all disabled:opacity-50 ${variantClasses[variant]}`}
           >
-            <Icon className="h-3 w-3" />
+            <Icon className="h-3.5 w-3.5" />
             <span>{t(label)}</span>
             {isLoading === status && (
               <span className="ml-0.5 h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent" />

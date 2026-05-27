@@ -27,10 +27,10 @@ export function StatusHistorySection({ history }: Props) {
     <div className="space-y-2">
       {history.map((h) => (
         <div key={h.id} className="flex items-start gap-2">
-          <div className="mt-0.5 h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--module-sat)]" />
+          <div className="mt-1 h-2 w-2 shrink-0 rounded-full bg-[var(--module-sat)]" />
           <div className="flex-1">
             <div className="flex items-center justify-between">
-              <span className="text-xs text-[var(--text)]">
+              <span className="text-sm text-[var(--text)]">
                 {h.statusFrom ? (
                   <>
                     <span className="capitalize">{h.statusFrom}</span>{" "}
@@ -41,18 +41,18 @@ export function StatusHistorySection({ history }: Props) {
                   <span className="capitalize">{h.statusTo}</span>
                 )}
               </span>
-              <span className="text-[10px] text-[var(--text-muted)]">
+              <span className="text-xs text-[var(--text-muted)]">
                 {new Date(h.createdAt).toLocaleString("ca-ES", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}
               </span>
             </div>
             {h.reason && (
-              <p className="text-[10px] text-[var(--text-muted)]">{h.reason}</p>
+              <p className="text-xs text-[var(--text-muted)]">{h.reason}</p>
             )}
           </div>
         </div>
       ))}
       {history.length === 0 && (
-        <p className="text-xs text-[var(--text-muted)]">Sense historial</p>
+        <p className="text-sm text-[var(--text-muted)]">Sense historial</p>
       )}
     </div>
   );
