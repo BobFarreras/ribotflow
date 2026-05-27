@@ -13,7 +13,7 @@ import { useTransition } from "react";
 import { addMaterialAction } from "@/actions/sat/addMaterial";
 import { removeMaterialAction } from "@/actions/sat/removeMaterial";
 import type { WorkOrderMaterial, Product } from "@/types/sat";
-import { Plus, Trash2, Package, ShoppingCart } from "lucide-react";
+import { Plus, Trash2, Package, ShoppingCart, Minus } from "lucide-react";
 
 interface Props {
   materials: WorkOrderMaterial[];
@@ -39,19 +39,27 @@ export function MaterialList({ materials: initialMaterials, workOrderId, product
     setSelectedProductId(productId);
     if (productId === "__free__") {
       setIsFreeText(true);
-      setFormData({ name: "", quantity: "", unitPrice: "", unitCost: "" });
+      setFormData({ name: "", quantity: "1", unitPrice: "", unitCost: "" });
     } else {
       setIsFreeText(false);
       const product = products.find((p) => p.id === productId);
       if (product) {
         setFormData({
           name: product.name,
-          quantity: "",
+          quantity: "1",
           unitPrice: product.unitPrice ?? "",
           unitCost: product.unitCost ?? "",
         });
       }
     }
+  };
+
+  const adjustQuantity = (delta: number) => {
+    setFormData((d) => {
+      const current = parseFloat(d.quantity) || 0;
+      const next = Math.max(0.01, current + delta);
+      return { ...d, quantity: String(next) };
+    });
   };
 
   const handleAdd = () => {
@@ -138,15 +146,31 @@ export function MaterialList({ materials: initialMaterials, workOrderId, product
             />
           )}
 
-          {/* Quantity (always required) */}
-          <input
-            type="number"
-            step="0.01"
-            placeholder={t("quantityPlaceholder")}
-            value={formData.quantity}
-            onChange={(e) => setFormData((d) => ({ ...d, quantity: e.target.value }))}
-            className="w-full rounded-md border border-[var(--border)] bg-[var(--surface)] px-2.5 py-1.5 text-sm text-[var(--text)] placeholder:text-[var(--text-muted)] focus:border-[var(--primary)] focus:outline-none"
-          />
+          {/* Quantity with +/- buttons */}
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => adjustQuantity(-1)}
+              className="flex h-8 w-8 items-center justify-center rounded-md border border-[var(--border)] bg-[var(--surface)] text-[var(--text)] transition-colors hover:bg-[var(--bg)]"
+            >
+              <Minus className="h-3.5 w-3.5" />
+            </button>
+            <input
+              type="number"
+              step="0.01"
+              placeholder={t("quantityPlaceholder")}
+              value={formData.quantity}
+              onChange={(e) => setFormData((d) => ({ ...d, quantity: e.target.value }))}
+              className="flex-1 rounded-md border border-[var(--border)] bg-[var(--surface)] px-2.5 py-1.5 text-center text-sm text-[var(--text)] placeholder:text-[var(--text-muted)] focus:border-[var(--primary)] focus:outline-none"
+            />
+            <button
+              type="button"
+              onClick={() => adjustQuantity(1)}
+              className="flex h-8 w-8 items-center justify-center rounded-md border border-[var(--border)] bg-[var(--surface)] text-[var(--text)] transition-colors hover:bg-[var(--bg)]"
+            >
+              <Plus className="h-3.5 w-3.5" />
+            </button>
+          </div>
 
           {/* Price fields (only for free text) */}
           {isFreeText && (

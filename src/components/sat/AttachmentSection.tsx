@@ -27,24 +27,31 @@ export function AttachmentSection({ attachments: initialAttachments, workOrderId
   const [isBefore, setIsBefore] = useState(false);
   const [caption, setCaption] = useState("");
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     setError(null);
+    setPendingFile(file);
+    setPreviewUrl(URL.createObjectURL(file));
+    setCaption("");
+    setIsBefore(false);
 
-    // Preview
-    const url = URL.createObjectURL(file);
-    setPreviewUrl(url);
+    // Reset input so the same file can be selected again if cancelled
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
 
-    // Upload
+  const handleUpload = () => {
+    if (!pendingFile) return;
+
     startTransition(async () => {
       const formData = new FormData();
-      formData.append("file", file);
+      formData.append("file", pendingFile);
       formData.append("workOrderId", workOrderId);
       formData.append("isBefore", String(isBefore));
       if (caption) formData.append("caption", caption);
@@ -54,15 +61,21 @@ export function AttachmentSection({ attachments: initialAttachments, workOrderId
       if (result.success && result.data) {
         setAttachments((prev) => [result.data, ...prev]);
         setPreviewUrl(null);
+        setPendingFile(null);
         setCaption("");
         setIsBefore(false);
       } else {
         setError(result.error || t("invalidType"));
       }
-
-      // Reset input
-      if (fileInputRef.current) fileInputRef.current.value = "";
     });
+  };
+
+  const handleCancelUpload = () => {
+    setPreviewUrl(null);
+    setPendingFile(null);
+    setCaption("");
+    setIsBefore(false);
+    setError(null);
   };
 
   const handleDelete = (id: string) => {
@@ -107,9 +120,9 @@ export function AttachmentSection({ attachments: initialAttachments, workOrderId
         />
       </div>
 
-      {/* Upload options */}
-      {previewUrl && (
-        <div className="mb-3 space-y-2 rounded-md border border-[var(--border)] bg-[var(--bg)] p-3">
+      {/* Upload preview + options */}
+      {previewUrl && pendingFile && (
+        <div className="mb-2 space-y-2 rounded-md border border-[var(--border)] bg-[var(--bg)] p-2">
           <div className="relative aspect-video w-full overflow-hidden rounded-md">
             <img src={previewUrl} alt={t("previewAlt")} className="h-full w-full object-contain" />
           </div>
@@ -132,6 +145,22 @@ export function AttachmentSection({ attachments: initialAttachments, workOrderId
             />
           </div>
           {error && <p className="text-xs text-red-500">{error}</p>}
+          <div className="flex justify-end gap-2">
+            <button
+              onClick={handleCancelUpload}
+              className="rounded-md px-2.5 py-1 text-xs text-[var(--text-muted)] transition-colors hover:bg-[var(--surface-hover)]"
+            >
+              Cancel·lar
+            </button>
+            <button
+              onClick={handleUpload}
+              disabled={isPending}
+              className="flex items-center gap-1 rounded-md bg-[var(--primary)] px-2.5 py-1 text-xs font-medium text-white transition-colors hover:bg-[var(--primary)]/90 disabled:opacity-50"
+            >
+              <Upload className="h-3 w-3" />
+              {isPending ? "Pujant..." : "Pujar"}
+            </button>
+          </div>
         </div>
       )}
 
