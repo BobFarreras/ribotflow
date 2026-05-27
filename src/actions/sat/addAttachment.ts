@@ -36,10 +36,13 @@ export async function addAttachmentAction(formData: FormData) {
     const workOrderId = formData.get("workOrderId") as string;
     const isBefore = formData.get("isBefore") === "true";
     const caption = formData.get("caption") as string | null;
+    const customFileName = formData.get("fileName") as string | null;
 
     if (!file || !workOrderId) {
       return { success: false, error: "Missing file or work order ID" };
     }
+
+    const fileName = customFileName?.trim() || file.name;
 
     const attachmentType = ALLOWED_TYPES[file.type as keyof typeof ALLOWED_TYPES];
     if (!attachmentType) {
@@ -62,7 +65,7 @@ export async function addAttachmentAction(formData: FormData) {
       "sat",
       companyId,
       order.number,
-      file.name
+      fileName
     );
 
     const buffer = Buffer.from(await file.arrayBuffer());
@@ -84,7 +87,7 @@ export async function addAttachmentAction(formData: FormData) {
       workOrderId,
       uploadedBy: session.user.id as string,
       type: attachmentType,
-      fileName: file.name,
+      fileName: fileName,
       mimeType: file.type,
       sizeBytes: file.size,
       width,

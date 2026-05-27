@@ -13,7 +13,7 @@ import { useTransition } from "react";
 import { addAttachmentAction } from "@/actions/sat/addAttachment";
 import { deleteAttachmentAction } from "@/actions/sat/deleteAttachment";
 import type { WorkOrderAttachment } from "@/types/sat";
-import { Upload, X, ImageIcon, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
+import { Upload, X, ImageIcon, Trash2, ChevronLeft, ChevronRight, Edit3 } from "lucide-react";
 
 interface Props {
   attachments: WorkOrderAttachment[];
@@ -28,6 +28,8 @@ export function AttachmentSection({ attachments: initialAttachments, workOrderId
   const [caption, setCaption] = useState("");
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [pendingFile, setPendingFile] = useState<File | null>(null);
+  const [customFileName, setCustomFileName] = useState("");
+  const [renameMode, setRenameMode] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -39,6 +41,8 @@ export function AttachmentSection({ attachments: initialAttachments, workOrderId
     setError(null);
     setPendingFile(file);
     setPreviewUrl(URL.createObjectURL(file));
+    setCustomFileName(file.name);
+    setRenameMode(false);
     setCaption("");
     setIsBefore(false);
 
@@ -55,6 +59,7 @@ export function AttachmentSection({ attachments: initialAttachments, workOrderId
       formData.append("workOrderId", workOrderId);
       formData.append("isBefore", String(isBefore));
       if (caption) formData.append("caption", caption);
+      if (customFileName.trim()) formData.append("fileName", customFileName.trim());
 
       const result = await addAttachmentAction(formData);
 
@@ -62,6 +67,8 @@ export function AttachmentSection({ attachments: initialAttachments, workOrderId
         setAttachments((prev) => [result.data, ...prev]);
         setPreviewUrl(null);
         setPendingFile(null);
+        setCustomFileName("");
+        setRenameMode(false);
         setCaption("");
         setIsBefore(false);
       } else {
@@ -73,6 +80,8 @@ export function AttachmentSection({ attachments: initialAttachments, workOrderId
   const handleCancelUpload = () => {
     setPreviewUrl(null);
     setPendingFile(null);
+    setCustomFileName("");
+    setRenameMode(false);
     setCaption("");
     setIsBefore(false);
     setError(null);
@@ -126,6 +135,32 @@ export function AttachmentSection({ attachments: initialAttachments, workOrderId
           <div className="relative aspect-video w-full overflow-hidden rounded-md">
             <img src={previewUrl} alt={t("previewAlt")} className="h-full w-full object-contain" />
           </div>
+
+          {/* File name — editable */}
+          <div className="flex items-center gap-2">
+            {renameMode ? (
+              <input
+                type="text"
+                value={customFileName}
+                onChange={(e) => setCustomFileName(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && setRenameMode(false)}
+                className="flex-1 rounded-md border border-[var(--border)] bg-[var(--surface)] px-2.5 py-1 text-xs text-[var(--text)] focus:border-[var(--primary)] focus:outline-none"
+                autoFocus
+              />
+            ) : (
+              <span className="flex-1 truncate text-xs text-[var(--text-muted)]">
+                {customFileName}
+              </span>
+            )}
+            <button
+              onClick={() => setRenameMode(!renameMode)}
+              className="flex items-center gap-1 rounded-md px-2 py-1 text-[10px] text-[var(--primary)] transition-colors hover:bg-[var(--primary)]/10"
+            >
+              <Edit3 className="h-3 w-3" />
+              {renameMode ? "Desar" : "Canviar nom"}
+            </button>
+          </div>
+
           <div className="flex items-center gap-3">
             <label className="flex items-center gap-1.5 text-xs text-[var(--text)]">
               <input
