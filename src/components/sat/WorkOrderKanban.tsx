@@ -15,6 +15,7 @@ import { updateWorkOrderStatusAction } from "@/actions/sat/updateStatus";
 import { WorkOrderPriorityBadge } from "./WorkOrderPriorityBadge";
 import { CategoryIcon } from "./CategoryIcon";
 import { GripVertical, Calendar, ChevronLeft, ChevronRight } from "lucide-react";
+import { isValidTransition } from "@/lib/constants/statusTransitions";
 
 interface KanbanOrder {
   workOrder: WorkOrder;
@@ -45,33 +46,11 @@ export function WorkOrderKanban({ orders: initialOrders }: Props) {
   const [dragOverColumn, setDragOverColumn] = useState<string | null>(null);
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
   const scrollRef = useRef<HTMLDivElement>(null);
-  const topScrollRef = useRef<HTMLDivElement>(null);
 
   // Keep local state in sync when prop changes (e.g. filter changes)
   useEffect(() => {
     setItems(initialOrders);
   }, [initialOrders]);
-
-  // Sync top scrollbar with main scroll
-  useEffect(() => {
-    const main = scrollRef.current;
-    const top = topScrollRef.current;
-    if (!main || !top) return;
-
-    const onMainScroll = () => {
-      top.scrollLeft = main.scrollLeft;
-    };
-    const onTopScroll = () => {
-      main.scrollLeft = top.scrollLeft;
-    };
-
-    main.addEventListener("scroll", onMainScroll);
-    top.addEventListener("scroll", onTopScroll);
-    return () => {
-      main.removeEventListener("scroll", onMainScroll);
-      top.removeEventListener("scroll", onTopScroll);
-    };
-  }, []);
 
   const handleDragStart = (e: React.DragEvent, orderId: string) => {
     setDraggingId(orderId);
@@ -84,8 +63,19 @@ export function WorkOrderKanban({ orders: initialOrders }: Props) {
     setDragOverColumn(null);
   };
 
+  const getDraggedStatus = (): string | null => {
+    if (!draggingId) return null;
+    const item = items.find((o) => o.workOrder.id === draggingId);
+    return item?.workOrder.status ?? null;
+  };
+
   const handleDragOver = (e: React.DragEvent, status: string) => {
     e.preventDefault();
+    const fromStatus = getDraggedStatus();
+    if (fromStatus && !isValidTransition(fromStatus as any, status as any)) {
+      e.dataTransfer.dropEffect = "none";
+      return;
+    }
     e.dataTransfer.dropEffect = "move";
     setDragOverColumn(status);
   };
@@ -101,6 +91,14 @@ export function WorkOrderKanban({ orders: initialOrders }: Props) {
 
       const item = items.find((o) => o.workOrder.id === orderId);
       if (!item || item.workOrder.status === newStatus) return;
+
+      // Validate transition client-side before optimistic update
+      if (!isValidTransition(item.workOrder.status, newStatus as any)) {
+        console.warn(
+          `[Kanban] Invalid transition: ${item.workOrder.status} -> ${newStatus}`
+        );
+        return;
+      }
 
       // Optimistic UI: update local state immediately
       setItems((prev) =>
@@ -145,29 +143,15 @@ export function WorkOrderKanban({ orders: initialOrders }: Props) {
 
   // Show all columns that have items + always-visible workflow columns
   const visibleColumns = COLUMNS.filter(
-    (col) => items.some((o) => o.workOrder.status === col.key) ||
+    (col) =>
+      items.some((o) => o.workOrder.status === col.key) ||
       ["pending", "assigned", "in_progress", "completed"].includes(col.key)
   );
 
-  // Calculate total scroll width for top scrollbar
-  const columnWidth = 280;
-  const collapsedWidth = 48;
-  const totalWidth = visibleColumns.reduce(
-    (sum, col) => sum + (collapsed.has(col.key) ? collapsedWidth : columnWidth),
-    0
-  );
+  const draggedStatus = getDraggedStatus();
 
   return (
     <div className="flex h-full flex-col">
-      {/* Top scrollbar track */}
-      <div
-        ref={topScrollRef}
-        className="shrink-0 overflow-x-auto pb-1"
-        style={{ scrollbarWidth: "thin", scrollbarGutter: "stable" }}
-      >
-        <div style={{ width: totalWidth, height: 1 }} />
-      </div>
-
       {/* Board */}
       <div
         ref={scrollRef}
@@ -177,6 +161,7 @@ export function WorkOrderKanban({ orders: initialOrders }: Props) {
           const colOrders = items.filter((o) => o.workOrder.status === col.key);
           const isDragOver = dragOverColumn === col.key;
           const isCollapsed = collapsed.has(col.key);
+          const isValidTarget = draggedStatus ? isValidTransition(draggedStatus as any, col.key as any) : false;
 
           if (isCollapsed) {
             return (
@@ -184,8 +169,8 @@ export function WorkOrderKanban({ orders: initialOrders }: Props) {
                 key={col.key}
                 onClick={() => toggleColumn(col.key)}
                 className={`flex h-full w-12 shrink-0 flex-col items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] py-3 transition-colors hover:border-[var(--border-strong)] ${
-                  isDragOver ? "border-[var(--module-sat)] bg-[var(--module-sat)]/5" : ""
-                }`}
+                  isDragOver && isValidTarget ? "border-[var(--module-sat)] bg-[var(--module-sat)]/5" : ""
+                } ${draggedStatus && !isValidTarget ? "opacity-60" : ""}`}
                 onDragOver={(e) => handleDragOver(e, col.key)}
                 onDrop={(e) => handleDrop(e, col.key)}
                 onDragLeave={() => setDragOverColumn(null)}
@@ -214,8 +199,10 @@ export function WorkOrderKanban({ orders: initialOrders }: Props) {
             <div
               key={col.key}
               className={`flex h-full w-[280px] shrink-0 flex-col rounded-xl border transition-colors ${
-                isDragOver
+                isDragOver && isValidTarget
                   ? "border-[var(--module-sat)] bg-[var(--module-sat)]/5"
+                  : draggedStatus && !isValidTarget
+                  ? "border-red-300/30 bg-red-500/[0.02]"
                   : "border-[var(--border)] bg-[var(--surface)]"
               }`}
               onDragOver={(e) => handleDragOver(e, col.key)}
@@ -304,7 +291,7 @@ export function WorkOrderKanban({ orders: initialOrders }: Props) {
                   </div>
                 ))}
 
-                {isDragOver && colOrders.length === 0 && (
+                {isDragOver && isValidTarget && colOrders.length === 0 && (
                   <div className="flex flex-1 items-center justify-center rounded-lg border-2 border-dashed border-[var(--module-sat)]/30 py-8 text-sm text-[var(--text-muted)]">
                     Deixa aquí
                   </div>

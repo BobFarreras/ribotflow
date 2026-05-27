@@ -51,7 +51,7 @@ export default async function SatListPage({ searchParams }: Props) {
     .where(eq(users.companyId, companyId));
 
   return (
-    <div className="flex flex-1 flex-col bg-[var(--bg)]">
+    <div className="flex h-[calc(100dvh-1px)] flex-col bg-[var(--bg)]">
       {/* Header */}
       <header className="shrink-0 border-b border-[var(--border)] bg-[var(--surface)] px-4 py-4 sm:px-6">
         <div className="mx-auto flex max-w-7xl items-center justify-between">
@@ -74,7 +74,7 @@ export default async function SatListPage({ searchParams }: Props) {
         </div>
       </header>
 
-      {/* Content */}
+      {/* Content — fills remaining viewport, children handle internal scroll */}
       <main className="mx-auto flex min-h-0 w-full max-w-7xl flex-1 flex-col px-4 py-4 sm:px-6">
         <WorkOrderList orders={orders} categories={categories} technicians={technicians} />
       </main>

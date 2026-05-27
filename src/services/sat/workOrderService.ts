@@ -13,23 +13,7 @@ import type {
   UpdateWorkOrderInput,
 } from "@/lib/validators/sat/workOrderSchema";
 import type { WorkOrderStatus } from "@/types/sat";
-
-const VALID_STATUS_TRANSITIONS: Record<WorkOrderStatus, WorkOrderStatus[]> = {
-  pending: ["assigned", "scheduled", "cancelled"],
-  assigned: ["in_progress", "cancelled"],
-  scheduled: ["in_progress", "cancelled"],
-  in_progress: ["paused", "completed", "cancelled", "waiting_parts", "waiting_client"],
-  paused: ["in_progress", "cancelled"],
-  completed: ["closed", "in_progress"],
-  closed: [],
-  cancelled: ["pending"],
-  waiting_parts: ["in_progress", "cancelled"],
-  waiting_client: ["in_progress", "cancelled"],
-};
-
-function isValidTransition(from: WorkOrderStatus, to: WorkOrderStatus): boolean {
-  return VALID_STATUS_TRANSITIONS[from]?.includes(to) ?? false;
-}
+import { isValidTransition } from "@/lib/constants/statusTransitions";
 
 export const workOrderService = {
   async getNextOrderNumber(companyId: string) {

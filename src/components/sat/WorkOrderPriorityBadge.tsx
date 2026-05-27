@@ -1,7 +1,7 @@
 /**
  * Creation/modification date: 27/05/2026
  * Path: src/components/sat/WorkOrderPriorityBadge.tsx
- * Description: Refined priority badge matching status badge style.
+ * Description: Plain-text priority indicator — no background, just dot + label.
  */
 
 "use client";
@@ -25,13 +25,7 @@ export function WorkOrderPriorityBadge({ priority }: Props) {
   const color = PRIORITY_COLORS[priority];
 
   return (
-    <span
-      className="inline-flex items-center gap-1.5 rounded-md px-1.5 py-0.5 text-[11px] font-medium"
-      style={{
-        color,
-        backgroundColor: `${color}14`,
-      }}
-    >
+    <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-[var(--text-muted)]">
       <span
         className="h-1.5 w-1.5 rounded-full shrink-0"
         style={{ backgroundColor: color }}

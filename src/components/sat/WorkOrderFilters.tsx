@@ -259,7 +259,6 @@ export function WorkOrderFilters({ categories, technicians }: Props) {
             checked={categoryFilters.includes(c.id)}
             onChange={() => toggleArrayFilter("category", c.id)}
             label={c.name}
-            color={c.color}
             icon={<CategoryIcon slug={c.slug} color={c.color} size={14} />}
           />
         ))}
@@ -275,7 +274,6 @@ export function WorkOrderFilters({ categories, technicians }: Props) {
             checked={priorityFilters.includes(p.key)}
             onChange={() => toggleArrayFilter("priority", p.key)}
             label={p.label}
-            color={p.color}
           />
         ))}
       </FilterDropdown>

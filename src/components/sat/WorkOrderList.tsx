@@ -122,25 +122,8 @@ export function WorkOrderList({ orders, categories, technicians }: Props) {
     <div className="flex h-full flex-col gap-3">
       <WorkOrderFilters categories={categories} technicians={technicians} />
 
-      <div className="flex items-center justify-between">
-        <div className="text-xs text-[var(--text-muted)]">
-          {filtered.length} de {orders.length} ordres
-        </div>
-        {!isKanban && (
-          <Pagination
-            currentPage={page}
-            totalItems={filtered.length}
-            pageSize={pageSize}
-            onPageChange={(p) => setParam("page", String(p))}
-            onPageSizeChange={(s) => {
-              setParam("limit", String(s));
-              setParam("page", "1");
-            }}
-          />
-        )}
-      </div>
-
-      <div className="min-h-0 flex-1">
+      {/* Content area — scrollable independently per view */}
+      <div className="min-h-0 flex-1 overflow-hidden">
         {filtered.length === 0 ? (
           <div className="flex h-full flex-col items-center justify-center rounded-lg border border-dashed border-[var(--border)] bg-[var(--surface)] text-center">
             <p className="text-sm text-[var(--text-muted)]">{t("list.noResults")}</p>
@@ -150,7 +133,7 @@ export function WorkOrderList({ orders, categories, technicians }: Props) {
         ) : view === "kanban" ? (
           <WorkOrderKanban orders={filtered} />
         ) : (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="grid h-full auto-rows-min gap-4 overflow-y-auto sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 content-start">
             {paginated.map((item) => (
               <WorkOrderCard
                 key={item.workOrder.id}
@@ -164,8 +147,12 @@ export function WorkOrderList({ orders, categories, technicians }: Props) {
         )}
       </div>
 
-      {!isKanban && filtered.length > 0 && (
-        <div className="flex justify-end pt-1">
+      {/* Pagination — only at bottom */}
+      {!isKanban && (
+        <div className="flex shrink-0 items-center justify-between border-t border-[var(--border)] pt-2">
+          <div className="text-xs text-[var(--text-muted)]">
+            {filtered.length} de {orders.length} ordres
+          </div>
           <Pagination
             currentPage={page}
             totalItems={filtered.length}
