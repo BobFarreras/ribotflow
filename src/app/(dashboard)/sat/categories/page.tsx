@@ -1,47 +1,101 @@
 /**
- * Creation/modification date: 25/05/2026
+ * Creation/modification date: 27/05/2026
  * Path: src/app/(dashboard)/sat/categories/page.tsx
- * Description: Work order categories page placeholder. Will be implemented in future SAT iterations.
+ * Description: Work order category management page.
  */
 
-"use client";
+import { auth } from "@/lib/auth";
+import { db } from "@/db";
+import { workOrderCategories } from "@/db/schema/sat";
+import { eq, asc } from "drizzle-orm";
+import { getTranslations } from "next-intl/server";
+import Link from "next/link";
+import { Tag, Plus, Star } from "lucide-react";
+import { CategoryIcon } from "@/components/sat/CategoryIcon";
 
-import { motion } from "motion/react";
-import { Tag, ArrowLeft } from "lucide-react";
+export default async function CategoriesPage() {
+  const session = await auth();
+  if (!session?.user?.companyId) return null;
 
-export default function CategoriesPage() {
+  const companyId = session.user.companyId;
+  const t = await getTranslations("sat.categories");
+
+  const categoryList = await db
+    .select()
+    .from(workOrderCategories)
+    .where(eq(workOrderCategories.companyId, companyId))
+    .orderBy(asc(workOrderCategories.sortOrder));
+
   return (
-    <div className="flex-1 bg-[var(--bg)] p-4 sm:p-6 lg:p-8">
-      <motion.div
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3, ease: "easeOut" }}
-      >
-        <a
-          href="/sat"
-          className="inline-flex items-center gap-1.5 text-sm text-[var(--text-muted)] hover:text-[var(--text)] transition-colors mb-4"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Tornar a SAT
-        </a>
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--module-sat)]/10 text-[var(--module-sat)]">
-            <Tag className="h-5 w-5" />
+    <div className="flex-1 bg-[var(--bg)]">
+      <header className="border-b border-[var(--border)] bg-[var(--surface)] px-4 py-4 sm:px-6">
+        <div className="mx-auto flex max-w-7xl items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-md bg-[var(--module-sat)]/10 text-[var(--module-sat)]">
+              <Tag className="h-5 w-5" />
+            </div>
+            <div>
+              <h1 className="text-lg font-semibold text-[var(--text)]">{t("title")}</h1>
+              <p className="text-xs text-[var(--text-muted)]">{categoryList.length} categories</p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-xl font-semibold text-[var(--text)]">Categories</h1>
-            <p className="text-sm text-[var(--text-muted)]">Categories d&apos;ordres de treball</p>
-          </div>
+          <Link
+            href="/sat/categories/new"
+            className="flex items-center gap-1.5 rounded-md bg-[var(--module-sat)] px-3 py-2 text-sm font-medium text-white shadow-sm transition-opacity hover:opacity-90"
+          >
+            <Plus className="h-4 w-4" />
+            <span className="hidden sm:inline">{t("newButton")}</span>
+          </Link>
         </div>
-      </motion.div>
+      </header>
 
-      <div className="mt-8 flex flex-col items-center justify-center rounded-xl border border-dashed border-[var(--border)] bg-[var(--surface)] py-20 text-center">
-        <Tag className="mb-4 h-12 w-12 text-[var(--text-muted)]" />
-        <h2 className="text-lg font-medium text-[var(--text)]">En desenvolupament</h2>
-        <p className="mt-1 text-sm text-[var(--text-muted)] max-w-md">
-          Aquesta pàgina es troba en construcció. Formarà part del mòdul SAT complet.
-        </p>
-      </div>
+      <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6">
+        {categoryList.length === 0 ? (
+          <div className="rounded-lg border border-dashed border-[var(--border)] bg-[var(--surface)] py-16 text-center">
+            <Tag className="mx-auto mb-3 h-10 w-10 text-[var(--text-muted)]" />
+            <p className="text-sm text-[var(--text-muted)]">{t("emptyState")}</p>
+          </div>
+        ) : (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {categoryList.map((cat) => (
+              <div
+                key={cat.id}
+                className="flex items-start gap-4 rounded-xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-sm transition-all hover:border-[var(--module-sat)]/30 hover:shadow-md"
+              >
+                <div
+                  className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl"
+                  style={{ backgroundColor: cat.color ? `${cat.color}20` : undefined }}
+                >
+                  <CategoryIcon
+                    slug={cat.slug}
+                    color={cat.color}
+                    size={24}
+                  />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-sm font-semibold text-[var(--text)]">{cat.name}</h3>
+                    {cat.isDefault && (
+                      <span className="flex items-center gap-0.5 rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium text-amber-700">
+                        <Star className="h-3 w-3" />
+                        Per defecte
+                      </span>
+                    )}
+                  </div>
+                  <p className="mt-0.5 text-xs text-[var(--text-muted)]">slug: {cat.slug}</p>
+                  <div className="mt-2 flex items-center gap-2">
+                    <span
+                      className="inline-block h-3 w-3 rounded-full"
+                      style={{ backgroundColor: cat.color ?? "#6b7280" }}
+                    />
+                    <span className="text-xs text-[var(--text-muted)]">{cat.color ?? "Sense color"}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </main>
     </div>
   );
 }

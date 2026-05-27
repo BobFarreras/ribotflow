@@ -35,6 +35,7 @@
         "urgent": "Urgent"
       },
       "emptyState": "No hi ha ordres de treball. Crea la primera!",
+      "noResults": "No hi ha ordres que coincideixin amb els filtres seleccionats.",
       "viewDetails": "Veure detall"
     },
     "detail": {
@@ -160,5 +161,15 @@
     "stops": "Parades",
     "totalDistance": "Distància Total",
     "totalTime": "Temps Total"
+  },
+  "clients": {
+    "title": "Clients SAT",
+    "newButton": "Nou Client",
+    "emptyState": "No hi ha clients registrats. Crea el primer client per començar."
+  },
+  "categories": {
+    "title": "Categories d'Ordres",
+    "newButton": "Nova Categoria",
+    "emptyState": "No hi ha categories definides. Crea la primera categoria."
   }
 }

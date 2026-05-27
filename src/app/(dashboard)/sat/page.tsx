@@ -1,21 +1,23 @@
 /**
- * Creation/modification date: 26/05/2026
+ * Creation/modification date: 27/05/2026
  * Path: src/app/(dashboard)/sat/page.tsx
- * Description: Work order list page — orchestrates data fetching and delegates
- *              presentation to focused components (SoC / SOLID).
+ * Description: Work order list page with 3 views (grid/table/kanban),
+ *              advanced filters, and category icons.
  */
 
 import { auth } from "@/lib/auth";
 import { workOrderService } from "@/services/sat/workOrderService";
-import type { WorkOrderStatus } from "@/types/sat";
+import { db } from "@/db";
+import { workOrderCategories } from "@/db/schema/sat";
+import { users } from "@/db/schema/auth";
+import { eq } from "drizzle-orm";
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { Wrench, Plus } from "lucide-react";
-import { StatusFilterBar } from "@/components/sat/StatusFilterBar";
-import { WorkOrderCard } from "@/components/sat/WorkOrderCard";
+import { WorkOrderList } from "@/components/sat/WorkOrderList";
 
 interface Props {
-  searchParams: Promise<{ status?: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
 export default async function SatListPage({ searchParams }: Props) {
@@ -26,12 +28,27 @@ export default async function SatListPage({ searchParams }: Props) {
 
   const companyId = session.user.companyId;
   const t = await getTranslations("sat.workOrder");
-  const params = await searchParams;
 
-  const statusFilter = params.status as WorkOrderStatus | undefined;
-  const orders = await workOrderService.getByCompanyWithRelations(companyId, {
-    status: statusFilter,
-  });
+  // Get all orders (client-side filtering for instant UX)
+  const orders = await workOrderService.getByCompanyWithRelations(companyId);
+
+  // Get categories for filter dropdown
+  const categories = await db
+    .select({
+      id: workOrderCategories.id,
+      name: workOrderCategories.name,
+      slug: workOrderCategories.slug,
+      color: workOrderCategories.color,
+    })
+    .from(workOrderCategories)
+    .where(eq(workOrderCategories.companyId, companyId))
+    .orderBy(workOrderCategories.sortOrder);
+
+  // Get technicians for filter dropdown
+  const technicians = await db
+    .select({ id: users.id, name: users.name })
+    .from(users)
+    .where(eq(users.companyId, companyId));
 
   return (
     <div className="flex-1 bg-[var(--bg)]">
@@ -44,7 +61,7 @@ export default async function SatListPage({ searchParams }: Props) {
             </div>
             <div>
               <h1 className="text-lg font-semibold text-[var(--text)]">{t("list.title")}</h1>
-              <p className="text-xs text-[var(--text-muted)]">{orders.length} ordres</p>
+              <p className="text-xs text-[var(--text-muted)]">{orders.length} ordres totals</p>
             </div>
           </div>
           <Link
@@ -59,32 +76,7 @@ export default async function SatListPage({ searchParams }: Props) {
 
       {/* Content */}
       <main className="mx-auto max-w-7xl px-4 py-4 sm:px-6">
-        <StatusFilterBar activeStatus={params.status} />
-
-        {orders.length === 0 ? (
-          <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-[var(--border)] bg-[var(--surface)] py-16 text-center">
-            <Wrench className="mb-3 h-10 w-10 text-[var(--text-muted)]" />
-            <p className="text-sm font-medium text-[var(--text)]">{t("list.emptyState")}</p>
-            <Link
-              href="/sat/new"
-              className="mt-4 rounded-md bg-[var(--module-sat)] px-4 py-2 text-sm font-medium text-white"
-            >
-              {t("list.newButton")}
-            </Link>
-          </div>
-        ) : (
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {orders.map(({ workOrder, client, category, technician }) => (
-              <WorkOrderCard
-                key={workOrder.id}
-                workOrder={workOrder}
-                client={client}
-                category={category}
-                technicianName={technician?.name}
-              />
-            ))}
-          </div>
-        )}
+        <WorkOrderList orders={orders} categories={categories} technicians={technicians} />
       </main>
     </div>
   );

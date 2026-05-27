@@ -35,6 +35,7 @@
         "urgent": "Urgente"
       },
       "emptyState": "No hay órdenes de trabajo. ¡Crea la primera!",
+      "noResults": "No hay órdenes que coincidan con los filtros seleccionados.",
       "viewDetails": "Ver detalle"
     },
     "detail": {
@@ -160,5 +161,15 @@
     "stops": "Paradas",
     "totalDistance": "Distancia Total",
     "totalTime": "Tiempo Total"
+  },
+  "clients": {
+    "title": "Clientes SAT",
+    "newButton": "Nuevo Cliente",
+    "emptyState": "No hay clientes registrados. Crea el primer cliente para empezar."
+  },
+  "categories": {
+    "title": "Categorías de Órdenes",
+    "newButton": "Nueva Categoría",
+    "emptyState": "No hay categorías definidas. Crea la primera categoría."
   }
 }
