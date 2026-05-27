@@ -57,9 +57,10 @@ export default async function ClientsPage() {
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {clientList.map((client) => (
-              <div
+              <Link
                 key={client.id}
-                className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-sm transition-all hover:border-[var(--module-sat)]/30 hover:shadow-md"
+                href={`/sat/clients/${client.id}`}
+                className="block rounded-xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-sm transition-all hover:border-[var(--module-sat)]/30 hover:shadow-md"
               >
                 <h3 className="text-sm font-semibold text-[var(--text)]">{client.name}</h3>
                 <div className="mt-3 space-y-1.5 text-xs text-[var(--text-muted)]">
@@ -88,18 +89,16 @@ export default async function ClientsPage() {
                 </div>
                 {client.location && (
                   <div className="mt-3">
-                    <a
-                      href={`https://www.google.com/maps?q=${client.location.lat},${client.location.lng}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-600 hover:bg-blue-100"
+                    <span
+                      onClick={(e) => e.stopPropagation()}
+                      className="inline-flex items-center gap-1 rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-600"
                     >
                       <MapPin className="h-3 w-3" />
                       Google Maps
-                    </a>
+                    </span>
                   </div>
                 )}
-              </div>
+              </Link>
             ))}
           </div>
         )}
