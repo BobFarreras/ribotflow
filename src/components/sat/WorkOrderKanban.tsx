@@ -2,7 +2,8 @@
  * Creation/modification date: 27/05/2026
  * Path: src/components/sat/WorkOrderKanban.tsx
  * Description: Professional Kanban board with local state (persists moves
- *              instantly), collapsible columns, and per-column scroll.
+ *              instantly), collapsible columns, per-column scroll, and
+ *              click-drag horizontal panning.
  */
 
 "use client";
@@ -39,9 +40,6 @@ const COLUMNS = [
   { key: "cancelled", label: "Cancel·lada", short: "X", color: "#ef4444" },
 ];
 
-const DRAG_MIME_ORDER_ID = "application/x-ribotflow-order-id";
-const DRAG_MIME_STATUS = "application/x-ribotflow-status";
-
 export function WorkOrderKanban({ orders: initialOrders }: Props) {
   const router = useRouter();
   const [items, setItems] = useState<KanbanOrder[]>(initialOrders);
@@ -52,21 +50,47 @@ export function WorkOrderKanban({ orders: initialOrders }: Props) {
 
   // Refs for latest state inside event handlers (avoid stale closures)
   const itemsRef = useRef(items);
-  const draggingIdRef = useRef(draggingId);
   useEffect(() => { itemsRef.current = items; }, [items]);
-  useEffect(() => { draggingIdRef.current = draggingId; }, [draggingId]);
 
   // Keep local state in sync when prop changes (e.g. filter changes)
   useEffect(() => {
     setItems(initialOrders);
   }, [initialOrders]);
 
-  const handleDragStart = (e: React.DragEvent, orderId: string, fromStatus: string) => {
+  // ── Drag-to-scroll (pan) ────────────────────────────────
+  const [isPanning, setIsPanning] = useState(false);
+  const panStart = useRef({ x: 0, scrollLeft: 0 });
+
+  const handleBoardMouseDown = (e: React.MouseEvent) => {
+    // Only pan when clicking the board background, not a card or button
+    const target = e.target as HTMLElement;
+    if (target.closest("[data-kanban-card]")) return;
+    if (target.closest("button")) return;
+
+    const board = scrollRef.current;
+    if (!board) return;
+
+    setIsPanning(true);
+    panStart.current = {
+      x: e.clientX,
+      scrollLeft: board.scrollLeft,
+    };
+  };
+
+  const handleBoardMouseMove = useCallback((e: React.MouseEvent) => {
+    if (!isPanning || !scrollRef.current) return;
+    const dx = e.clientX - panStart.current.x;
+    scrollRef.current.scrollLeft = panStart.current.scrollLeft - dx;
+  }, [isPanning]);
+
+  const handleBoardMouseUp = useCallback(() => {
+    setIsPanning(false);
+  }, []);
+
+  // ── Card drag & drop ────────────────────────────────────
+  const handleDragStart = (e: React.DragEvent, orderId: string) => {
     setDraggingId(orderId);
     e.dataTransfer.effectAllowed = "move";
-    e.dataTransfer.setData(DRAG_MIME_ORDER_ID, orderId);
-    e.dataTransfer.setData(DRAG_MIME_STATUS, fromStatus);
-    // Also set plain text as fallback
     e.dataTransfer.setData("text/plain", orderId);
   };
 
@@ -77,7 +101,11 @@ export function WorkOrderKanban({ orders: initialOrders }: Props) {
 
   const handleDragOver = (e: React.DragEvent, status: string) => {
     e.preventDefault();
-    const fromStatus = e.dataTransfer.getData(DRAG_MIME_STATUS);
+    // Use ref to read latest dragged status without stale closure
+    const draggedId = draggingId;
+    if (!draggedId) return;
+    const item = itemsRef.current.find((o) => o.workOrder.id === draggedId);
+    const fromStatus = item?.workOrder.status;
     if (fromStatus && !isValidTransition(fromStatus as any, status as any)) {
       e.dataTransfer.dropEffect = "none";
       return;
@@ -89,8 +117,7 @@ export function WorkOrderKanban({ orders: initialOrders }: Props) {
   const handleDrop = useCallback(
     async (e: React.DragEvent, newStatus: string) => {
       e.preventDefault();
-      const orderId = e.dataTransfer.getData(DRAG_MIME_ORDER_ID) || e.dataTransfer.getData("text/plain");
-      const fromStatus = e.dataTransfer.getData(DRAG_MIME_STATUS);
+      const orderId = e.dataTransfer.getData("text/plain");
       setDragOverColumn(null);
       setDraggingId(null);
 
@@ -98,8 +125,15 @@ export function WorkOrderKanban({ orders: initialOrders }: Props) {
         console.warn("[Kanban] Drop received but no orderId found in dataTransfer");
         return;
       }
+
+      // Look up the CURRENT status from the latest ref (avoids stale closure)
+      const item = itemsRef.current.find((o) => o.workOrder.id === orderId);
+      if (!item) return;
+
+      const fromStatus = item.workOrder.status;
       if (fromStatus === newStatus) return;
-      if (fromStatus && !isValidTransition(fromStatus as any, newStatus as any)) {
+
+      if (!isValidTransition(fromStatus, newStatus as any)) {
         console.warn(`[Kanban] Invalid transition: ${fromStatus} -> ${newStatus}`);
         return;
       }
@@ -123,11 +157,11 @@ export function WorkOrderKanban({ orders: initialOrders }: Props) {
         router.refresh();
       } catch (err) {
         console.error("[Kanban] Status update failed:", err);
-        // Revert using latest items from ref
+        // Revert
         setItems((prev) =>
           prev.map((o) =>
             o.workOrder.id === orderId
-              ? { ...o, workOrder: { ...o.workOrder, status: fromStatus as any } }
+              ? { ...o, workOrder: { ...o.workOrder, status: fromStatus } }
               : o
           )
         );
@@ -160,13 +194,21 @@ export function WorkOrderKanban({ orders: initialOrders }: Props) {
       {/* Board */}
       <div
         ref={scrollRef}
-        className="flex flex-1 gap-3 overflow-x-auto overflow-y-hidden pb-2"
+        className={`flex flex-1 gap-3 overflow-x-auto overflow-y-hidden pb-2 select-none ${
+          isPanning ? "cursor-grabbing" : "cursor-grab"
+        }`}
+        onMouseDown={handleBoardMouseDown}
+        onMouseMove={handleBoardMouseMove}
+        onMouseUp={handleBoardMouseUp}
+        onMouseLeave={handleBoardMouseUp}
       >
         {visibleColumns.map((col) => {
           const colOrders = items.filter((o) => o.workOrder.status === col.key);
           const isDragOver = dragOverColumn === col.key;
           const isCollapsed = collapsed.has(col.key);
-          const isValidTarget = draggedStatus ? isValidTransition(draggedStatus as any, col.key as any) : false;
+          const isValidTarget = draggedStatus
+            ? isValidTransition(draggedStatus as any, col.key as any)
+            : false;
 
           if (isCollapsed) {
             return (
@@ -242,8 +284,9 @@ export function WorkOrderKanban({ orders: initialOrders }: Props) {
                 {colOrders.map((item) => (
                   <div
                     key={item.workOrder.id}
+                    data-kanban-card
                     draggable
-                    onDragStart={(e) => handleDragStart(e, item.workOrder.id, item.workOrder.status)}
+                    onDragStart={(e) => handleDragStart(e, item.workOrder.id)}
                     onDragEnd={handleDragEnd}
                     className={`group cursor-grab rounded-lg border border-[var(--border)] bg-[var(--bg)] p-3 shadow-sm transition-all active:cursor-grabbing ${
                       draggingId === item.workOrder.id
