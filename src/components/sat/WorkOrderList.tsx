@@ -1,20 +1,21 @@
 /**
  * Creation/modification date: 27/05/2026
  * Path: src/components/sat/WorkOrderList.tsx
- * Description: Client component that manages filters and switches between
- *              grid, table and kanban views.
+ * Description: Client component that manages filters, pagination, and switches
+ *              between grid, table and kanban views. Occupies full viewport.
  */
 
 "use client";
 
 import { useMemo } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import type { WorkOrder } from "@/types/sat";
 import { WorkOrderFilters } from "./WorkOrderFilters";
 import { WorkOrderCard } from "./WorkOrderCard";
 import { WorkOrderTable } from "./WorkOrderTable";
 import { WorkOrderKanban } from "./WorkOrderKanban";
+import { Pagination } from "@/components/ui/Pagination";
 
 interface OrderItem {
   workOrder: WorkOrder;
@@ -44,6 +45,8 @@ interface Props {
 export function WorkOrderList({ orders, categories, technicians }: Props) {
   const t = useTranslations("sat.workOrder");
   const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
 
   const search = searchParams.get("search")?.toLowerCase() ?? "";
   const statusFilters = searchParams.get("status")?.split(",") ?? [];
@@ -53,12 +56,22 @@ export function WorkOrderList({ orders, categories, technicians }: Props) {
   const dateFrom = searchParams.get("dateFrom");
   const dateTo = searchParams.get("dateTo");
   const view = searchParams.get("view") || "grid";
+  const page = Math.max(1, parseInt(searchParams.get("page") ?? "1", 10));
+  const pageSize = [25, 50, 100].includes(parseInt(searchParams.get("limit") ?? "25", 10))
+    ? parseInt(searchParams.get("limit") ?? "25", 10)
+    : 25;
+
+  const setParam = (key: string, value: string | null) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (value === null) params.delete(key);
+    else params.set(key, value);
+    router.push(`${pathname}?${params.toString()}`);
+  };
 
   const filtered = useMemo(() => {
     return orders.filter((item) => {
       const { workOrder, client, category, technician } = item;
 
-      // Text search
       if (search) {
         const haystack = [
           workOrder.number,
@@ -73,19 +86,11 @@ export function WorkOrderList({ orders, categories, technicians }: Props) {
         if (!haystack.includes(search)) return false;
       }
 
-      // Status filter
       if (statusFilters.length > 0 && !statusFilters.includes(workOrder.status)) return false;
-
-      // Category filter
       if (categoryFilters.length > 0 && !categoryFilters.includes(category.id)) return false;
-
-      // Priority filter
       if (priorityFilters.length > 0 && !priorityFilters.includes(workOrder.priority)) return false;
-
-      // Technician filter
       if (technicianFilter && technician?.id !== technicianFilter) return false;
 
-      // Date range
       if (dateFrom || dateTo) {
         const scheduled = workOrder.scheduledDate ? new Date(workOrder.scheduledDate) : null;
         if (!scheduled) return false;
@@ -105,33 +110,72 @@ export function WorkOrderList({ orders, categories, technicians }: Props) {
     });
   }, [orders, search, statusFilters, categoryFilters, priorityFilters, technicianFilter, dateFrom, dateTo]);
 
+  // Pagination slice
+  const paginated = useMemo(() => {
+    const start = (page - 1) * pageSize;
+    return filtered.slice(start, start + pageSize);
+  }, [filtered, page, pageSize]);
+
+  const isKanban = view === "kanban";
+
   return (
-    <div className="space-y-4">
+    <div className="flex h-full flex-col gap-3">
       <WorkOrderFilters categories={categories} technicians={technicians} />
 
-      <div className="text-xs text-[var(--text-muted)]">
-        {filtered.length} de {orders.length} ordres
+      <div className="flex items-center justify-between">
+        <div className="text-xs text-[var(--text-muted)]">
+          {filtered.length} de {orders.length} ordres
+        </div>
+        {!isKanban && (
+          <Pagination
+            currentPage={page}
+            totalItems={filtered.length}
+            pageSize={pageSize}
+            onPageChange={(p) => setParam("page", String(p))}
+            onPageSizeChange={(s) => {
+              setParam("limit", String(s));
+              setParam("page", "1");
+            }}
+          />
+        )}
       </div>
 
-      {filtered.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-[var(--border)] bg-[var(--surface)] py-16 text-center">
-          <p className="text-sm text-[var(--text-muted)]">{t("list.noResults")}</p>
-        </div>
-      ) : view === "table" ? (
-        <WorkOrderTable orders={filtered} />
-      ) : view === "kanban" ? (
-        <WorkOrderKanban orders={filtered} />
-      ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {filtered.map((item) => (
-            <WorkOrderCard
-              key={item.workOrder.id}
-              workOrder={item.workOrder}
-              client={item.client}
-              category={item.category}
-              technicianName={item.technician?.name}
-            />
-          ))}
+      <div className="min-h-0 flex-1">
+        {filtered.length === 0 ? (
+          <div className="flex h-full flex-col items-center justify-center rounded-lg border border-dashed border-[var(--border)] bg-[var(--surface)] text-center">
+            <p className="text-sm text-[var(--text-muted)]">{t("list.noResults")}</p>
+          </div>
+        ) : view === "table" ? (
+          <WorkOrderTable orders={paginated} />
+        ) : view === "kanban" ? (
+          <WorkOrderKanban orders={filtered} />
+        ) : (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {paginated.map((item) => (
+              <WorkOrderCard
+                key={item.workOrder.id}
+                workOrder={item.workOrder}
+                client={item.client}
+                category={item.category}
+                technicianName={item.technician?.name}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+
+      {!isKanban && filtered.length > 0 && (
+        <div className="flex justify-end pt-1">
+          <Pagination
+            currentPage={page}
+            totalItems={filtered.length}
+            pageSize={pageSize}
+            onPageChange={(p) => setParam("page", String(p))}
+            onPageSizeChange={(s) => {
+              setParam("limit", String(s));
+              setParam("page", "1");
+            }}
+          />
         </div>
       )}
     </div>

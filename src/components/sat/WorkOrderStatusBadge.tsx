@@ -1,8 +1,8 @@
 /**
- * Creation/modification date: 26/05/2026
+ * Creation/modification date: 27/05/2026
  * Path: src/components/sat/WorkOrderStatusBadge.tsx
- * Description: Pure presentational component for a work order status badge.
- *              Eliminates duplication between list and detail pages.
+ * Description: Refined status badge with subtle background dot indicator.
+ *              Inspired by Linear / Attio — no borders, no uppercase.
  */
 
 "use client";
@@ -15,30 +15,39 @@ interface Props {
   size?: "sm" | "md";
 }
 
-const STATUS_STYLES: Record<WorkOrderStatus, string> = {
-  pending: "bg-amber-100 text-amber-700 border-amber-200",
-  assigned: "bg-blue-100 text-blue-700 border-blue-200",
-  scheduled: "bg-blue-100 text-blue-700 border-blue-200",
-  in_progress: "bg-emerald-100 text-emerald-700 border-emerald-200",
-  paused: "bg-gray-100 text-gray-700 border-gray-200",
-  completed: "bg-teal-100 text-teal-700 border-teal-200",
-  closed: "bg-purple-100 text-purple-700 border-purple-200",
-  cancelled: "bg-red-100 text-red-700 border-red-200",
-  waiting_parts: "bg-orange-100 text-orange-700 border-orange-200",
-  waiting_client: "bg-orange-100 text-orange-700 border-orange-200",
+const STATUS_COLORS: Record<WorkOrderStatus, string> = {
+  pending: "#ca8a04",
+  assigned: "#3b82f6",
+  scheduled: "#8b5cf6",
+  in_progress: "#10b981",
+  paused: "#6b7280",
+  completed: "#14b8a6",
+  closed: "#6366f1",
+  cancelled: "#ef4444",
+  waiting_parts: "#f97316",
+  waiting_client: "#f59e0b",
 };
 
 export function WorkOrderStatusBadge({ status, size = "sm" }: Props) {
   const t = useTranslations("sat.workOrder");
+  const color = STATUS_COLORS[status];
 
   const sizeClasses = size === "md"
-    ? "px-3 py-1 text-xs"
-    : "px-2 py-0.5 text-[10px]";
+    ? "px-2 py-1 text-xs"
+    : "px-1.5 py-0.5 text-[11px]";
 
   return (
     <span
-      className={`rounded-full border font-semibold uppercase tracking-wide ${sizeClasses} ${STATUS_STYLES[status]}`}
+      className={`inline-flex items-center gap-1.5 rounded-md font-medium ${sizeClasses}`}
+      style={{
+        color,
+        backgroundColor: `${color}14`, // ~8% opacity
+      }}
     >
+      <span
+        className="h-1.5 w-1.5 rounded-full shrink-0"
+        style={{ backgroundColor: color }}
+      />
       {t(`list.status.${status}`)}
     </span>
   );

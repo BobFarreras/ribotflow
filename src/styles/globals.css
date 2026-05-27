@@ -56,13 +56,13 @@
 
 /* Dark Mode */
 .dark {
-  --bg: #0a0a0a;
-  --surface: #171717;
-  --surface-hover: #1f1f1f;
-  --border: #262626;
+  --bg: #121212;
+  --surface: #1e1e1e;
+  --surface-hover: #262626;
+  --border: #2e2e2e;
   --border-strong: #404040;
-  --text: #fafafa;
-  --text-muted: #a3a3a3;
+  --text: #f0f0f0;
+  --text-muted: #9ca3af;
   --text-inverse: #171717;
 
   --primary: #3b82f6;

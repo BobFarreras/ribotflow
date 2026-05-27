@@ -1,7 +1,7 @@
 /**
- * Creation/modification date: 26/05/2026
+ * Creation/modification date: 27/05/2026
  * Path: src/components/sat/WorkOrderPriorityBadge.tsx
- * Description: Pure presentational component for a work order priority badge.
+ * Description: Refined priority badge matching status badge style.
  */
 
 "use client";
@@ -13,20 +13,29 @@ interface Props {
   priority: WorkOrderPriority;
 }
 
-const PRIORITY_STYLES: Record<WorkOrderPriority, string> = {
-  urgent: "bg-red-100 text-red-700 border-red-200",
-  high: "bg-orange-100 text-orange-700 border-orange-200",
-  medium: "bg-blue-100 text-blue-700 border-blue-200",
-  low: "bg-gray-100 text-gray-700 border-gray-200",
+const PRIORITY_COLORS: Record<WorkOrderPriority, string> = {
+  low: "#6b7280",
+  medium: "#3b82f6",
+  high: "#f59e0b",
+  urgent: "#ef4444",
 };
 
 export function WorkOrderPriorityBadge({ priority }: Props) {
   const t = useTranslations("sat.workOrder");
+  const color = PRIORITY_COLORS[priority];
 
   return (
     <span
-      className={`rounded-full border px-2 py-0.5 text-[10px] font-medium ${PRIORITY_STYLES[priority]}`}
+      className="inline-flex items-center gap-1.5 rounded-md px-1.5 py-0.5 text-[11px] font-medium"
+      style={{
+        color,
+        backgroundColor: `${color}14`,
+      }}
     >
+      <span
+        className="h-1.5 w-1.5 rounded-full shrink-0"
+        style={{ backgroundColor: color }}
+      />
       {t(`list.priority.${priority}`)}
     </span>
   );
