@@ -114,7 +114,7 @@ describe("WorkOrder Service (Integration)", () => {
       expect(history.some((h) => h.statusTo === "assigned")).toBe(true);
     });
 
-    it("should reject invalid status transitions", async () => {
+    it("should allow any status transition", async () => {
       if (!hasDbConnection) return;
 
       const categories = await workOrderService.getDefaultCategoryId(
@@ -127,18 +127,19 @@ describe("WorkOrder Service (Integration)", () => {
         {
           clientId: testData.client.id,
           categoryId: categories,
-          title: "Invalid Transition Test",
+          title: "Free Transition Test",
         }
       );
 
-      await expect(
-        workOrderService.updateStatus(
-          testData.company.id,
-          workOrder.id,
-          testData.user.id,
-          "closed" // Invalid: pending -> closed
-        )
-      ).rejects.toThrow("Invalid status transition");
+      // Any transition is allowed — e.g. pending -> closed directly
+      const updated = await workOrderService.updateStatus(
+        testData.company.id,
+        workOrder.id,
+        testData.user.id,
+        "closed"
+      );
+
+      expect(updated.status).toBe("closed");
     });
 
     it("should set started_at on first in_progress", async () => {

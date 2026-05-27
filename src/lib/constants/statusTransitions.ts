@@ -6,17 +6,30 @@
 
 import type { WorkOrderStatus } from "@/types/sat";
 
+const ALL_STATUSES: WorkOrderStatus[] = [
+  "pending",
+  "assigned",
+  "scheduled",
+  "in_progress",
+  "paused",
+  "completed",
+  "closed",
+  "cancelled",
+  "waiting_parts",
+  "waiting_client",
+];
+
 export const VALID_STATUS_TRANSITIONS: Record<WorkOrderStatus, WorkOrderStatus[]> = {
-  pending: ["assigned", "scheduled", "cancelled"],
-  assigned: ["in_progress", "cancelled"],
-  scheduled: ["in_progress", "cancelled"],
-  in_progress: ["paused", "completed", "cancelled", "waiting_parts", "waiting_client"],
-  paused: ["in_progress", "cancelled"],
-  completed: ["closed", "in_progress"],
-  closed: [],
-  cancelled: ["pending"],
-  waiting_parts: ["in_progress", "cancelled"],
-  waiting_client: ["in_progress", "cancelled"],
+  pending: ALL_STATUSES,
+  assigned: ALL_STATUSES,
+  scheduled: ALL_STATUSES,
+  in_progress: ALL_STATUSES,
+  paused: ALL_STATUSES,
+  completed: ALL_STATUSES,
+  closed: ALL_STATUSES,
+  cancelled: ALL_STATUSES,
+  waiting_parts: ALL_STATUSES,
+  waiting_client: ALL_STATUSES,
 };
 
 export function isValidTransition(from: WorkOrderStatus, to: WorkOrderStatus): boolean {
