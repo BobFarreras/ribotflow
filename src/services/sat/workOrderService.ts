@@ -200,6 +200,7 @@ export const workOrderService = {
         category: {
           id: workOrderCategories.id,
           name: workOrderCategories.name,
+          slug: workOrderCategories.slug,
           color: workOrderCategories.color,
         },
         technician: {

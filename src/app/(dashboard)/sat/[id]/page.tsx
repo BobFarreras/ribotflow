@@ -1,8 +1,8 @@
 /**
- * Creation/modification date: 26/05/2026
+ * Creation/modification date: 27/05/2026
  * Path: src/app/(dashboard)/sat/[id]/page.tsx
- * Description: Work order detail page — orchestrates data fetching and delegates
- *              presentation to focused components (SoC / SOLID).
+ * Description: Work order detail page — compact dashboard layout that fits
+ *              entirely within the viewport. No vertical scroll.
  */
 
 import { auth } from "@/lib/auth";
@@ -15,7 +15,7 @@ import { locationService } from "@/services/sat/locationService";
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, MapPin, Phone, Calendar, FileText, FileCheck, User, Wrench, Car, Route, Euro, FilePlus } from "lucide-react";
 import { WorkOrderActions } from "@/components/sat/WorkOrderActions";
 import { TechnicianAssigner } from "@/components/sat/TechnicianAssigner";
 import { MaterialList } from "@/components/sat/MaterialList";
@@ -23,11 +23,11 @@ import { AttachmentSection } from "@/components/sat/AttachmentSection";
 import { SignatureCanvas } from "@/components/sat/SignatureCanvas";
 import { CheckInButton } from "@/components/sat/CheckInButton";
 import { WorkOrderStatusBadge } from "@/components/sat/WorkOrderStatusBadge";
+import { WorkOrderPriorityBadge } from "@/components/sat/WorkOrderPriorityBadge";
 import { StatusHistorySection } from "@/components/sat/StatusHistorySection";
-import { ClientInfoCard } from "@/components/sat/ClientInfoCard";
-import { CategoryInfoCard } from "@/components/sat/CategoryInfoCard";
-import { TravelCostCard } from "@/components/sat/TravelCostCard";
+import { GoogleMapsLink } from "@/components/sat/GoogleMapsLink";
 import { PdfGenerator } from "@/components/sat/PdfGenerator";
+import { CategoryIcon } from "@/components/sat/CategoryIcon";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -35,18 +35,14 @@ interface Props {
 
 export default async function WorkOrderDetailPage({ params }: Props) {
   const session = await auth();
-  if (!session?.user?.companyId) {
-    return null;
-  }
+  if (!session?.user?.companyId) return null;
 
   const { id } = await params;
   const companyId = session.user.companyId;
   const t = await getTranslations("sat.workOrder");
 
   const order = await workOrderService.getByIdWithRelations(companyId, id);
-  if (!order) {
-    notFound();
-  }
+  if (!order) notFound();
 
   const history = await workOrderService.getStatusHistory(id);
   const technicians = await workOrderService.getTechniciansByCompany(companyId);
@@ -62,177 +58,221 @@ export default async function WorkOrderDetailPage({ params }: Props) {
   const canSign = workOrder.status === "completed" || workOrder.status === "closed";
   const canCheckIn = workOrder.status === "assigned" || workOrder.status === "in_progress";
 
+  // Travel cost
+  const travelCost = workOrder.travelDistanceKm && session.user.travelRatePerKm
+    ? parseFloat(workOrder.travelDistanceKm) * parseFloat(session.user.travelRatePerKm)
+    : null;
+
   return (
-    <div className="flex-1 bg-[var(--bg)]">
-      {/* Header */}
-      <header className="border-b border-[var(--border)] bg-[var(--surface)] px-4 py-4 sm:px-6">
+    <div className="flex h-[calc(100dvh-1px)] flex-col bg-[var(--bg)]">
+      {/* ── Header ── */}
+      <header className="shrink-0 border-b border-[var(--border)] bg-[var(--surface)] px-4 py-3">
         <div className="mx-auto flex max-w-7xl items-center justify-between">
           <div className="flex items-center gap-3">
             <Link
               href="/sat"
-              className="flex h-8 w-8 items-center justify-center rounded-md border border-[var(--border)] text-[var(--text-muted)] transition-colors hover:bg-[var(--surface)]"
+              className="flex h-7 w-7 items-center justify-center rounded-md border border-[var(--border)] text-[var(--text-muted)] transition-colors hover:bg-[var(--bg)]"
             >
-              <ArrowLeft className="h-4 w-4" />
+              <ArrowLeft className="h-3.5 w-3.5" />
             </Link>
-            <div>
-              <span className="text-xs font-medium text-[var(--text-muted)]">
+            <div className="flex items-center gap-2">
+              <span className="rounded bg-[var(--bg)] px-1.5 py-0.5 text-[10px] font-mono font-medium text-[var(--text-muted)]">
                 {workOrder.number}
               </span>
-              <h1 className="text-lg font-semibold text-[var(--text)]">{workOrder.title}</h1>
+              <h1 className="text-base font-semibold text-[var(--text)]">{workOrder.title}</h1>
             </div>
           </div>
-          <WorkOrderStatusBadge status={workOrder.status} size="md" />
+          <div className="flex items-center gap-2">
+            <WorkOrderPriorityBadge priority={workOrder.priority} />
+            <WorkOrderStatusBadge status={workOrder.status} size="sm" />
+          </div>
         </div>
       </header>
 
-      {/* Content */}
-      <main className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6">
-        <div className="grid gap-6 lg:grid-cols-12">
-          {/* Main column */}
-          <div className="space-y-4 lg:col-span-7">
-            {/* Status history */}
-            <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4">
-              <h2 className="mb-3 text-sm font-semibold text-[var(--text)]">
-                {t("detail.statusHistory")}
-              </h2>
-              <StatusHistorySection history={history} />
-            </div>
+      {/* ── Info strip ── */}
+      <div className="shrink-0 border-b border-[var(--border)] bg-[var(--surface)] px-4 py-2">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-4 gap-y-1 text-xs text-[var(--text-muted)]">
+          <span className="flex items-center gap-1">
+            <User className="h-3 w-3" />
+            {client.name}
+            {client.phone && (
+              <a href={`tel:${client.phone}`} className="ml-1 text-[var(--module-sat)] hover:underline">
+                <Phone className="inline h-3 w-3" />
+              </a>
+            )}
+          </span>
+          <span className="flex items-center gap-1">
+            <CategoryIcon slug={category.slug} color={category.color} size={12} />
+            {category.name}
+          </span>
+          {workOrder.scheduledDate && (
+            <span className="flex items-center gap-1">
+              <Calendar className="h-3 w-3" />
+              {new Date(workOrder.scheduledDate).toLocaleDateString("ca-ES", { day: "2-digit", month: "short", year: "numeric" })}
+            </span>
+          )}
+          {workOrder.travelDistanceKm && (
+            <span className="flex items-center gap-1">
+              <Route className="h-3 w-3" />
+              {workOrder.travelDistanceKm} km
+              {workOrder.travelDurationMinutes && (
+                <span className="text-[10px] opacity-70">
+                  ({Math.floor(workOrder.travelDurationMinutes / 60)}h {workOrder.travelDurationMinutes % 60}m)
+                </span>
+              )}
+            </span>
+          )}
+          {travelCost !== null && (
+            <span className="flex items-center gap-1">
+              <Euro className="h-3 w-3" />
+              {travelCost.toFixed(2)} €
+            </span>
+          )}
+          {client.address && (
+            <span className="flex items-center gap-1">
+              <MapPin className="h-3 w-3" />
+              {client.address}
+              {client.location && <GoogleMapsLink lat={client.location.lat} lng={client.location.lng} label="Mapa" />}
+            </span>
+          )}
+        </div>
+      </div>
 
-            {/* Description */}
-            {workOrder.description && (
-              <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4">
-                <h2 className="mb-2 text-sm font-semibold text-[var(--text)]">
-                  {t("create.descriptionLabel")}
-                </h2>
-                <p className="whitespace-pre-wrap text-sm text-[var(--text-muted)]">
-                  {workOrder.description}
-                </p>
-              </div>
+      {/* ── Main content ── */}
+      <main className="mx-auto flex min-h-0 w-full max-w-7xl flex-1 gap-3 px-4 py-3">
+        {/* Left: Description + History */}
+        <div className="flex min-h-0 w-[34%] flex-col gap-3">
+          {/* Description */}
+          <div className="shrink-0 rounded-lg border border-[var(--border)] bg-[var(--surface)] p-3">
+            <h2 className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-[var(--text-muted)]">
+              {t("create.descriptionLabel")}
+            </h2>
+            {workOrder.description ? (
+              <p className="text-xs leading-relaxed text-[var(--text)]">
+                {workOrder.description}
+              </p>
+            ) : (
+              <p className="text-xs italic text-[var(--text-muted)]">Sense descripció</p>
             )}
           </div>
 
-          {/* Sidebar */}
-          <div className="space-y-4 lg:col-span-5">
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
-              <ClientInfoCard client={client} />
-              <CategoryInfoCard category={category} />
-              <TravelCostCard
-                distanceKm={workOrder.travelDistanceKm}
-                durationMinutes={workOrder.travelDurationMinutes}
-                ratePerKm={session.user.travelRatePerKm ?? null}
+          {/* Status history */}
+          <div className="flex min-h-0 flex-1 flex-col rounded-lg border border-[var(--border)] bg-[var(--surface)] p-3">
+            <h2 className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-[var(--text-muted)]">
+              {t("detail.statusHistory")}
+            </h2>
+            <div className="min-h-0 overflow-y-auto pr-1">
+              <StatusHistorySection history={history} />
+            </div>
+          </div>
+        </div>
+
+        {/* Center: Materials + Attachments */}
+        <div className="flex min-h-0 w-[33%] flex-col gap-3">
+          <div className="flex min-h-0 flex-1 flex-col rounded-lg border border-[var(--border)] bg-[var(--surface)] p-3">
+            <MaterialList materials={materials} workOrderId={workOrder.id} products={products} />
+          </div>
+          <div className="flex min-h-0 flex-1 flex-col rounded-lg border border-[var(--border)] bg-[var(--surface)] p-3">
+            <AttachmentSection attachments={attachments} workOrderId={workOrder.id} />
+          </div>
+        </div>
+
+        {/* Right: Actions + Meta + Quote */}
+        <div className="flex min-h-0 w-[33%] flex-col gap-3">
+          {/* Actions */}
+          <div className="shrink-0 rounded-lg border border-[var(--border)] bg-[var(--surface)] p-3">
+            <h2 className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-[var(--text-muted)]">
+              {t("detail.actionsTitle")}
+            </h2>
+            <WorkOrderActions workOrderId={workOrder.id} currentStatus={workOrder.status} />
+          </div>
+
+          {/* Technician */}
+          {userRole !== "TECHNICIAN" && (
+            <div className="shrink-0 rounded-lg border border-[var(--border)] bg-[var(--surface)] p-3">
+              <h2 className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-[var(--text-muted)]">
+                {t("detail.assignTitle")}
+              </h2>
+              <TechnicianAssigner
+                workOrderId={workOrder.id}
+                currentTechnicianId={order.technician?.id ?? null}
+                technicians={technicians}
               />
             </div>
+          )}
 
-            <MaterialList materials={materials} workOrderId={workOrder.id} products={products} />
-
-            <AttachmentSection attachments={attachments} workOrderId={workOrder.id} />
-
-            {/* Signature */}
-            {canSign && (
-              <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4">
-                <h2 className="mb-3 text-sm font-semibold text-[var(--text)]">
-                  {t("detail.signature")}
-                </h2>
-                {signature ? (
-                  <div className="space-y-2">
-                    <p className="text-sm text-[var(--text-muted)]">
-                      Signed by:{" "}
-                      <span className="font-medium text-[var(--text)]">{signature.signedBy}</span>
-                    </p>
-                    {signature.signaturePngUrl ? (
-                      <img
-                        src={signature.signaturePngUrl}
-                        alt="Signature"
-                        className="max-h-32 rounded border border-[var(--border)] bg-white"
-                      />
-                    ) : (
-                      <div
-                        className="rounded border border-[var(--border)] bg-white p-2"
-                        dangerouslySetInnerHTML={{ __html: signature.signatureSvg }}
-                      />
-                    )}
-                  </div>
-                ) : (
-                  <SignatureCanvas workOrderId={workOrder.id} />
-                )}
-              </div>
-            )}
-
-            {/* Technician assignment */}
-            {userRole !== "TECHNICIAN" && (
-              <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4">
-                <h2 className="mb-3 text-sm font-semibold text-[var(--text)]">
-                  {t("detail.assignTitle")}
-                </h2>
-                <TechnicianAssigner
-                  workOrderId={workOrder.id}
-                  currentTechnicianId={order.technician?.id ?? null}
-                  technicians={technicians}
-                />
-              </div>
-            )}
-
-            {/* PDF Report */}
-            <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4">
-              <h2 className="mb-3 text-sm font-semibold text-[var(--text)]">
-                {t("pdf.title")}
+          {/* Signature */}
+          {canSign && (
+            <div className="shrink-0 rounded-lg border border-[var(--border)] bg-[var(--surface)] p-3">
+              <h2 className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-[var(--text-muted)]">
+                {t("detail.signature")}
               </h2>
-              <PdfGenerator workOrderId={workOrder.id} pdfUrl={workOrder.pdfUrl} />
+              {signature ? (
+                <div className="flex items-center gap-2">
+                  <FileCheck className="h-4 w-4 text-emerald-500" />
+                  <span className="text-xs text-[var(--text)]">
+                    Signat per <span className="font-medium">{signature.signedBy}</span>
+                  </span>
+                </div>
+              ) : (
+                <SignatureCanvas workOrderId={workOrder.id} />
+              )}
             </div>
+          )}
 
-            {/* Geolocation / Check-in */}
-            {canCheckIn && userRole === "TECHNICIAN" && (
-              <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4">
-                <h2 className="mb-3 text-sm font-semibold text-[var(--text)]">
-                  {t("detail.location")}
-                </h2>
+          {/* PDF */}
+          <div className="shrink-0 rounded-lg border border-[var(--border)] bg-[var(--surface)] p-3">
+            <h2 className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-[var(--text-muted)]">
+              {t("pdf.title")}
+            </h2>
+            <PdfGenerator workOrderId={workOrder.id} pdfUrl={workOrder.pdfUrl} />
+          </div>
+
+          {/* Quote (placeholder) */}
+          <div className="shrink-0 rounded-lg border border-[var(--border)] bg-[var(--surface)] p-3">
+            <h2 className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-[var(--text-muted)]">
+              Pressupost
+            </h2>
+            <div className="flex items-center gap-2">
+              <FilePlus className="h-4 w-4 text-[var(--module-sat)]" />
+              <span className="text-xs text-[var(--text-muted)]">Sense pressupost associat</span>
+            </div>
+            <Link
+              href="#"
+              className="mt-2 inline-flex items-center gap-1 rounded-md bg-[var(--module-sat)]/10 px-2 py-1 text-[10px] font-medium text-[var(--module-sat)] transition-colors hover:bg-[var(--module-sat)]/20"
+            >
+              <FileText className="h-3 w-3" />
+              Crear pressupost
+            </Link>
+          </div>
+
+          {/* Check-in / Location */}
+          {(canCheckIn || locations.length > 0) && (
+            <div className="shrink-0 rounded-lg border border-[var(--border)] bg-[var(--surface)] p-3">
+              <h2 className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-[var(--text-muted)]">
+                Localització
+              </h2>
+              {canCheckIn && userRole === "TECHNICIAN" && (
                 <CheckInButton
                   workOrderId={workOrder.id}
                   clientLocation={client.location}
                   lastCheckIn={lastLocation ? { lat: Number(lastLocation.lat), lng: Number(lastLocation.lng), createdAt: lastLocation.createdAt } : null}
                 />
-              </div>
-            )}
-
-            {/* Location history (visible to all roles) */}
-            {locations.length > 0 && (
-              <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4">
-                <h2 className="mb-3 text-sm font-semibold text-[var(--text)]">
-                  {t("detail.locationHistory")}
-                </h2>
-                <div className="space-y-2">
-                  {locations.slice(0, 5).map((loc) => (
-                    <div key={loc.id} className="flex items-center justify-between text-sm">
-                      <div className="flex items-center gap-2">
-                        <span className={`inline-flex h-2 w-2 rounded-full ${
-                          loc.eventType === "check_in"
-                            ? "bg-emerald-500"
-                            : loc.eventType === "check_out"
-                            ? "bg-amber-500"
-                            : "bg-slate-400"
-                        }`} />
-                        <span className="text-[var(--text)] capitalize">{loc.eventType.replace("_", " ")}</span>
-                      </div>
-                      <span className="text-xs text-[var(--text-muted)]">
-                        {new Date(loc.createdAt).toLocaleTimeString("ca-ES", {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
+              )}
+              {locations.length > 0 && (
+                <div className="mt-2 space-y-1">
+                  {locations.slice(0, 3).map((loc) => (
+                    <div key={loc.id} className="flex items-center justify-between text-xs">
+                      <span className="capitalize text-[var(--text)]">{loc.eventType.replace("_", " ")}</span>
+                      <span className="text-[10px] text-[var(--text-muted)]">
+                        {new Date(loc.createdAt).toLocaleTimeString("ca-ES", { hour: "2-digit", minute: "2-digit" })}
                       </span>
                     </div>
                   ))}
                 </div>
-              </div>
-            )}
-
-            {/* Actions */}
-            <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4">
-              <h2 className="mb-3 text-sm font-semibold text-[var(--text)]">
-                {t("detail.actionsTitle")}
-              </h2>
-              <WorkOrderActions workOrderId={workOrder.id} currentStatus={workOrder.status} />
+              )}
             </div>
-          </div>
+          )}
         </div>
       </main>
     </div>

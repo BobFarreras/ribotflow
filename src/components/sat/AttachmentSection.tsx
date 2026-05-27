@@ -87,15 +87,15 @@ export function AttachmentSection({ attachments: initialAttachments, workOrderId
   const lightboxAttachment = lightboxIndex !== null ? attachments[lightboxIndex] : null;
 
   return (
-    <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4">
-      <div className="mb-3 flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-[var(--text)]">{t("title")}</h2>
+    <div className="flex h-full flex-col">
+      <div className="mb-2 flex items-center justify-between">
+        <h2 className="text-[11px] font-semibold uppercase tracking-wide text-[var(--text-muted)]">{t("title")}</h2>
         <button
           onClick={() => fileInputRef.current?.click()}
           disabled={isPending}
-          className="flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-[var(--primary)] transition-colors hover:bg-[var(--primary)]/10 disabled:opacity-50"
+          className="flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] font-medium text-[var(--primary)] transition-colors hover:bg-[var(--primary)]/10 disabled:opacity-50"
         >
-          <Upload className="h-3.5 w-3.5" />
+          <Upload className="h-3 w-3" />
           {t("uploadButton")}
         </button>
         <input
@@ -137,12 +137,12 @@ export function AttachmentSection({ attachments: initialAttachments, workOrderId
 
       {/* Grid */}
       {attachments.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-4 text-[var(--text-muted)]">
-          <ImageIcon className="mb-1 h-5 w-5 opacity-50" />
-          <p className="text-xs">{t("empty")}</p>
+        <div className="flex flex-1 flex-col items-center justify-center text-[var(--text-muted)]">
+          <ImageIcon className="mb-1 h-4 w-4 opacity-50" />
+          <p className="text-[10px]">{t("empty")}</p>
         </div>
       ) : (
-        <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+        <div className="grid grid-cols-4 gap-1.5">
           {attachments.map((a, index) => (
             <div
               key={a.id}
@@ -171,9 +171,9 @@ export function AttachmentSection({ attachments: initialAttachments, workOrderId
                   handleDelete(a.id);
                 }}
                 disabled={isPending}
-                className="absolute right-1 top-1 rounded bg-black/60 p-1 text-white opacity-0 transition-opacity group-hover:opacity-100 disabled:opacity-50"
+                className="absolute right-0.5 top-0.5 rounded bg-black/60 p-0.5 text-white opacity-0 transition-opacity group-hover:opacity-100 disabled:opacity-50"
               >
-                <Trash2 className="h-3 w-3" />
+                <Trash2 className="h-2.5 w-2.5" />
               </button>
             </div>
           ))}
