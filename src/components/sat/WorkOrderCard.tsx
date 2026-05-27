@@ -45,13 +45,7 @@ export function WorkOrderCard({ workOrder, client, category, technicianName }: P
 
       {/* Category & Priority */}
       <div className="mt-3 flex items-center gap-2">
-        <div
-          className="flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-medium"
-          style={{
-            backgroundColor: category.color ? `${category.color}15` : undefined,
-            color: category.color ?? undefined,
-          }}
-        >
+        <div className="flex items-center gap-1.5 text-xs text-[var(--text-muted)]">
           <CategoryIcon slug={category.slug} color={category.color} size={12} />
           {category.name}
         </div>

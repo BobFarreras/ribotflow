@@ -39,6 +39,9 @@ const COLUMNS = [
   { key: "cancelled", label: "Cancel·lada", short: "X", color: "#ef4444" },
 ];
 
+const DRAG_MIME_ORDER_ID = "application/x-ribotflow-order-id";
+const DRAG_MIME_STATUS = "application/x-ribotflow-status";
+
 export function WorkOrderKanban({ orders: initialOrders }: Props) {
   const router = useRouter();
   const [items, setItems] = useState<KanbanOrder[]>(initialOrders);
@@ -47,14 +50,23 @@ export function WorkOrderKanban({ orders: initialOrders }: Props) {
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
   const scrollRef = useRef<HTMLDivElement>(null);
 
+  // Refs for latest state inside event handlers (avoid stale closures)
+  const itemsRef = useRef(items);
+  const draggingIdRef = useRef(draggingId);
+  useEffect(() => { itemsRef.current = items; }, [items]);
+  useEffect(() => { draggingIdRef.current = draggingId; }, [draggingId]);
+
   // Keep local state in sync when prop changes (e.g. filter changes)
   useEffect(() => {
     setItems(initialOrders);
   }, [initialOrders]);
 
-  const handleDragStart = (e: React.DragEvent, orderId: string) => {
+  const handleDragStart = (e: React.DragEvent, orderId: string, fromStatus: string) => {
     setDraggingId(orderId);
     e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData(DRAG_MIME_ORDER_ID, orderId);
+    e.dataTransfer.setData(DRAG_MIME_STATUS, fromStatus);
+    // Also set plain text as fallback
     e.dataTransfer.setData("text/plain", orderId);
   };
 
@@ -63,15 +75,9 @@ export function WorkOrderKanban({ orders: initialOrders }: Props) {
     setDragOverColumn(null);
   };
 
-  const getDraggedStatus = (): string | null => {
-    if (!draggingId) return null;
-    const item = items.find((o) => o.workOrder.id === draggingId);
-    return item?.workOrder.status ?? null;
-  };
-
   const handleDragOver = (e: React.DragEvent, status: string) => {
     e.preventDefault();
-    const fromStatus = getDraggedStatus();
+    const fromStatus = e.dataTransfer.getData(DRAG_MIME_STATUS);
     if (fromStatus && !isValidTransition(fromStatus as any, status as any)) {
       e.dataTransfer.dropEffect = "none";
       return;
@@ -83,20 +89,18 @@ export function WorkOrderKanban({ orders: initialOrders }: Props) {
   const handleDrop = useCallback(
     async (e: React.DragEvent, newStatus: string) => {
       e.preventDefault();
-      const orderId = e.dataTransfer.getData("text/plain");
+      const orderId = e.dataTransfer.getData(DRAG_MIME_ORDER_ID) || e.dataTransfer.getData("text/plain");
+      const fromStatus = e.dataTransfer.getData(DRAG_MIME_STATUS);
       setDragOverColumn(null);
       setDraggingId(null);
 
-      if (!orderId) return;
-
-      const item = items.find((o) => o.workOrder.id === orderId);
-      if (!item || item.workOrder.status === newStatus) return;
-
-      // Validate transition client-side before optimistic update
-      if (!isValidTransition(item.workOrder.status, newStatus as any)) {
-        console.warn(
-          `[Kanban] Invalid transition: ${item.workOrder.status} -> ${newStatus}`
-        );
+      if (!orderId) {
+        console.warn("[Kanban] Drop received but no orderId found in dataTransfer");
+        return;
+      }
+      if (fromStatus === newStatus) return;
+      if (fromStatus && !isValidTransition(fromStatus as any, newStatus as any)) {
+        console.warn(`[Kanban] Invalid transition: ${fromStatus} -> ${newStatus}`);
         return;
       }
 
@@ -119,17 +123,17 @@ export function WorkOrderKanban({ orders: initialOrders }: Props) {
         router.refresh();
       } catch (err) {
         console.error("[Kanban] Status update failed:", err);
-        // Revert
+        // Revert using latest items from ref
         setItems((prev) =>
           prev.map((o) =>
             o.workOrder.id === orderId
-              ? { ...o, workOrder: { ...o.workOrder, status: item.workOrder.status } }
+              ? { ...o, workOrder: { ...o.workOrder, status: fromStatus as any } }
               : o
           )
         );
       }
     },
-    [items, router]
+    [router]
   );
 
   const toggleColumn = (key: string) => {
@@ -148,7 +152,8 @@ export function WorkOrderKanban({ orders: initialOrders }: Props) {
       ["pending", "assigned", "in_progress", "completed"].includes(col.key)
   );
 
-  const draggedStatus = getDraggedStatus();
+  const draggedItem = draggingId ? items.find((o) => o.workOrder.id === draggingId) : null;
+  const draggedStatus = draggedItem?.workOrder.status ?? null;
 
   return (
     <div className="flex h-full flex-col">
@@ -238,7 +243,7 @@ export function WorkOrderKanban({ orders: initialOrders }: Props) {
                   <div
                     key={item.workOrder.id}
                     draggable
-                    onDragStart={(e) => handleDragStart(e, item.workOrder.id)}
+                    onDragStart={(e) => handleDragStart(e, item.workOrder.id, item.workOrder.status)}
                     onDragEnd={handleDragEnd}
                     className={`group cursor-grab rounded-lg border border-[var(--border)] bg-[var(--bg)] p-3 shadow-sm transition-all active:cursor-grabbing ${
                       draggingId === item.workOrder.id
