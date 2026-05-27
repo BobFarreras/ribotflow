@@ -1,8 +1,8 @@
 /**
- * Creation/modification date: 26/05/2026
+ * Creation/modification date: 27/05/2026
  * Path: src/app/(dashboard)/sat/map/page.tsx
- * Description: Map view of all work orders. Server Component fetches data,
- *              passes to client MapView.
+ * Description: Map view of all work orders. Server Component fetches data
+ *              including HQ location and technicians, passes to client MapView.
  */
 
 import { auth } from "@/lib/auth";
@@ -10,6 +10,7 @@ import { getTranslations } from "next-intl/server";
 import { MapView } from "@/components/sat/MapView";
 import { db } from "@/db";
 import { workOrders, clients, workOrderCategories } from "@/db/schema/sat";
+import { companies, users } from "@/db/schema/auth";
 import { eq, and } from "drizzle-orm";
 
 export default async function WorkOrderMapPage() {
@@ -21,6 +22,17 @@ export default async function WorkOrderMapPage() {
   const companyId = session.user.companyId;
   const t = await getTranslations("sat.map");
 
+  // Get company HQ
+  const [company] = await db
+    .select({
+      name: companies.name,
+      location: companies.companyLocation,
+    })
+    .from(companies)
+    .where(eq(companies.id, companyId))
+    .limit(1);
+
+  // Get all orders with client, category, and technician
   const orders = await db
     .select({
       workOrder: workOrders,
@@ -32,7 +44,23 @@ export default async function WorkOrderMapPage() {
     .innerJoin(workOrderCategories, eq(workOrders.categoryId, workOrderCategories.id))
     .where(eq(workOrders.companyId, companyId));
 
-  const ordersWithLocation = orders.filter((o) => o.client.location != null);
+  // Fetch technicians for assigned orders
+  const technicianIds = orders
+    .map((o) => o.workOrder.assignedTo)
+    .filter((id): id is string => !!id);
+
+  const technicians = technicianIds.length > 0
+    ? await db.select().from(users).where(eq(users.companyId, companyId))
+    : [];
+
+  const technicianMap = new Map(technicians.map((u) => [u.id, u]));
+
+  const ordersWithLocation = orders
+    .filter((o) => o.client.location != null)
+    .map((o) => ({
+      ...o,
+      technician: o.workOrder.assignedTo ? technicianMap.get(o.workOrder.assignedTo) ?? null : null,
+    }));
 
   if (ordersWithLocation.length === 0) {
     return (
@@ -53,7 +81,11 @@ export default async function WorkOrderMapPage() {
           {t("subtitle", { count: ordersWithLocation.length })}
         </p>
       </header>
-      <MapView orders={ordersWithLocation} />
+      <MapView
+        orders={ordersWithLocation}
+        hqLocation={company?.location ?? null}
+        companyName={company?.name ?? "Seu"}
+      />
     </div>
   );
 }

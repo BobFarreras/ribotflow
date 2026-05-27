@@ -15,6 +15,7 @@ export interface User {
   name: string;
   role: Role;
   companyId: string;
+  travelRatePerKm?: string | null;
 }
 
 export interface Company {
@@ -34,6 +35,7 @@ declare module "next-auth" {
     id: string;
     companyId: string;
     role: Role;
+    travelRatePerKm?: string | null;
   }
 }
 

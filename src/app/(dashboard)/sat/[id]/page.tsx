@@ -26,6 +26,7 @@ import { WorkOrderStatusBadge } from "@/components/sat/WorkOrderStatusBadge";
 import { StatusHistorySection } from "@/components/sat/StatusHistorySection";
 import { ClientInfoCard } from "@/components/sat/ClientInfoCard";
 import { CategoryInfoCard } from "@/components/sat/CategoryInfoCard";
+import { TravelCostCard } from "@/components/sat/TravelCostCard";
 import { PdfGenerator } from "@/components/sat/PdfGenerator";
 
 interface Props {
@@ -115,6 +116,11 @@ export default async function WorkOrderDetailPage({ params }: Props) {
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
               <ClientInfoCard client={client} />
               <CategoryInfoCard category={category} />
+              <TravelCostCard
+                distanceKm={workOrder.travelDistanceKm}
+                durationMinutes={workOrder.travelDurationMinutes}
+                ratePerKm={session.user.travelRatePerKm ?? null}
+              />
             </div>
 
             <MaterialList materials={materials} workOrderId={workOrder.id} products={products} />

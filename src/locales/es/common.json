@@ -12,6 +12,8 @@
         "label": "SAT",
         "subItems": {
           "workOrders": "Órdenes de Trabajo",
+          "map": "Mapa",
+          "routes": "Rutas",
           "clients": "Clientes",
           "categories": "Categorías"
         }

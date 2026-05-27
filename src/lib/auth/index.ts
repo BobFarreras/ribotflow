@@ -8,7 +8,7 @@ import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { DrizzleAdapter } from "@auth/drizzle-adapter";
 import { db } from "@/db";
-import { users } from "@/db/schema/auth";
+import { users, companies } from "@/db/schema/auth";
 import { eq } from "drizzle-orm";
 import { verifyPassword } from "@/lib/utils/crypto";
 import type { Role } from "@/types";
@@ -71,6 +71,21 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         session.user.id = token.id as string;
         session.user.companyId = token.companyId as string;
         session.user.role = token.role as Role;
+
+        // Fetch company travel rate for the session
+        try {
+          const [company] = await db
+            .select({ travelRatePerKm: companies.travelRatePerKm })
+            .from(companies)
+            .where(eq(companies.id, token.companyId as string))
+            .limit(1);
+
+          if (company) {
+            session.user.travelRatePerKm = company.travelRatePerKm;
+          }
+        } catch {
+          // Ignore, travel rate is optional
+        }
       }
       return session;
     },

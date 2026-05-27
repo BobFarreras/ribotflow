@@ -7,7 +7,7 @@
  */
 
 import type { GeoPoint } from "./interface";
-import { calculateDistance } from "@/services/sat/locationService";
+import { calculateDistance } from "@/lib/utils/geo";
 
 export interface RouteStop {
   workOrderId: string;

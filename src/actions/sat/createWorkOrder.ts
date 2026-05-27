@@ -33,7 +33,7 @@ export async function createWorkOrderAction(rawInput: unknown) {
       input
     );
 
-    // Calculate travel distance from company headquarters to client
+    // Calculate travel distance from company headquarters to order location
     try {
       const [company] = await db
         .select({ companyLocation: companies.companyLocation })
@@ -41,17 +41,23 @@ export async function createWorkOrderAction(rawInput: unknown) {
         .where(eq(companies.id, companyId))
         .limit(1);
 
-      const [client] = await db
-        .select({ location: clients.location })
-        .from(clients)
-        .where(eq(clients.id, input.clientId))
-        .limit(1);
+      // Priority: use order-specific location, fallback to client location
+      let destination = input.location ?? null;
 
-      if (company?.companyLocation && client?.location) {
+      if (!destination && input.clientId) {
+        const [client] = await db
+          .select({ location: clients.location })
+          .from(clients)
+          .where(eq(clients.id, input.clientId))
+          .limit(1);
+        destination = client?.location ?? null;
+      }
+
+      if (company?.companyLocation && destination) {
         const engine = createDistanceEngine();
         const route = await engine.calculateDistance(
           company.companyLocation,
-          client.location
+          destination
         );
 
         await workOrderService.updateTravelMetrics(

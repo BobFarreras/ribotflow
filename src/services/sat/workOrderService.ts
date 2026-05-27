@@ -89,6 +89,8 @@ export const workOrderService = {
         scheduledDate: input.scheduledDate ? new Date(input.scheduledDate) : null,
         estimatedDurationMinutes: input.estimatedDurationMinutes ?? null,
         notes: input.notes ?? null,
+        address: input.address ?? null,
+        location: input.location ?? null,
         status: "pending",
       })
       .returning();

@@ -19,7 +19,12 @@ export default async function NewWorkOrderPage() {
   const companyId = session.user.companyId;
 
   const clientList = await db
-    .select({ id: clients.id, name: clients.name })
+    .select({
+      id: clients.id,
+      name: clients.name,
+      address: clients.address,
+      location: clients.location,
+    })
     .from(clients)
     .where(eq(clients.companyId, companyId))
     .orderBy(asc(clients.name));

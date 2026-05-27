@@ -7,12 +7,16 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import { GoogleMapsLink } from "./GoogleMapsLink";
+import { MapPin } from "lucide-react";
+
 interface Props {
   client: {
     name: string;
     phone: string | null;
     email: string | null;
     address: string | null;
+    location?: { lat: number; lng: number } | null;
   };
 }
 
@@ -28,7 +32,21 @@ export function ClientInfoCard({ client }: Props) {
         <p className="font-medium">{client.name}</p>
         {client.phone && <p className="mt-1 text-[var(--text-muted)]">{client.phone}</p>}
         {client.email && <p className="text-[var(--text-muted)]">{client.email}</p>}
-        {client.address && <p className="text-[var(--text-muted)]">{client.address}</p>}
+        {client.address && (
+          <div className="mt-1 flex items-start gap-2">
+            <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[var(--text-muted)]" />
+            <span className="text-[var(--text-muted)]">{client.address}</span>
+          </div>
+        )}
+        {client.location && (
+          <div className="mt-2">
+            <GoogleMapsLink
+              lat={client.location.lat}
+              lng={client.location.lng}
+              label="Veure mapa"
+            />
+          </div>
+        )}
       </div>
     </div>
   );

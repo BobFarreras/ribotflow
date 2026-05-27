@@ -34,9 +34,9 @@ async function seedDemo() {
         name: "DigitAIStudios",
         tenantSlug: "ditaistudios",
         plan: "plus",
-        companyAddress: "Carrer de la Tecnologia 42, Barcelona",
-        companyLocation: { lat: 41.3851, lng: 2.1734 },
-        travelRatePerKm: "0.45",
+        companyAddress: "Carrer Nou 15, La Bisbal d'Empordà",
+        companyLocation: { lat: 41.96011156891511, lng: 3.0391116346094664 },
+        travelRatePerKm: "0.40",
       })
       .returning();
     console.log(`✅ Created company: ${company.name} (${company.id})`);
@@ -145,14 +145,14 @@ async function seedDemo() {
 
   // 5. Seed clients
   const demoClients = [
-    { name: "Restaurant La Taula", email: "contact@lataula.cat", phone: "933112233", address: "Carrer Major 45, Barcelona", location: { lat: 41.3879, lng: 2.1699 } },
-    { name: "Gimnàs FitPro", email: "info@fitpro.es", phone: "934445566", address: "Avinguda Diagonal 220, Barcelona", location: { lat: 41.3895, lng: 2.1778 } },
-    { name: "Clínica Dental Smile", email: "hola@smiledental.cat", phone: "935556677", address: "Carrer Aragó 88, Barcelona", location: { lat: 41.3908, lng: 2.1654 } },
-    { name: "Hotel Marina", email: "recepcio@hotelmarina.com", phone: "936667788", address: "Passeig Marítim 12, Castelldefels", location: { lat: 41.2804, lng: 1.9769 } },
-    { name: "Escola Creativa", email: "direccio@escolacreativa.cat", phone: "937778899", address: "Carrer València 156, Barcelona", location: { lat: 41.3943, lng: 2.1602 } },
-    { name: "Supermercat Fresc", email: "admin@superfresc.es", phone: "938889900", address: "Carrer Sants 77, Barcelona", location: { lat: 41.3759, lng: 2.1356 } },
-    { name: "Oficines Nexus", email: "contacte@oficinesnexus.com", phone: "931234567", address: "Gran Via 340, Barcelona", location: { lat: 41.3853, lng: 2.1682 } },
-    { name: "Taller Mecànic Ràpid", email: "taller@mecanicrapid.cat", phone: "932345678", address: "Carrer Industria 12, Hospitalet", location: { lat: 41.3596, lng: 2.0998 } },
+    { name: "Restaurant El Terrall", email: "info@elterrall.cat", phone: "972642100", address: "Carrer Major 28, La Bisbal d'Empordà", location: { lat: 41.9598, lng: 3.0378 } },
+    { name: "Hotel Museum", email: "recepcio@hotelmuseum.cat", phone: "972642312", address: "Plaça Major 1, La Bisbal d'Empordà", location: { lat: 41.9591, lng: 3.0402 } },
+    { name: "Escola Pia", email: "secretaria@escolapia.cat", phone: "972642455", address: "Carrer de l'Església 12, La Bisbal d'Empordà", location: { lat: 41.9605, lng: 3.0385 } },
+    { name: "Can Roura - Ferreteria", email: "info@canroura.cat", phone: "972642678", address: "Avinguda de Francesc Macià 45, La Bisbal d'Empordà", location: { lat: 41.9572, lng: 3.0421 } },
+    { name: "Supermercat Esclat", email: "bisbal@esclat.cat", phone: "972642789", address: "Carrer de la Mercè 8, La Bisbal d'Empordà", location: { lat: 41.9612, lng: 3.0365 } },
+    { name: "Gimnàs Olymp", email: "contacte@gimnasolymp.cat", phone: "972642901", address: "Polígon Industrial, Parcel·la 12, La Bisbal d'Empordà", location: { lat: 41.9555, lng: 3.0445 } },
+    { name: "Clínica Dental Bisbal", email: "hola@dentalbisbal.cat", phone: "972643012", address: "Carrer de Santa Margarida 6, La Bisbal d'Empordà", location: { lat: 41.9585, lng: 3.0398 } },
+    { name: "Taller Mecànic Romagosa", email: "taller@romagosa.cat", phone: "972643123", address: "Carretera de Girona 15, La Bisbal d'Empordà", location: { lat: 41.9568, lng: 3.0412 } },
   ];
 
   const existingClients = await db
@@ -183,6 +183,7 @@ async function seedDemo() {
       description: "L'aire condicionat de la sala principal no refreda prou. Possible falta de gas o compressor defectuós.",
       priority: "urgent" as const,
       status: "in_progress" as const,
+      assignedTo: true,
       scheduledDate: new Date(Date.now() + 86400000),
       estimatedDurationMinutes: 120,
     },
@@ -192,7 +193,8 @@ async function seedDemo() {
       title: "Manteniment mensual màquines de cardio",
       description: "Revisió i lubricació de cintes de córrer i bicicletes estàtiques. Canviar filtres d'aire.",
       priority: "medium" as const,
-      status: "scheduled" as const,
+      status: "assigned" as const,
+      assignedTo: true,
       scheduledDate: new Date(Date.now() + 172800000),
       estimatedDurationMinutes: 180,
     },
@@ -202,7 +204,8 @@ async function seedDemo() {
       title: "Reparació porta d'accés clínica",
       description: "La porta automàtica d'accés no s'obre correctament. Sensor de moviment possiblement descalibrat.",
       priority: "high" as const,
-      status: "pending" as const,
+      status: "assigned" as const,
+      assignedTo: true,
       scheduledDate: new Date(Date.now() + 43200000),
       estimatedDurationMinutes: 90,
     },
@@ -212,7 +215,8 @@ async function seedDemo() {
       title: "Instal·lació sistema de clau electrònica habitacions 201-210",
       description: "Substituir panys tradicionals per panys electrònics amb targeta NFC. Programar accessos per recepció.",
       priority: "medium" as const,
-      status: "in_progress" as const,
+      status: "assigned" as const,
+      assignedTo: true,
       scheduledDate: new Date(Date.now() + 259200000),
       estimatedDurationMinutes: 360,
     },
@@ -232,7 +236,8 @@ async function seedDemo() {
       title: "Revisió cameras de seguretat i alarmes",
       description: "Revisar funcionament de les 12 càmeres de seguretat. Comprovar connexió amb central d'alarmes.",
       priority: "high" as const,
-      status: "waiting_parts" as const,
+      status: "assigned" as const,
+      assignedTo: true,
       scheduledDate: new Date(Date.now() + 64800000),
       estimatedDurationMinutes: 150,
     },
@@ -242,7 +247,8 @@ async function seedDemo() {
       title: "Revisió trimestral instal·lació elèctrica",
       description: "Inspecció de quadres elèctrics, diferencials i preses. Verificar terra i proteccions.",
       priority: "medium" as const,
-      status: "scheduled" as const,
+      status: "assigned" as const,
+      assignedTo: true,
       scheduledDate: new Date(Date.now() + 345600000),
       estimatedDurationMinutes: 120,
     },
@@ -253,6 +259,7 @@ async function seedDemo() {
       description: "L'elevador de 3 tones fa soroll estrany en pujar. Revisar bomba hidràulica i seguretat.",
       priority: "urgent" as const,
       status: "in_progress" as const,
+      assignedTo: true,
       scheduledDate: new Date(Date.now() + 21600000),
       estimatedDurationMinutes: 180,
     },
@@ -263,6 +270,7 @@ async function seedDemo() {
       description: "Instal·lar extractor nou amb filtres de carbó per a cuina industrial. Dimensionar canalització.",
       priority: "high" as const,
       status: "paused" as const,
+      assignedTo: true,
       scheduledDate: new Date(Date.now() + 518400000),
       estimatedDurationMinutes: 480,
     },
@@ -319,6 +327,7 @@ async function seedDemo() {
           clientId: client.id,
           categoryId: category.id,
           createdBy: userId,
+          assignedTo: orderData.assignedTo ? userId : null,
           number,
           title: orderData.title,
           description: orderData.description,
@@ -342,7 +351,7 @@ async function seedDemo() {
         reason: "Work order created",
       });
 
-      if (orderData.status !== "pending") {
+      if ((orderData.status as string) !== "pending") {
         await db.insert(workOrderStatusHistory).values({
           workOrderId: workOrder.id,
           statusFrom: "pending",

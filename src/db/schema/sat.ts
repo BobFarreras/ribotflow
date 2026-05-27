@@ -151,6 +151,8 @@ export const workOrders = pgTable(
     pdfUrl: text("pdf_url"),
     travelDistanceKm: numeric("travel_distance_km", { precision: 10, scale: 2 }),
     travelDurationMinutes: integer("travel_duration_minutes"),
+    address: text("address"),
+    location: jsonb("location").$type<{ lat: number; lng: number }>(),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
   },

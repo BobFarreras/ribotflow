@@ -2,20 +2,24 @@
  * Creation/modification date: 24/05/2026
  * Path: src/components/sat/WorkOrderForm.tsx
  * Description: Client-side work order creation form with validation feedback.
+ *              Includes address autocomplete with coordinates via Nominatim.
  */
 
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { createWorkOrderAction } from "@/actions/sat/createWorkOrder";
-import { ArrowLeft, Save } from "lucide-react";
+import { AddressAutocomplete } from "./AddressAutocomplete";
+import { ArrowLeft, Save, MapPin, Home } from "lucide-react";
 import Link from "next/link";
 
 interface ClientOption {
   id: string;
   name: string;
+  address: string | null;
+  location: { lat: number; lng: number } | null;
 }
 
 interface CategoryOption {
@@ -43,6 +47,37 @@ export function WorkOrderForm({ clients, categories }: Props) {
   const [scheduledDate, setScheduledDate] = useState("");
   const [estimatedDuration, setEstimatedDuration] = useState("");
   const [notes, setNotes] = useState("");
+  const [address, setAddress] = useState("");
+  const [location, setLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [useClientAddress, setUseClientAddress] = useState(true);
+
+  const selectedClient = clients.find((c) => c.id === clientId);
+
+  const handleClientChange = (id: string) => {
+    setClientId(id);
+    const client = clients.find((c) => c.id === id);
+    if (client && useClientAddress) {
+      setAddress(client.address ?? "");
+      setLocation(client.location);
+    }
+  };
+
+  const handleUseClientAddressToggle = (checked: boolean) => {
+    setUseClientAddress(checked);
+    if (checked && selectedClient) {
+      setAddress(selectedClient.address ?? "");
+      setLocation(selectedClient.location);
+    }
+  };
+
+  const handleAddressChange = useCallback(
+    (newAddress: string, newLocation: { lat: number; lng: number } | null) => {
+      setAddress(newAddress);
+      setLocation(newLocation);
+      if (!newLocation) setUseClientAddress(false);
+    },
+    []
+  );
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -58,6 +93,8 @@ export function WorkOrderForm({ clients, categories }: Props) {
       scheduledDate: scheduledDate || undefined,
       estimatedDurationMinutes: estimatedDuration ? parseInt(estimatedDuration, 10) : undefined,
       notes: notes || undefined,
+      address: address || undefined,
+      location: location ?? undefined,
     });
 
     setIsSubmitting(false);
@@ -98,7 +135,7 @@ export function WorkOrderForm({ clients, categories }: Props) {
               id="client"
               required
               value={clientId}
-              onChange={(e) => setClientId(e.target.value)}
+              onChange={(e) => handleClientChange(e.target.value)}
               className="w-full rounded-md border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-sm text-[var(--text)] focus:border-[var(--module-sat)] focus:outline-none focus:ring-1 focus:ring-[var(--module-sat)]"
             >
               <option value="">— Selecciona —</option>
@@ -159,6 +196,59 @@ export function WorkOrderForm({ clients, categories }: Props) {
             onChange={(e) => setDescription(e.target.value)}
             className="w-full rounded-md border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-sm text-[var(--text)] focus:border-[var(--module-sat)] focus:outline-none focus:ring-1 focus:ring-[var(--module-sat)]"
           />
+        </div>
+
+        {/* Address Section */}
+        <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4">
+          <div className="mb-3 flex items-center justify-between">
+            <label className="flex items-center gap-2 text-sm font-medium text-[var(--text)]">
+              <MapPin className="h-4 w-4 text-[var(--module-sat)]" />
+              Ubicació de l'ordre
+            </label>
+            {selectedClient && (
+              <label className="flex items-center gap-2 text-sm text-[var(--text-muted)]">
+                <input
+                  type="checkbox"
+                  checked={useClientAddress}
+                  onChange={(e) => handleUseClientAddressToggle(e.target.checked)}
+                  className="h-4 w-4 rounded border-[var(--border)]"
+                />
+                <span className="flex items-center gap-1">
+                  <Home className="h-3 w-3" />
+                  Usar adreça del client
+                </span>
+              </label>
+            )}
+          </div>
+
+          <AddressAutocomplete
+            value={address}
+            onChange={handleAddressChange}
+            placeholder="Cerca adreça de l'ordre..."
+          />
+
+          {location && (
+            <div className="mt-2 flex items-center gap-2 text-xs text-[var(--text-muted)]">
+              <MapPin className="h-3 w-3 text-green-500" />
+              <span>
+                Coordenades: {location.lat.toFixed(6)}, {location.lng.toFixed(6)}
+              </span>
+              <a
+                href={`https://www.google.com/maps?q=${location.lat},${location.lng}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[var(--module-sat)] hover:underline"
+              >
+                Veure a Google Maps
+              </a>
+            </div>
+          )}
+
+          {!location && address && (
+            <p className="mt-2 text-xs text-amber-600">
+              ⚠️ Adreça sense coordenades. Cerca i selecciona una adreça per calcular la distància.
+            </p>
+          )}
         </div>
 
         <div className="grid gap-4 sm:grid-cols-3">
@@ -246,3 +336,4 @@ export function WorkOrderForm({ clients, categories }: Props) {
     </div>
   );
 }
+

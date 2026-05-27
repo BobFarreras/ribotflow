@@ -30,6 +30,8 @@ import {
   Fingerprint,
   Building2,
   Shield,
+  Map,
+  Route,
 } from "lucide-react";
 import { useSidebar } from "./SidebarContext";
 
@@ -58,6 +60,8 @@ const navItems: NavItem[] = [
     icon: Wrench,
     subItems: [
       { key: "workOrders", href: "/sat", icon: List },
+      { key: "map", href: "/sat/map", icon: Map },
+      { key: "routes", href: "/sat/routes", icon: Route },
       { key: "clients", href: "/sat/clients", icon: UserCircle },
       { key: "categories", href: "/sat/categories", icon: Tag },
     ],
