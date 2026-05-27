@@ -1,5 +1,5 @@
 /**
- * Creation/modification date: 26/05/2026
+ * Creation/modification date: 27/05/2026
  * Path: src/components/sat/AttachmentSection.tsx
  * Description: Client component for uploading and displaying work order attachments.
  *              Supports photos with before/after labels, previews, and lightbox.
@@ -24,8 +24,6 @@ export function AttachmentSection({ attachments: initialAttachments, workOrderId
   const t = useTranslations("sat.attachments");
   const [attachments, setAttachments] = useState(initialAttachments);
   const [isPending, startTransition] = useTransition();
-  const [isBefore, setIsBefore] = useState(false);
-  const [caption, setCaption] = useState("");
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [customFileName, setCustomFileName] = useState("");
@@ -40,11 +38,13 @@ export function AttachmentSection({ attachments: initialAttachments, workOrderId
 
     setError(null);
     setPendingFile(file);
-    setPreviewUrl(URL.createObjectURL(file));
     setCustomFileName(file.name);
     setRenameMode(false);
-    setCaption("");
-    setIsBefore(false);
+
+    // Use FileReader for a robust data-url preview (works with all file types as fallback)
+    const reader = new FileReader();
+    reader.onload = () => setPreviewUrl(reader.result as string);
+    reader.readAsDataURL(file);
 
     // Reset input so the same file can be selected again if cancelled
     if (fileInputRef.current) fileInputRef.current.value = "";
@@ -57,8 +57,7 @@ export function AttachmentSection({ attachments: initialAttachments, workOrderId
       const formData = new FormData();
       formData.append("file", pendingFile);
       formData.append("workOrderId", workOrderId);
-      formData.append("isBefore", String(isBefore));
-      if (caption) formData.append("caption", caption);
+      formData.append("isBefore", "false");
       if (customFileName.trim()) formData.append("fileName", customFileName.trim());
 
       const result = await addAttachmentAction(formData);
@@ -69,8 +68,6 @@ export function AttachmentSection({ attachments: initialAttachments, workOrderId
         setPendingFile(null);
         setCustomFileName("");
         setRenameMode(false);
-        setCaption("");
-        setIsBefore(false);
       } else {
         setError(result.error || t("invalidType"));
       }
@@ -82,8 +79,6 @@ export function AttachmentSection({ attachments: initialAttachments, workOrderId
     setPendingFile(null);
     setCustomFileName("");
     setRenameMode(false);
-    setCaption("");
-    setIsBefore(false);
     setError(null);
   };
 
@@ -129,11 +124,17 @@ export function AttachmentSection({ attachments: initialAttachments, workOrderId
         />
       </div>
 
-      {/* Upload preview + options */}
+      {/* Upload preview + file name */}
       {previewUrl && pendingFile && (
         <div className="mb-2 space-y-2 rounded-md border border-[var(--border)] bg-[var(--bg)] p-2">
-          <div className="relative aspect-video w-full overflow-hidden rounded-md">
-            <img src={previewUrl} alt={t("previewAlt")} className="h-full w-full object-contain" />
+          {/* Preview image */}
+          <div className="relative w-full overflow-hidden rounded-md" style={{ aspectRatio: "16/9" }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={previewUrl}
+              alt="Vista prèvia"
+              className="h-full w-full object-contain"
+            />
           </div>
 
           {/* File name — editable */}
@@ -161,24 +162,6 @@ export function AttachmentSection({ attachments: initialAttachments, workOrderId
             </button>
           </div>
 
-          <div className="flex items-center gap-3">
-            <label className="flex items-center gap-1.5 text-xs text-[var(--text)]">
-              <input
-                type="checkbox"
-                checked={isBefore}
-                onChange={(e) => setIsBefore(e.target.checked)}
-                className="h-3.5 w-3.5 rounded border-[var(--border)]"
-              />
-              {t("beforeLabel")}
-            </label>
-            <input
-              type="text"
-              placeholder={t("captionPlaceholder")}
-              value={caption}
-              onChange={(e) => setCaption(e.target.value)}
-              className="flex-1 rounded-md border border-[var(--border)] bg-[var(--surface)] px-2.5 py-1 text-xs text-[var(--text)] placeholder:text-[var(--text-muted)] focus:border-[var(--primary)] focus:outline-none"
-            />
-          </div>
           {error && <p className="text-xs text-red-500">{error}</p>}
           <div className="flex justify-end gap-2">
             <button
