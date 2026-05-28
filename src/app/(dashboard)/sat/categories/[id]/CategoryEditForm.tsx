@@ -1,7 +1,7 @@
 /**
  * Creation/modification date: 27/05/2026
- * Path: src/app/(dashboard)/sat/categories/new/page.tsx
- * Description: Create new work order category page with visual icon picker.
+ * Path: src/app/(dashboard)/sat/categories/[id]/CategoryEditForm.tsx
+ * Description: Client form for editing a work order category.
  */
 
 "use client";
@@ -9,7 +9,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { createCategoryAction } from "@/actions/sat/createCategory";
+import { updateCategoryAction } from "@/actions/sat/updateCategory";
 import { ArrowLeft, Tag, Loader2 } from "lucide-react";
 import { ICONS, CategoryIcon } from "@/components/sat/CategoryIcon";
 
@@ -21,42 +21,36 @@ const COLOR_OPTIONS = [
 
 const ICON_SLUGS = Object.keys(ICONS);
 
-export default function NewCategoryPage() {
+interface Props {
+  categoryId: string;
+  initialData: {
+    name: string;
+    slug: string;
+    color: string | null;
+    icon: string | null;
+    isDefault: boolean;
+  };
+}
+
+export function CategoryEditForm({ categoryId, initialData }: Props) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
-    name: "",
-    slug: "",
-    color: COLOR_OPTIONS[0],
-    icon: ICON_SLUGS[0],
-    isDefault: false,
+    name: initialData.name,
+    slug: initialData.slug,
+    color: initialData.color || COLOR_OPTIONS[0],
+    icon: initialData.icon || ICON_SLUGS[0],
+    isDefault: initialData.isDefault,
   });
-
-  const generateSlug = (name: string) => {
-    return name
-      .toLowerCase()
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .replace(/[^a-z0-9]+/g, "_")
-      .replace(/^_+|_+$/g, "");
-  };
-
-  const handleNameChange = (name: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      name,
-      slug: prev.slug === generateSlug(prev.name) ? generateSlug(name) : prev.slug,
-    }));
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
 
-    const result = await createCategoryAction({
+    const result = await updateCategoryAction(categoryId, {
       name: formData.name,
       slug: formData.slug,
       color: formData.color,
@@ -86,7 +80,7 @@ export default function NewCategoryPage() {
           </Link>
           <div className="flex items-center gap-2">
             <Tag className="h-5 w-5 text-[var(--module-sat)]" />
-            <h1 className="text-lg font-semibold text-[var(--text)]">Nova Categoria</h1>
+            <h1 className="text-lg font-semibold text-[var(--text)]">Editar Categoria</h1>
           </div>
         </div>
       </header>
@@ -106,10 +100,9 @@ export default function NewCategoryPage() {
             <input
               type="text"
               value={formData.name}
-              onChange={(e) => handleNameChange(e.target.value)}
-              placeholder="Ex: Visita d'obra"
+              onChange={(e) => setFormData((p) => ({ ...p, name: e.target.value }))}
               required
-              className="w-full rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 py-2 text-sm text-[var(--text)] outline-none placeholder:text-[var(--text-muted)] focus:border-[var(--module-sat)]"
+              className="w-full rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 py-2 text-sm text-[var(--text)] outline-none focus:border-[var(--module-sat)]"
             />
           </div>
 
@@ -121,14 +114,10 @@ export default function NewCategoryPage() {
               type="text"
               value={formData.slug}
               onChange={(e) => setFormData((p) => ({ ...p, slug: e.target.value }))}
-              placeholder="visita_dobra"
               required
               pattern="^[a-z0-9_-]+$"
-              className="w-full rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 py-2 text-sm text-[var(--text)] outline-none placeholder:text-[var(--text-muted)] focus:border-[var(--module-sat)]"
+              className="w-full rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 py-2 text-sm text-[var(--text)] outline-none focus:border-[var(--module-sat)]"
             />
-            <p className="mt-1 text-xs text-[var(--text-muted)]">
-              Identificador únic. Només minúscules, números, guions i guions baixos.
-            </p>
           </div>
 
           <div>
@@ -175,7 +164,7 @@ export default function NewCategoryPage() {
               })}
             </div>
             <p className="mt-1.5 text-xs text-[var(--text-muted)]">
-              Seleccionada: <span className="font-medium text-[var(--text)]">{ICONS[formData.icon].label}</span>
+              Seleccionada: <span className="font-medium text-[var(--text)]">{ICONS[formData.icon]?.label ?? ""}</span>
             </p>
           </div>
 
@@ -203,7 +192,7 @@ export default function NewCategoryPage() {
               className="flex items-center gap-2 rounded-lg bg-[var(--module-sat)] px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50"
             >
               {isLoading && <Loader2 className="h-4 w-4 animate-spin" />}
-              Crear categoria
+              Desar canvis
             </button>
           </div>
         </form>

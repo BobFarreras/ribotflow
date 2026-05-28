@@ -75,11 +75,11 @@ async function seedDemo() {
 
   // 3. Seed categories
   const defaultCategories = [
-    { name: "Reparació", slug: "repair", color: "#ef4444", isDefault: true },
-    { name: "Manteniment", slug: "maintenance", color: "#3b82f6", isDefault: false },
-    { name: "Instal·lació", slug: "installation", color: "#10b981", isDefault: false },
-    { name: "Muntatge", slug: "assembly", color: "#f59e0b", isDefault: false },
-    { name: "Revisió", slug: "inspection", color: "#8b5cf6", isDefault: false },
+    { name: "Reparació", slug: "repair", icon: "repair", color: "#ef4444", isDefault: true },
+    { name: "Manteniment", slug: "maintenance", icon: "maintenance", color: "#3b82f6", isDefault: false },
+    { name: "Instal·lació", slug: "installation", icon: "installation", color: "#10b981", isDefault: false },
+    { name: "Muntatge", slug: "assembly", icon: "assembly", color: "#f59e0b", isDefault: false },
+    { name: "Revisió", slug: "inspection", icon: "inspection", color: "#8b5cf6", isDefault: false },
   ];
 
   const existingCategories = await db
@@ -93,6 +93,7 @@ async function seedDemo() {
         companyId,
         name: c.name,
         slug: c.slug,
+        icon: c.icon,
         color: c.color,
         isDefault: c.isDefault,
         sortOrder: i,

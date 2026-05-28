@@ -201,6 +201,7 @@ export const workOrderService = {
           id: workOrderCategories.id,
           name: workOrderCategories.name,
           slug: workOrderCategories.slug,
+          icon: workOrderCategories.icon,
           color: workOrderCategories.color,
         },
         technician: {
@@ -261,6 +262,7 @@ export const workOrderService = {
           id: workOrderCategories.id,
           name: workOrderCategories.name,
           slug: workOrderCategories.slug,
+          icon: workOrderCategories.icon,
           color: workOrderCategories.color,
         },
         technician: { id: users.id, name: users.name },

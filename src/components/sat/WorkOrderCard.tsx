@@ -18,7 +18,7 @@ import { Phone, MapPin, Calendar, User } from "lucide-react";
 interface Props {
   workOrder: WorkOrder;
   client: { name: string; phone: string | null; address: string | null };
-  category: { name: string; slug: string; color: string | null };
+  category: { name: string; slug: string; icon: string | null; color: string | null };
   technicianName?: string | null;
 }
 
@@ -46,7 +46,7 @@ export function WorkOrderCard({ workOrder, client, category, technicianName }: P
       {/* Category & Priority */}
       <div className="mt-3 flex items-center gap-2">
         <div className="flex items-center gap-1.5 text-xs text-[var(--text-muted)]">
-          <CategoryIcon slug={category.slug} color={category.color} size={12} />
+          <CategoryIcon slug={category.icon ?? category.slug} color={category.color} size={12} />
           {category.name}
         </div>
         <WorkOrderPriorityBadge priority={workOrder.priority} />

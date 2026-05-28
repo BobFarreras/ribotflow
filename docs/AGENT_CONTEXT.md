@@ -112,10 +112,10 @@ This document contains all critical context from previous development sessions i
 - [x] **Signature service** (generic `signatures` table for work_order/quote/invoice)
 - [x] **PDF generation service** (`pdf-lib`, multi-language ca/es/en, branded design)
 - [x] Product service (company catalog with SKU, unitPrice, unitCost, stock)
-- [x] Server Actions: createWorkOrder, updateStatus, assignTechnician, addMaterial, removeMaterial, getProducts, addAttachment, deleteAttachment, **saveSignature**, **generatePdf**, **deletePdf**
-- [x] UI pages: List (`/sat`), Detail (`/sat/[id]`), Create (`/sat/new`)
-- [x] Client components: WorkOrderForm, WorkOrderActions, TechnicianAssigner, MaterialList, AttachmentSection, **SignatureCanvas**, **PdfGenerator**
-- [x] i18n translations (ca/es) for all SAT strings including materials, attachments, signatures, PDF
+- [x] Server Actions: createWorkOrder, updateStatus, assignTechnician, addMaterial, removeMaterial, getProducts, addAttachment, deleteAttachment, **saveSignature**, **generatePdf**, **deletePdf**, **createCategory**, **updateCategory**, **createClient**
+- [x] UI pages: List (`/sat`), Detail (`/sat/[id]`), Create (`/sat/new`), **Map (`/sat/map`)**, **Routes (`/sat/routes`)**, **Clients (`/sat/clients`)**, **Client Detail (`/sat/clients/[id]`)**, **Client New (`/sat/clients/new`)**, **Categories (`/sat/categories`)**, **Category New (`/sat/categories/new`)**, **Category Edit (`/sat/categories/[id]`)**
+- [x] Client components: WorkOrderForm, WorkOrderActions, TechnicianAssigner, MaterialList, AttachmentSection, **SignatureCanvas**, **PdfGenerator**, **CheckInButton**, **AddressAutocomplete**, **GoogleMapsLink**, **MapView**, **TravelCostCard**, **WorkOrderFilters**, **Pagination**, **WorkOrderCard**, **WorkOrderTable**, **WorkOrderKanban**, **CategoryIcon**, **StatusHistorySection**
+- [x] i18n translations (ca/es) for all SAT strings including materials, attachments, signatures, PDF, work orders, clients, categories
 - [x] Auto-number generation: `OT-{YYYY}-{SEQ}` per company
 - [x] Technician assignment with RBAC guard
 - [x] Status history tracking
@@ -126,45 +126,59 @@ This document contains all critical context from previous development sessions i
  - [x] **Geolocation / Check-in GPS** (`CheckInButton.tsx`, distance validation <100m, auto-updates status to `in_progress`)
  - [x] FileStorage abstraction (`LocalFileStorage`, `MinioStorage`, `SupabaseStorage`) with factory pattern
  - [x] Local file storage API (`/api/uploads/[...path]`) with mime type detection and security
+ - [x] **3 Views for work orders:** Grid (cards), Table (sortable columns), Kanban (drag & drop with panning)
+ - [x] **Advanced filters** (search, status, category, priority, technician, date range)
+ - [x] **Pagination** (25/50/100 per page)
+ - [x] **Routing engine agnostic** (Haversine free / OpenRouteService free / Google Maps premium)
+ - [x] **Travel billing service** (distance × rate per km)
+ - [x] **Notification service** (email SMTP with lazy nodemailer import)
+ - [x] **Category CRUD** with visual icon picker (~12 SVG icons) and color picker
+ - [x] **Client CRUD** (list, detail, create)
+ - [x] **Category icon propagation** — `icon` field flows from DB → Service → all 6 UI components
 
 ### Work Order Statuses (All Implemented)
-| Status | Catalan | Spanish | Transitions |
-|--------|---------|---------|-------------|
-| pending | Pendent | Pendiente | → assigned, scheduled, cancelled |
-| assigned | Assignada | Asignada | → in_progress, cancelled |
-| scheduled | Programada | Programada | → in_progress, cancelled |
-| in_progress | En curs | En curso | → paused, completed, cancelled, waiting_parts, waiting_client |
-| paused | Pausada | Pausada | → in_progress, cancelled |
-| completed | Completada | Completada | → closed, in_progress |
-| closed | Tancada | Cerrada | (final) |
-| cancelled | Cancel·lada | Cancelada | → pending |
-| waiting_parts | Esperant peces | Esperando piezas | → in_progress, cancelled |
-| waiting_client | Esperant client | Esperando cliente | → in_progress, cancelled |
+| Status | Catalan | Spanish |
+|--------|---------|---------|
+| pending | Pendent | Pendiente |
+| assigned | Assignada | Asignada |
+| scheduled | Programada | Programada |
+| in_progress | En curs | En curso |
+| paused | Pausada | Pausada |
+| completed | Completada | Completada |
+| closed | Tancada | Cerrada |
+| cancelled | Cancel·lada | Cancelada |
+| waiting_parts | Esperant peces | Esperando piezas |
+| waiting_client | Esperant client | Esperando cliente |
+
+**IMPORTANT:** Status transitions are now **FREE** — any status can transition to any other status. The `VALID_STATUS_TRANSITIONS` constant in `src/lib/constants/statusTransitions.ts` allows all transitions. No restrictive validation.
 
 ### Pending / Next Features (Priority Order)
-1. **Vista Kanban** per a oficina (`/sat?view=kanban`)
-   - Columnes: Pendent, Assignada, En Curs, Completada
-   - Drag & drop per a canviar estat (només ADMIN/OFFICE)
-
-2. **Mòdul Pressupostos i Albaranes** (Fase 2G)
-   - Esquemes `quotes`, `quote_items`, reutilitzar `signatures` genèrica
-   - Conversió quote → work_order → invoice
+1. **Mòdul Pressupostos (Quotes)** ⭐ NEXT PRIORITY
+   - Taules: `quotes`, `quote_items` (vinculades a `work_orders`)
+   - Estats: `draft` → `sent` → `accepted` / `rejected`
+   - Crear pressupost des del detall de l'OT (ja hi ha placeholder UI)
+   - Línies amb productes/materials, quantitats, preus
    - PDF de pressupost amb `pdf-lib`
-
-3. **Personalització de PDF i Company Settings** (Fase 2H)
-   - Mòdul de configuració d'empresa (logo, colors, text legal)
+   - Server Actions: `createQuote`, `updateQuote`, `addQuoteItem`, `removeQuoteItem`, `generateQuotePdf`
+ 
+2. **Edició de Clients** (`/sat/clients/[id]/edit`)
+   - Formulari per editar client existent
+   - Protecció d'eliminació si té OTs associades
+ 
+3. **Personalització de PDF i Company Settings**
+   - Mòdul de configuració d'empresa (logo, colors, text legal als PDFs)
    - `PdfBuilder` dinàmic amb branding per empresa
-
-4. **Mapa incrustat** (Leaflet / MapLibre) a la pàgina de detall
-   - Mostrar ubicació del client i ruta del tècnic
-   - Enllaç extern a Google Maps / Waze
-
-5. **Mode PWA Offline** per a tècnics
+   - Tarifa de desplaçament (`travelRatePerKm` ja existeix a `companies`)
+ 
+4. **Mode PWA Offline** per a tècnics
    - Service Worker per treballar sense connexió
    - Sincronització en background quan recupera WiFi
-
-6. **Email notifications** on status changes
-7. **Calendar integration** for scheduled dates
+ 
+5. **Email notifications** on status changes
+   - `notificationService.ts` ja existeix amb nodemailer lazy import
+   - Falta: hook a `updateStatusAction` per enviar email al client/tècnic
+ 
+6. **Calendar integration** for scheduled dates
 
 ---
 
@@ -177,7 +191,7 @@ This document contains all critical context from previous development sessions i
 - **Run tests:** `pnpm test`
 - **Full CI check:** `pnpm ci:check` (typecheck + lint + format + test + build)
 
-**Current Test Count:** 71 tests passing across 11 test files
+**Current Test Count:** 78 tests passing across 13 test files
 
 | Test File | Tests | Description |
 |-----------|-------|-------------|
@@ -189,6 +203,8 @@ This document contains all critical context from previous development sessions i
 | `attachmentService.test.ts` | 6 | Attachments CRUD + metadata + security |
 | `signatureService.test.ts` | 6 | Signature save/update/get/remove + multi-tenant security |
 | `locationService.test.ts` | 11 | GPS check-in + distance calculation + security |
+| `routeOptimizer.test.ts` | 3 | TSP greedy nearest-neighbor algorithm |
+| `haversineEngine.test.ts` | 4 | Haversine distance + time estimation |
 | `DashboardShell.test.tsx` | 3 | Layout rendering |
 | `SidebarContext.test.tsx` | 9 | Sidebar state management |
 | `SidebarNav.test.tsx` | 11 | Navigation rendering + active states |
@@ -252,6 +268,19 @@ docker exec ribotflow-dev-minio mc anonymous set public local/ribotflow
 cat src/db/migrations/0002_eminent_blink.sql | docker exec -i ribotflow-dev-db psql -U postgres -d ribotflow
 ```
 
+### Issue: Category icon not updating in work order listings after edit
+**Root Cause:** `workOrderService.ts` queries only selected `category.slug`, not `category.icon`. Components passed `slug` to `CategoryIcon`, which is immutable.
+**Solution:** Added `icon` to all category queries in `workOrderService.ts` and updated all 6 components to use `category.icon ?? category.slug`.
+**Files changed:** `workOrderService.ts`, `WorkOrderCard.tsx`, `WorkOrderTable.tsx`, `WorkOrderKanban.tsx`, `WorkOrderList.tsx`, `/sat/[id]/page.tsx`, `/sat/page.tsx`.
+
+### Issue: "In HTML, <a> cannot be a descendant of <a>" on /sat/clients
+**Root Cause:** `Link` card wrapped entire card, and inside were `<a href="tel:...">` and `<a href="mailto:...">`.
+**Solution:** Restructured to `<div>` with invisible absolute `<Link>` overlay (z-0) and elevated interactive children (z-10). See Decision Log entry "Card overlay pattern".
+**Files changed:** `/sat/clients/page.tsx`.
+
+### Issue: Sidebar flash on navigation (RESOLVED — see Critical Bug section below)
+**If it returns:** Verify ALL navigation uses `<Link>` from `next/link`, NEVER `<a href>`. Check `SidebarNav.tsx`, `Sidebar.tsx`, and any custom nav components.
+
 ---
 
 ## File Structure Quick Reference
@@ -261,9 +290,17 @@ src/
   app/(dashboard)/         # Route group (no URL prefix)
     layout.tsx              # Dashboard layout with Sidebar + Shell
     dashboard/page.tsx      # Home dashboard template
-    sat/page.tsx            # List orders → URL: /sat
-    sat/[id]/page.tsx       # Order detail → URL: /sat/:id
+    sat/page.tsx            # List orders (3 views) → URL: /sat
+    sat/[id]/page.tsx       # Order detail (3 columns compact) → URL: /sat/:id
     sat/new/page.tsx        # Create order → URL: /sat/new
+    sat/map/page.tsx        # Interactive Leaflet map → URL: /sat/map
+    sat/routes/page.tsx     # Route optimizer (TSP) → URL: /sat/routes
+    sat/clients/page.tsx    # Client list → URL: /sat/clients
+    sat/clients/new/page.tsx # Create client → URL: /sat/clients/new
+    sat/clients/[id]/page.tsx # Client detail + OTs → URL: /sat/clients/:id
+    sat/categories/page.tsx # Category list → URL: /sat/categories
+    sat/categories/new/page.tsx # Create category → URL: /sat/categories/new
+    sat/categories/[id]/page.tsx # Edit category → URL: /sat/categories/:id
     api/uploads/[...path]/route.ts  # Local file serving API
   components/layout/        # Layout Components
     SidebarContext.tsx      # React context for sidebar state
@@ -284,15 +321,32 @@ src/
     generatePdf.ts          # Generate PDF report
     deletePdf.ts            # Delete generated PDF
     checkIn.ts              # GPS check-in with distance validation
+    createCategory.ts       # Create work order category
+    updateCategory.ts       # Update work order category
+    createClient.ts         # Create SAT client
   components/sat/           # Client Components
     WorkOrderForm.tsx
     WorkOrderActions.tsx
     TechnicianAssigner.tsx
-    MaterialList.tsx        # Product catalog + free-text materials
-    AttachmentSection.tsx   # Upload + grid + lightbox
+    MaterialList.tsx        # Product catalog + free-text materials (stepper +/-)
+    AttachmentSection.tsx   # Upload 2-step (preview → confirm) + grid
     SignatureCanvas.tsx     # Canvas for digital signature (mouse/touch)
     PdfGenerator.tsx        # Generate/download/regenerate/delete PDF
     CheckInButton.tsx       # GPS check-in with distance validation
+    WorkOrderFilters.tsx    # Unified filter bar (one row)
+    WorkOrderList.tsx       # View wrapper: filters + pagination + switcher
+    WorkOrderCard.tsx       # Grid card with category icon + distance
+    WorkOrderTable.tsx      # Sortable table view
+    WorkOrderKanban.tsx     # Drag & drop board with horizontal panning
+    WorkOrderStatusBadge.tsx # Dot indicator badge (Linear/Attio style)
+    WorkOrderPriorityBadge.tsx # Dot + text (no background)
+    CategoryIcon.tsx        # SVG icon picker (~12 icons, reusable)
+    AddressAutocomplete.tsx # Nominatim geocoding autocomplete
+    GoogleMapsLink.tsx      # External Google Maps link with coords
+    MapView.tsx             # Leaflet map with category icons
+    TravelCostCard.tsx      # Distance, time, cost display
+    StatusHistorySection.tsx # Audit log timeline
+    Pagination.tsx          # Page size + page number controls
   services/sat/             # Business Logic
     workOrderService.ts
     materialService.ts
@@ -301,6 +355,18 @@ src/
     signatureService.ts     # Generic signature CRUD + storage
     pdfService.ts           # PdfBuilder class + PdfService
     locationService.ts      # GPS tracking + Haversine distance calculation
+    clientService.ts        # SAT client CRUD
+    categoryService.ts      # Work order category CRUD
+  services/routing/         # Route Engine (agnostic)
+    interface.ts            # RouteEngine contract
+    haversineEngine.ts      # Free: straight-line distance
+    openRouteServiceEngine.ts # Free: real driving directions
+    googleMapsEngine.ts     # Premium: Google Maps API
+    routeOptimizer.ts       # Greedy TSP nearest-neighbor
+  services/billing/         # Billing
+    travelBillingService.ts # Calculate travel cost (km × rate)
+  services/notifications/   # Notifications
+    notificationService.ts  # Email SMTP with lazy nodemailer import
   services/storage/         # File Storage Abstraction
     interface.ts            # FileStorage contract
     factory.ts              # Provider selector (local/minio/supabase)
@@ -506,6 +572,11 @@ quotes/Empresa_Test/PRES-2026-0001-signature.png
 | 26/05/2026 | Bucket public policy (dev only) | `mc anonymous set public local/ribotflow` via CLI. In production, use signed URLs. |
 | 26/05/2026 | Generic `signatures` table | Replaced `work_order_signatures` with generic `signatures` (entity_type + entity_id). Reusable for work orders, quotes, invoices. Validation logic lives in Server Actions, not Service. |
 | 26/05/2026 | `pdf-lib` for PDF generation | Pure JS (~1MB), no Chromium binary. Generates professional PDFs with branded header, tables, photo grid 2x2, embedded signature. Multi-language (ca/es/en). |
+| 27/05/2026 | Category icon stored in DB `icon` column, not inferred from `slug` | `slug` is immutable identifier; `icon` is user-editable visual. All UI components use `category.icon ?? category.slug` fallback. Prevents icon changes from breaking when slug differs. |
+| 27/05/2026 | Free status transitions (any → any) | Removed restrictive transition matrix. `VALID_STATUS_TRANSITIONS` in `src/lib/constants/statusTransitions.ts` allows all transitions. Simplifies workflow and avoids user frustration. |
+| 27/05/2026 | Card overlay pattern for nested interactive elements | When a card needs to be clickable AND contain inner links (tel:/mailto:), use a `<div>` with an invisible absolute `<Link>` overlay (z-0) and elevate interactive children with z-10. Avoids "<a> cannot be descendant of <a>" hydration error. |
+| 27/05/2026 | Kanban reads state via `itemsRef.current` in drag handlers | Prevents stale closures in React drag & drop. `useRef` stores latest state; event handlers read from ref instead of closure-captured state. |
+| 27/05/2026 | Attachment upload: 2-step process (select → preview → confirm) | Uses `FileReader.readAsDataURL` for robust preview. Allows editing filename before upload. Eliminates checkbox "Abans" and caption input from upload form (moved to display layer). |
 
 ---
 
@@ -540,6 +611,45 @@ Multiple agents (including this one) investigated the wrong causes:
 
 ---
 
+## Session Handoff — Last Update: 28/05/2026
+
+### What Was Done Today
+1. **Category Edit page** (`/sat/categories/[id]`): Server component fetches category, delegates to `CategoryEditForm.tsx`. Includes color picker, visual icon picker (~12 SVGs), auto-slug, default checkbox.
+2. **Fixed category icon propagation bug**: Changing a category's icon now reflects immediately in ALL work order views (Grid, Table, Kanban, Detail). See Known Issues above for root cause.
+3. **Fixed client list hydration error**: Restructured card with overlay pattern to avoid `<a>` inside `<a>`.
+4. **Seed updated**: `seed-demo.ts` now populates `icon` field on default categories.
+5. **All tests passing**: 78 tests, 13 suites.
+
+### Next Task for Next Agent
+**Implement Pressupostos (Quotes) module** — this is the #1 priority.
+- Schema: `quotes` + `quote_items` tables (add to `src/db/schema/sat.ts`)
+- Server Actions: `createQuote`, `updateQuote`, `addQuoteItem`, `removeQuoteItem`, `generateQuotePdf`
+- UI: Add to `/sat/[id]/page.tsx` (replace the placeholder "Crear pressupost" button)
+- Reuse: `signatures` table (generic), `pdfService.ts` for PDF generation
+- Flow: Draft → Sent → Accepted/Rejected
+
+### Quick Commands for Next Session
+```bash
+# 1. Start everything
+pnpm db:up && pnpm db:migrate
+
+# 2. Seed demo (if needed)
+pnpm db:seed:demo
+
+# 3. Make MinIO public (if fresh container)
+docker exec ribotflow-dev-minio mc alias set local http://127.0.0.1:9000 minioadmin minioadmin
+docker exec ribotflow-dev-minio mc mb local/ribotflow
+docker exec ribotflow-dev-minio mc anonymous set public local/ribotflow
+
+# 4. Verify tests
+pnpm test
+
+# 5. Start dev
+pnpm dev
+```
+
+---
+
 ## For Future Agents
 
 When you start working on this project:
@@ -558,7 +668,7 @@ When you start working on this project:
    docker exec ribotflow-dev-minio mc mb local/ribotflow
    docker exec ribotflow-dev-minio mc anonymous set public local/ribotflow
    ```
-9. **Run tests:** `pnpm test` (ensure 71 tests pass)
+9. **Run tests:** `pnpm test` (ensure 78 tests pass)
 10. **Start dev server:** `pnpm dev`
 11. **Login with:** dais@test.com / 12345678
 

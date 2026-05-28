@@ -20,7 +20,7 @@ import { Pagination } from "@/components/ui/Pagination";
 interface OrderItem {
   workOrder: WorkOrder;
   client: { id: string; name: string; phone: string | null; address: string | null };
-  category: { id: string; name: string; slug: string; color: string | null };
+  category: { id: string; name: string; slug: string; icon: string | null; color: string | null };
   technician: { id: string; name: string } | null;
 }
 
@@ -28,6 +28,7 @@ interface CategoryOption {
   id: string;
   name: string;
   slug: string;
+  icon: string | null;
   color: string | null;
 }
 

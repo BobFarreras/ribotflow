@@ -19,7 +19,7 @@ import { ArrowUpDown, ArrowUp, ArrowDown, Phone, MapPin } from "lucide-react";
 interface TableOrder {
   workOrder: WorkOrder;
   client: { id: string; name: string; phone: string | null };
-  category: { id: string; name: string; slug: string; color: string | null };
+  category: { id: string; name: string; slug: string; icon: string | null; color: string | null };
   technician: { id: string; name: string } | null;
 }
 
@@ -186,7 +186,7 @@ export function WorkOrderTable({ orders }: Props) {
                 </td>
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-2">
-                    <CategoryIcon slug={category.slug} color={category.color} size={16} />
+                    <CategoryIcon slug={category.icon ?? category.slug} color={category.color} size={16} />
                     <span className="text-[var(--text)]">{category.name}</span>
                   </div>
                 </td>

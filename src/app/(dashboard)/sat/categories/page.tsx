@@ -58,23 +58,24 @@ export default async function CategoriesPage() {
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {categoryList.map((cat) => (
-              <div
+              <Link
                 key={cat.id}
-                className="flex items-start gap-4 rounded-xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-sm transition-all hover:border-[var(--module-sat)]/30 hover:shadow-md"
+                href={`/sat/categories/${cat.id}`}
+                className="group flex items-start gap-4 rounded-xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-sm transition-all hover:border-[var(--module-sat)]/30 hover:shadow-md hover:-translate-y-0.5 cursor-pointer"
               >
                 <div
                   className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl"
                   style={{ backgroundColor: cat.color ? `${cat.color}20` : undefined }}
                 >
                   <CategoryIcon
-                    slug={cat.slug}
+                    slug={cat.icon ?? cat.slug}
                     color={cat.color}
                     size={24}
                   />
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
-                    <h3 className="text-sm font-semibold text-[var(--text)]">{cat.name}</h3>
+                    <h3 className="text-sm font-semibold text-[var(--text)] group-hover:text-[var(--module-sat)]">{cat.name}</h3>
                     {cat.isDefault && (
                       <span className="flex items-center gap-0.5 rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium text-amber-700">
                         <Star className="h-3 w-3" />
@@ -91,7 +92,7 @@ export default async function CategoriesPage() {
                     <span className="text-xs text-[var(--text-muted)]">{cat.color ?? "Sense color"}</span>
                   </div>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         )}

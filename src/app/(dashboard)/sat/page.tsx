@@ -38,6 +38,7 @@ export default async function SatListPage({ searchParams }: Props) {
       id: workOrderCategories.id,
       name: workOrderCategories.name,
       slug: workOrderCategories.slug,
+      icon: workOrderCategories.icon,
       color: workOrderCategories.color,
     })
     .from(workOrderCategories)

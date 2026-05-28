@@ -57,13 +57,20 @@ export default async function ClientsPage() {
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {clientList.map((client) => (
-              <Link
+              <div
                 key={client.id}
-                href={`/sat/clients/${client.id}`}
-                className="block rounded-xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-sm transition-all hover:border-[var(--module-sat)]/30 hover:shadow-md"
+                className="group relative rounded-xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-sm transition-all hover:border-[var(--module-sat)]/30 hover:shadow-md"
               >
-                <h3 className="text-sm font-semibold text-[var(--text)]">{client.name}</h3>
-                <div className="mt-3 space-y-1.5 text-xs text-[var(--text-muted)]">
+                {/* Invisible overlay makes entire card clickable */}
+                <Link
+                  href={`/sat/clients/${client.id}`}
+                  className="absolute inset-0 z-0"
+                  aria-hidden="true"
+                />
+                <h3 className="relative z-10 text-sm font-semibold text-[var(--text)] group-hover:text-[var(--module-sat)]">
+                  {client.name}
+                </h3>
+                <div className="relative z-10 mt-3 space-y-1.5 text-xs text-[var(--text-muted)]">
                   {client.phone && (
                     <div className="flex items-center gap-1.5">
                       <Phone className="h-3.5 w-3.5" />
@@ -88,17 +95,19 @@ export default async function ClientsPage() {
                   )}
                 </div>
                 {client.location && (
-                  <div className="mt-3">
-                    <span
-                      onClick={(e) => e.stopPropagation()}
-                      className="inline-flex items-center gap-1 rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-600"
+                  <div className="relative z-10 mt-3">
+                    <a
+                      href={`https://www.google.com/maps/search/?api=1&query=${client.location.lat},${client.location.lng}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-600 transition-colors hover:bg-blue-100"
                     >
                       <MapPin className="h-3 w-3" />
                       Google Maps
-                    </span>
+                    </a>
                   </div>
                 )}
-              </Link>
+              </div>
             ))}
           </div>
         )}

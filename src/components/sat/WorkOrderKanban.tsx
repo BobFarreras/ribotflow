@@ -21,7 +21,7 @@ import { isValidTransition } from "@/lib/constants/statusTransitions";
 interface KanbanOrder {
   workOrder: WorkOrder;
   client: { id: string; name: string; phone: string | null; address: string | null };
-  category: { id: string; name: string; slug: string; color: string | null };
+  category: { id: string; name: string; slug: string; icon: string | null; color: string | null };
   technician: { id: string; name: string } | null;
 }
 
@@ -312,7 +312,7 @@ export function WorkOrderKanban({ orders: initialOrders }: Props) {
                         </Link>
                         <div className="mt-1.5 flex items-center gap-1.5 text-xs text-[var(--text-muted)]">
                           <CategoryIcon
-                            slug={item.category.slug}
+                            slug={item.category.icon ?? item.category.slug}
                             color={item.category.color}
                             size={12}
                           />

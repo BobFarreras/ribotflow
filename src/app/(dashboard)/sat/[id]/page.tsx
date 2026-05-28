@@ -107,7 +107,7 @@ export default async function WorkOrderDetailPage({ params }: Props) {
             )}
           </span>
           <span className="flex items-center gap-1">
-            <CategoryIcon slug={category.slug} color={category.color} size={12} />
+            <CategoryIcon slug={category.icon ?? category.slug} color={category.color} size={12} />
             {category.name}
           </span>
           {workOrder.scheduledDate && (
