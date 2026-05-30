@@ -60,6 +60,8 @@ const navItems: NavItem[] = [
     icon: Wrench,
     subItems: [
       { key: "workOrders", href: "/sat", icon: List },
+      { key: "quotes", href: "/sat/quotes", icon: FileText },
+      { key: "quoteTemplates", href: "/sat/quotes/templates", icon: FolderOpen },
       { key: "map", href: "/sat/map", icon: Map },
       { key: "routes", href: "/sat/routes", icon: Route },
       { key: "clients", href: "/sat/clients", icon: UserCircle },

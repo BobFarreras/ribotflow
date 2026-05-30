@@ -12,6 +12,8 @@
         "label": "SAT",
         "subItems": {
           "workOrders": "Órdenes de Trabajo",
+          "quotes": "Presupuestos",
+          "quoteTemplates": "Plantillas",
           "map": "Mapa",
           "routes": "Rutas",
           "clients": "Clientes",
