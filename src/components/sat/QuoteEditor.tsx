@@ -396,9 +396,20 @@ export function QuoteEditor({
 
   return (
     <div className="flex h-full flex-col">
-      {/* Toolbar */}
+      {/* Toolbar — all in one line */}
       <div className="flex items-center justify-between border-b border-[var(--border)] bg-[var(--surface)] px-4 py-2">
-        <div className="flex items-center gap-2">
+        {/* Left: Title + OT badge */}
+        <div className="flex items-center gap-3">
+          <h1 className="text-sm font-semibold text-[var(--text)]">Nou Pressupost</h1>
+          {workOrderId && (
+            <span className="rounded bg-[var(--bg)] px-2 py-0.5 text-[11px] font-mono text-[var(--text-muted)]">
+              OT
+            </span>
+          )}
+        </div>
+
+        {/* Center: View buttons */}
+        <div className="flex items-center gap-1">
           <button
             onClick={() => setView("split")}
             className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
@@ -432,6 +443,8 @@ export function QuoteEditor({
             Preview
           </button>
         </div>
+
+        {/* Right: Total + Action buttons */}
         <div className="flex items-center gap-3">
           <div className="text-right">
             <div className="text-[11px] text-[var(--text-muted)]">Total</div>
@@ -439,6 +452,22 @@ export function QuoteEditor({
               {total.toFixed(2)} €
             </div>
           </div>
+          <div className="h-6 w-px bg-[var(--border)]" />
+          <button
+            type="button"
+            onClick={() => router.back()}
+            className="rounded-lg border border-[var(--border)] px-3 py-1.5 text-xs font-medium text-[var(--text)] transition-colors hover:bg-[var(--bg)]"
+          >
+            Cancel·lar
+          </button>
+          <button
+            onClick={handleSubmit}
+            disabled={isLoading}
+            className="flex items-center gap-1.5 rounded-lg bg-[var(--module-sat)] px-3 py-1.5 text-xs font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+          >
+            {isLoading && <Loader2 className="h-3 w-3 animate-spin" />}
+            {mode === "edit" ? "Desar" : "Crear"}
+          </button>
         </div>
       </div>
 
@@ -691,25 +720,6 @@ export function QuoteEditor({
             clientNotes={formData.clientNotes}
           />
         </div>
-      </div>
-
-      {/* Footer */}
-      <div className="flex items-center justify-end gap-3 border-t border-[var(--border)] bg-[var(--surface)] px-4 py-3">
-        <button
-          type="button"
-          onClick={() => router.back()}
-          className="rounded-lg border border-[var(--border)] px-4 py-2 text-sm font-medium text-[var(--text)] transition-colors hover:bg-[var(--bg)]"
-        >
-          Cancel·lar
-        </button>
-        <button
-          onClick={handleSubmit}
-          disabled={isLoading}
-          className="flex items-center gap-2 rounded-lg bg-[var(--module-sat)] px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50"
-        >
-          {isLoading && <Loader2 className="h-4 w-4 animate-spin" />}
-          {mode === "edit" ? "Desar canvis" : "Crear pressupost"}
-        </button>
       </div>
     </div>
   );
