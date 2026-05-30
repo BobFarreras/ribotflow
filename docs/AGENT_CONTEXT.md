@@ -105,36 +105,44 @@ This document contains all critical context from previous development sessions i
 ## SAT Module Status
 
 ### Completed
-- [x] Database schema (9 tables: clients, categories, work_orders, status_history, materials, attachments, **signatures**, locations, **products**)
+- [x] Database schema (13 tables: clients, categories, work_orders, status_history, materials, attachments, signatures, locations, products, **quotes**, **quote_items**, **quote_templates**, **quote_status_history**)
 - [x] Work order service with status workflow transitions
 - [x] Material service with product catalog + free-text materials
 - [x] Attachment service with local file storage
-- [x] **Signature service** (generic `signatures` table for work_order/quote/invoice)
-- [x] **PDF generation service** (`pdf-lib`, multi-language ca/es/en, branded design)
+- [x] Signature service (generic `signatures` table for work_order/quote/invoice)
+- [x] PDF generation service (`pdf-lib`, multi-language ca/es/en, branded design)
 - [x] Product service (company catalog with SKU, unitPrice, unitCost, stock)
-- [x] Server Actions: createWorkOrder, updateStatus, assignTechnician, addMaterial, removeMaterial, getProducts, addAttachment, deleteAttachment, **saveSignature**, **generatePdf**, **deletePdf**, **createCategory**, **updateCategory**, **createClient**
-- [x] UI pages: List (`/sat`), Detail (`/sat/[id]`), Create (`/sat/new`), **Map (`/sat/map`)**, **Routes (`/sat/routes`)**, **Clients (`/sat/clients`)**, **Client Detail (`/sat/clients/[id]`)**, **Client New (`/sat/clients/new`)**, **Categories (`/sat/categories`)**, **Category New (`/sat/categories/new`)**, **Category Edit (`/sat/categories/[id]`)**
-- [x] Client components: WorkOrderForm, WorkOrderActions, TechnicianAssigner, MaterialList, AttachmentSection, **SignatureCanvas**, **PdfGenerator**, **CheckInButton**, **AddressAutocomplete**, **GoogleMapsLink**, **MapView**, **TravelCostCard**, **WorkOrderFilters**, **Pagination**, **WorkOrderCard**, **WorkOrderTable**, **WorkOrderKanban**, **CategoryIcon**, **StatusHistorySection**
-- [x] i18n translations (ca/es) for all SAT strings including materials, attachments, signatures, PDF, work orders, clients, categories
-- [x] Auto-number generation: `OT-{YYYY}-{SEQ}` per company
+- [x] **Quote service** (CRUD + workflow + PRE-{YYYY}-{SEQ} numbering + calculations)
+- [x] **Quote item service** (line items with auto-recalculation of totals)
+- [x] **Quote template service** (templates with duplicate and usage tracking)
+- [x] Server Actions: createWorkOrder, updateStatus, assignTechnician, addMaterial, removeMaterial, getProducts, addAttachment, deleteAttachment, saveSignature, generatePdf, deletePdf, createCategory, updateCategory, createClient, **createQuote**, **updateQuote**, **deleteQuote**, **updateQuoteStatus**, **addQuoteItem**, **updateQuoteItem**, **removeQuoteItem**, **createQuoteTemplate**, **updateQuoteTemplate**, **deleteQuoteTemplate**, **duplicateQuoteTemplate**
+- [x] UI pages: List (`/sat`), Detail (`/sat/[id]`), Create (`/sat/new`), Map (`/sat/map`), Routes (`/sat/routes`), Clients (`/sat/clients`), Client Detail (`/sat/clients/[id]`), Client New (`/sat/clients/new`), Categories (`/sat/categories`), Category New (`/sat/categories/new`), Category Edit (`/sat/categories/[id]`), **Quotes (`/sat/quotes`)**, **Quote Detail (`/sat/quotes/[id]`)**, **Quote New (`/sat/quotes/new`)**, **Quote Templates (`/sat/quotes/templates`)**
+- [x] Client components: WorkOrderForm, WorkOrderActions, TechnicianAssigner, MaterialList, AttachmentSection, SignatureCanvas, PdfGenerator, CheckInButton, AddressAutocomplete, GoogleMapsLink, MapView, TravelCostCard, WorkOrderFilters, Pagination, WorkOrderCard, WorkOrderTable, WorkOrderKanban, CategoryIcon, StatusHistorySection, **QuoteEditor**, **QuotePdfPreview**, **QuoteList**, **QuoteStatusBadge**, **QuoteItemTable**, **QuoteActions**
+- [x] i18n translations (ca/es) for all SAT strings including materials, attachments, signatures, PDF, work orders, clients, categories, **quotes**, **quote templates**
+- [x] Auto-number generation: `OT-{YYYY}-{SEQ}` per company, **`PRE-{YYYY}-{SEQ}`** for quotes
 - [x] Technician assignment with RBAC guard
 - [x] Status history tracking
 - [x] Materials management UI (catalog selector + free-text + quantity + totals)
 - [x] Attachments/photos UI (upload with preview, before/after checkbox, caption, grid, lightbox, delete)
- - [x] **Digital signature UI** (canvas with mouse/touch, SVG + PNG export, name input, only visible when status is `completed` or `closed`)
- - [x] **PDF generation UI** (language selector ca/es/en, generate/download/regenerate/delete buttons)
- - [x] **Geolocation / Check-in GPS** (`CheckInButton.tsx`, distance validation <100m, auto-updates status to `in_progress`)
- - [x] FileStorage abstraction (`LocalFileStorage`, `MinioStorage`, `SupabaseStorage`) with factory pattern
- - [x] Local file storage API (`/api/uploads/[...path]`) with mime type detection and security
- - [x] **3 Views for work orders:** Grid (cards), Table (sortable columns), Kanban (drag & drop with panning)
- - [x] **Advanced filters** (search, status, category, priority, technician, date range)
- - [x] **Pagination** (25/50/100 per page)
- - [x] **Routing engine agnostic** (Haversine free / OpenRouteService free / Google Maps premium)
- - [x] **Travel billing service** (distance × rate per km)
- - [x] **Notification service** (email SMTP with lazy nodemailer import)
- - [x] **Category CRUD** with visual icon picker (~12 SVG icons) and color picker
- - [x] **Client CRUD** (list, detail, create)
- - [x] **Category icon propagation** — `icon` field flows from DB → Service → all 6 UI components
+- [x] Digital signature UI (canvas with mouse/touch, SVG + PNG export, name input, only visible when status is `completed` or `closed`)
+- [x] PDF generation UI (language selector ca/es/en, generate/download/regenerate/delete buttons)
+- [x] Geolocation / Check-in GPS (`CheckInButton.tsx`, distance validation <100m, auto-updates status to `in_progress`)
+- [x] FileStorage abstraction (`LocalFileStorage`, `MinioStorage`, `SupabaseStorage`) with factory pattern
+- [x] Local file storage API (`/api/uploads/[...path]`) with mime type detection and security
+- [x] 3 Views for work orders: Grid (cards), Table (sortable columns), Kanban (drag & drop with panning)
+- [x] Advanced filters (search, status, category, priority, technician, date range)
+- [x] Pagination (25/50/100 per page)
+- [x] Routing engine agnostic (Haversine free / OpenRouteService free / Google Maps premium)
+- [x] Travel billing service (distance × rate per km)
+- [x] Notification service (email SMTP with lazy nodemailer import)
+- [x] Category CRUD with visual icon picker (~12 SVG icons) and color picker
+- [x] Client CRUD (list, detail, create)
+- [x] Category icon propagation — `icon` field flows from DB → Service → all 6 UI components
+- [x] **Quote professional editor** with split view (editor + PDF preview)
+- [x] **Quote PDF preview** simulating A4 document with professional layout
+- [x] **Quote default values** (30 days validity, conditions, work description)
+- [x] **Quote collapsible sections** in editor for better UX
+- [x] **Quote integration with OT detail** — shows quotes list in OT detail page
 
 ### Work Order Statuses (All Implemented)
 | Status | Catalan | Spanish |
@@ -153,32 +161,14 @@ This document contains all critical context from previous development sessions i
 **IMPORTANT:** Status transitions are now **FREE** — any status can transition to any other status. The `VALID_STATUS_TRANSITIONS` constant in `src/lib/constants/statusTransitions.ts` allows all transitions. No restrictive validation.
 
 ### Pending / Next Features (Priority Order)
-1. **Mòdul Pressupostos (Quotes)** ⭐ NEXT PRIORITY
-   - Taules: `quotes`, `quote_items` (vinculades a `work_orders`)
-   - Estats: `draft` → `sent` → `accepted` / `rejected`
-   - Crear pressupost des del detall de l'OT (ja hi ha placeholder UI)
-   - Línies amb productes/materials, quantitats, preus
-   - PDF de pressupost amb `pdf-lib`
-   - Server Actions: `createQuote`, `updateQuote`, `addQuoteItem`, `removeQuoteItem`, `generateQuotePdf`
- 
-2. **Edició de Clients** (`/sat/clients/[id]/edit`)
-   - Formulari per editar client existent
-   - Protecció d'eliminació si té OTs associades
- 
-3. **Personalització de PDF i Company Settings**
-   - Mòdul de configuració d'empresa (logo, colors, text legal als PDFs)
-   - `PdfBuilder` dinàmic amb branding per empresa
-   - Tarifa de desplaçament (`travelRatePerKm` ja existeix a `companies`)
- 
-4. **Mode PWA Offline** per a tècnics
-   - Service Worker per treballar sense connexió
-   - Sincronització en background quan recupera WiFi
- 
-5. **Email notifications** on status changes
-   - `notificationService.ts` ja existeix amb nodemailer lazy import
-   - Falta: hook a `updateStatusAction` per enviar email al client/tècnic
- 
-6. **Calendar integration** for scheduled dates
+1. **Edició de Pressupostos** — Usar el mateix editor per editar pressupostos existents (mode edit)
+2. **Enviament per email** — Modal per enviar pressupost al client amb adjunt PDF
+3. **Vista pública del client** — Enllaç sense login perquè el client pugui acceptar/rebutjar
+4. **Edició de Clients** (`/sat/clients/[id]/edit`)
+5. **Personalització de PDF i Company Settings** (logo, colors, text legal, tarifa desplaçament)
+6. **Mode PWA Offline** per a tècnics
+7. **Email notifications** on status changes
+8. **Calendar integration** for scheduled dates
 
 ---
 
@@ -301,6 +291,10 @@ src/
     sat/categories/page.tsx # Category list → URL: /sat/categories
     sat/categories/new/page.tsx # Create category → URL: /sat/categories/new
     sat/categories/[id]/page.tsx # Edit category → URL: /sat/categories/:id
+    sat/quotes/page.tsx # List quotes → URL: /sat/quotes
+    sat/quotes/new/page.tsx # Create quote → URL: /sat/quotes/new
+    sat/quotes/[id]/page.tsx # Quote detail → URL: /sat/quotes/:id
+    sat/quotes/templates/page.tsx # Quote templates → URL: /sat/quotes/templates
     api/uploads/[...path]/route.ts  # Local file serving API
   components/layout/        # Layout Components
     SidebarContext.tsx      # React context for sidebar state
@@ -324,6 +318,17 @@ src/
     createCategory.ts       # Create work order category
     updateCategory.ts       # Update work order category
     createClient.ts         # Create SAT client
+    createQuote.ts          # Create quote with items
+    updateQuote.ts          # Update quote (draft only)
+    deleteQuote.ts          # Delete quote (draft only)
+    updateQuoteStatus.ts    # Change quote status with validation
+    addQuoteItem.ts         # Add line item to quote
+    updateQuoteItem.ts      # Update quote line item
+    removeQuoteItem.ts      # Remove line item from quote
+    createQuoteTemplate.ts  # Create quote template
+    updateQuoteTemplate.ts  # Update quote template
+    deleteQuoteTemplate.ts  # Delete quote template
+    duplicateQuoteTemplate.ts # Duplicate quote template
   components/sat/           # Client Components
     WorkOrderForm.tsx
     WorkOrderActions.tsx
@@ -347,6 +352,12 @@ src/
     TravelCostCard.tsx      # Distance, time, cost display
     StatusHistorySection.tsx # Audit log timeline
     Pagination.tsx          # Page size + page number controls
+    QuoteEditor.tsx         # Professional editor with split view + collapsible sections
+    QuotePdfPreview.tsx     # A4 PDF simulation with professional layout
+    QuoteList.tsx           # Quote list with filters
+    QuoteStatusBadge.tsx    # Quote status badge with colors
+    QuoteItemTable.tsx      # Quote items display table
+    QuoteActions.tsx        # Quote status change buttons
   services/sat/             # Business Logic
     workOrderService.ts
     materialService.ts
@@ -357,6 +368,9 @@ src/
     locationService.ts      # GPS tracking + Haversine distance calculation
     clientService.ts        # SAT client CRUD
     categoryService.ts      # Work order category CRUD
+    quoteService.ts         # Quote CRUD + workflow + calculations
+    quoteItemService.ts     # Quote line items with auto-recalculation
+    quoteTemplateService.ts # Quote templates with duplicate and usage tracking
   services/routing/         # Route Engine (agnostic)
     interface.ts            # RouteEngine contract
     haversineEngine.ts      # Free: straight-line distance
@@ -377,7 +391,7 @@ src/
   lib/utils/storageKeys.ts  # Human-readable storage key builders
   lib/auth/index.ts         # NextAuth config (NO authorized callback!)
   proxy.ts                  # Auth proxy (SINGLE source of truth)
-  db/schema/sat.ts          # Database schema (9 tables)
+  db/schema/sat.ts          # Database schema (13 tables)
   locales/ca/*.json         # Catalan translations (common + sat)
   locales/es/*.json         # Spanish translations (common + sat)
 ```
@@ -577,6 +591,15 @@ quotes/Empresa_Test/PRES-2026-0001-signature.png
 | 27/05/2026 | Card overlay pattern for nested interactive elements | When a card needs to be clickable AND contain inner links (tel:/mailto:), use a `<div>` with an invisible absolute `<Link>` overlay (z-0) and elevate interactive children with z-10. Avoids "<a> cannot be descendant of <a>" hydration error. |
 | 27/05/2026 | Kanban reads state via `itemsRef.current` in drag handlers | Prevents stale closures in React drag & drop. `useRef` stores latest state; event handlers read from ref instead of closure-captured state. |
 | 27/05/2026 | Attachment upload: 2-step process (select → preview → confirm) | Uses `FileReader.readAsDataURL` for robust preview. Allows editing filename before upload. Eliminates checkbox "Abans" and caption input from upload form (moved to display layer). |
+| 28/05/2026 | Quote module: 4 tables with PRE-{YYYY}-{SEQ} numbering | `quotes`, `quote_items`, `quote_templates`, `quote_status_history`. Multi-tenant with company_id. Status workflow: draft→sent→accepted/rejected. |
+| 28/05/2026 | Quote transitions: draft→sent, sent→accepted/rejected, rejected→draft | Defined in `statusTransitions.ts` with `QuoteStatus` type and `isValidQuoteTransition()` function. |
+| 28/05/2026 | Professional quote editor with split view | Editor left (company+client+items), PDF preview right (A4 simulation). Collapsible sections for better UX. |
+| 28/05/2026 | Quote PDF preview: A4 simulation with inline styles | 210mm×297mm proportions, 20mm/15mm margins, gray background. Matches HTML template from user for professional look. |
+| 28/05/2026 | Default values for quotes: 30 days, conditions, description | Constants ready for company settings. `DEFAULT_VALIDITY_DAYS`, `DEFAULT_DESCRIPTION`, `DEFAULT_CONDITIONS`. |
+| 28/05/2026 | Intelligent units: integer for unit/pack, decimal for kg/m/h | `UNITS` array includes `step` field. Prevents floating point for items that should be integers. |
+| 28/05/2026 | General discount at quote level | `discountPercent` field on quotes, calculated before IVA. Shows in green (#16a34a) in preview. |
+| 28/05/2026 | Company data simulated in editor | `COMPANY_DATA` constant with DigitAIStudios info. Will come from DB when company settings implemented. |
+| 28/05/2026 | Single toolbar: all actions in one top bar | Removed duplicate header and footer. Title + OT badge + view buttons + total + action buttons in one line. |
 
 ---
 
