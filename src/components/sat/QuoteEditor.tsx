@@ -317,6 +317,11 @@ export function QuoteEditor({
       return;
     }
 
+    if (!workOrderId) {
+      setError("Ha d'estar vinculat a una OT");
+      return;
+    }
+
     const validItems = items.filter((item) => item.description);
     if (validItems.length === 0) {
       setError("Ha d'haver almenys una línia");

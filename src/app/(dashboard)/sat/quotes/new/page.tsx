@@ -6,9 +6,8 @@
 
 import { auth } from "@/lib/auth";
 import { db } from "@/db";
-import { clients, products } from "@/db/schema/sat";
+import { clients, products, workOrders } from "@/db/schema/sat";
 import { eq } from "drizzle-orm";
-import { notFound } from "next/navigation";
 import { QuoteEditor } from "@/components/sat/QuoteEditor";
 
 interface Props {
@@ -20,12 +19,10 @@ export default async function NewQuotePage({ searchParams }: Props) {
   if (!session?.user?.companyId) return null;
 
   const { otId } = await searchParams;
-  if (!otId) notFound();
-
   const companyId = session.user.companyId;
 
-  // Fetch clients and products for the editor
-  const [clientList, productList] = await Promise.all([
+  // Fetch clients, products, and optionally the work order
+  const [clientList, productList, workOrder] = await Promise.all([
     db
       .select()
       .from(clients)
@@ -34,6 +31,14 @@ export default async function NewQuotePage({ searchParams }: Props) {
       .select()
       .from(products)
       .where(eq(products.companyId, companyId)),
+    otId
+      ? db
+          .select()
+          .from(workOrders)
+          .where(eq(workOrders.id, otId))
+          .limit(1)
+          .then((r) => r[0] ?? null)
+      : Promise.resolve(null),
   ]);
 
   return (
@@ -42,13 +47,18 @@ export default async function NewQuotePage({ searchParams }: Props) {
       <header className="shrink-0 border-b border-[var(--border)] bg-[var(--surface)] px-4 py-3">
         <div className="mx-auto flex max-w-7xl items-center gap-3">
           <h1 className="text-lg font-semibold text-[var(--text)]">Nou Pressupost</h1>
+          {workOrder && (
+            <span className="rounded bg-[var(--bg)] px-2 py-0.5 text-xs text-[var(--text-muted)]">
+              OT: {workOrder.number}
+            </span>
+          )}
         </div>
       </header>
 
       {/* Editor */}
       <main className="min-h-0 flex-1">
         <QuoteEditor
-          workOrderId={otId}
+          workOrderId={otId ?? ""}
           clients={clientList}
           products={productList}
           mode="create"

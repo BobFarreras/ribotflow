@@ -174,5 +174,69 @@
     "title": "Categorías de Órdenes",
     "newButton": "Nueva Categoría",
     "emptyState": "No hay categorías definidas. Crea la primera categoría."
+  },
+  "quotes": {
+    "title": "Presupuestos",
+    "newButton": "Nuevo Presupuesto",
+    "list": {
+      "title": "Listado de Presupuestos",
+      "noResults": "No hay presupuestos",
+      "searchPlaceholder": "Buscar por número o título..."
+    },
+    "status": {
+      "draft": "Borrador",
+      "sent": "Enviado",
+      "accepted": "Aceptado",
+      "rejected": "Rechazado",
+      "expired": "Caducado",
+      "cancelled": "Cancelado"
+    },
+    "detail": {
+      "title": "Detalle del Presupuesto",
+      "client": "Cliente",
+      "workOrder": "Orden de Trabajo",
+      "validUntil": "Válido hasta",
+      "subtotal": "Base imponible",
+      "tax": "IVA",
+      "total": "Total",
+      "sendByEmail": "Enviar por email",
+      "downloadPdf": "Descargar PDF",
+      "accept": "Aceptar",
+      "reject": "Rechazar"
+    },
+    "create": {
+      "title": "Nuevo Presupuesto",
+      "fromTemplate": "Desde plantilla",
+      "blank": "En blanco",
+      "selectTemplate": "Seleccionar plantilla"
+    },
+    "items": {
+      "title": "Líneas del Presupuesto",
+      "addItem": "Añadir línea",
+      "description": "Descripción",
+      "quantity": "Cantidad",
+      "unitPrice": "Precio unitario",
+      "discount": "Descuento",
+      "subtotal": "Subtotal",
+      "category": "Categoría",
+      "material": "Material",
+      "labor": "Mano de obra",
+      "travel": "Desplazamiento",
+      "other": "Otros"
+    },
+    "email": {
+      "title": "Enviar Presupuesto",
+      "to": "Destinatario",
+      "subject": "Asunto",
+      "message": "Mensaje",
+      "send": "Enviar",
+      "sending": "Enviando..."
+    },
+    "templates": {
+      "title": "Plantillas de Presupuesto",
+      "newButton": "Nueva Plantilla",
+      "emptyState": "No hay plantillas creadas",
+      "usageCount": "Uso: {{count}} veces"
+    }
   }
 }

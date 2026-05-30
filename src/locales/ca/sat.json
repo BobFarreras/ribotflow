@@ -174,5 +174,69 @@
     "title": "Categories d'Ordres",
     "newButton": "Nova Categoria",
     "emptyState": "No hi ha categories definides. Crea la primera categoria."
+  },
+  "quotes": {
+    "title": "Pressupostos",
+    "newButton": "Nou Pressupost",
+    "list": {
+      "title": "Llistat de Pressupostos",
+      "noResults": "No hi ha pressupostos",
+      "searchPlaceholder": "Cercar per número o títol..."
+    },
+    "status": {
+      "draft": "Esborrany",
+      "sent": "Enviat",
+      "accepted": "Acceptat",
+      "rejected": "Rebutjat",
+      "expired": "Caducat",
+      "cancelled": "Cancel·lat"
+    },
+    "detail": {
+      "title": "Detall del Pressupost",
+      "client": "Client",
+      "workOrder": "Ordre de Treball",
+      "validUntil": "Vàlid fins a",
+      "subtotal": "Base imposable",
+      "tax": "IVA",
+      "total": "Total",
+      "sendByEmail": "Enviar per email",
+      "downloadPdf": "Descarregar PDF",
+      "accept": "Acceptar",
+      "reject": "Rebutjar"
+    },
+    "create": {
+      "title": "Nou Pressupost",
+      "fromTemplate": "Des de plantilla",
+      "blank": "En blanc",
+      "selectTemplate": "Seleccionar plantilla"
+    },
+    "items": {
+      "title": "Línies del Pressupost",
+      "addItem": "Afegir línia",
+      "description": "Descripció",
+      "quantity": "Quantitat",
+      "unitPrice": "Preu unitari",
+      "discount": "Descompte",
+      "subtotal": "Subtotal",
+      "category": "Categoria",
+      "material": "Material",
+      "labor": "Mà d'obra",
+      "travel": "Desplaçament",
+      "other": "Altres"
+    },
+    "email": {
+      "title": "Enviar Pressupost",
+      "to": "Destinatari",
+      "subject": "Assumpte",
+      "message": "Missatge",
+      "send": "Enviar",
+      "sending": "Enviant..."
+    },
+    "templates": {
+      "title": "Plantilles de Pressupost",
+      "newButton": "Nova Plantilla",
+      "emptyState": "No hi ha plantilles creades",
+      "usageCount": "Ús: {{count}} cops"
+    }
   }
 }
