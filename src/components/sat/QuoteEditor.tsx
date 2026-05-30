@@ -13,6 +13,7 @@ import { useRouter } from "next/navigation";
 import { createQuoteAction } from "@/actions/sat/createQuote";
 import { updateQuoteAction } from "@/actions/sat/updateQuote";
 import { Plus, Trash2, Loader2, Eye, Edit3, Package, Users, Car, MoreHorizontal } from "lucide-react";
+import { QuotePdfPreview } from "./QuotePdfPreview";
 
 /* ============================================================
    TYPES
@@ -635,152 +636,34 @@ export function QuoteEditor({
             view === "split" ? "w-1/2" : "w-full"
           } ${view === "editor" ? "hidden" : ""}`}
         >
-          <div className="p-4">
-            <div className="mx-auto max-w-[595px] bg-white shadow-lg">
-              {/* PDF Header with Company */}
-              <div className="border-b-2 border-[var(--module-sat)] p-6">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-[var(--module-sat)]/10 text-[var(--module-sat)] font-bold text-xl">
-                        {COMPANY_DATA.name.charAt(0)}
-                      </div>
-                      <div>
-                        <h1 className="text-xl font-bold text-gray-900">{COMPANY_DATA.name}</h1>
-                        <p className="text-xs text-gray-500">{COMPANY_DATA.nif}</p>
-                      </div>
-                    </div>
-                    <div className="mt-3 text-xs text-gray-500">
-                      <p>{COMPANY_DATA.address}</p>
-                      <p>{COMPANY_DATA.phone} · {COMPANY_DATA.email}</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <h2 className="text-2xl font-bold text-[var(--module-sat)]">PRESSUPOST</h2>
-                    <p className="mt-1 font-mono text-sm text-gray-600">
-                      {existingQuote?.number ?? "PRE-2026-0001"}
-                    </p>
-                    <div className="mt-2 text-xs text-gray-500">
-                      <p>Data: {new Date().toLocaleDateString("ca-ES")}</p>
-                      {formData.validUntil && (
-                        <p>Vallidesa: {new Date(formData.validUntil).toLocaleDateString("ca-ES")}</p>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Client Info */}
-              <div className="border-b border-gray-200 p-6">
-                <h2 className="mb-2 text-xs font-semibold uppercase text-gray-500">Client</h2>
-                <p className="font-medium text-gray-900">
-                  {useCustomClient ? customClient.name : selectedClient?.name ?? "—"}
-                </p>
-                {useCustomClient ? (
-                  <div className="text-sm text-gray-600">
-                    {customClient.email && <p>{customClient.email}</p>}
-                    {customClient.phone && <p>{customClient.phone}</p>}
-                    {customClient.address && <p>{customClient.address}</p>}
-                    {customClient.taxId && <p>NIF/CIF: {customClient.taxId}</p>}
-                  </div>
-                ) : (
-                  <div className="text-sm text-gray-600">
-                    {selectedClient?.email && <p>{selectedClient.email}</p>}
-                    {selectedClient?.phone && <p>{selectedClient.phone}</p>}
-                    {selectedClient?.address && <p>{selectedClient.address}</p>}
-                    {selectedClient?.taxId && <p>NIF/CIF: {selectedClient.taxId}</p>}
-                  </div>
-                )}
-              </div>
-
-              {/* Description */}
-              {formData.description && (
-                <div className="border-b border-gray-200 p-6">
-                  <h2 className="mb-2 text-xs font-semibold uppercase text-gray-500">Descripció</h2>
-                  <p className="text-sm text-gray-700">{formData.description}</p>
-                </div>
-              )}
-
-              {/* Items Table */}
-              <div className="p-6">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b border-gray-200">
-                      <th className="pb-2 text-left text-xs font-semibold text-gray-500">#</th>
-                      <th className="pb-2 text-left text-xs font-semibold text-gray-500">Descripció</th>
-                      <th className="pb-2 text-right text-xs font-semibold text-gray-500">Qtat</th>
-                      <th className="pb-2 text-right text-xs font-semibold text-gray-500">Preu</th>
-                      <th className="pb-2 text-right text-xs font-semibold text-gray-500">Total</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {items
-                      .filter((item) => item.description)
-                      .map((item, index) => (
-                        <tr key={index} className="border-b border-gray-100">
-                          <td className="py-2 text-gray-500">{index + 1}</td>
-                          <td className="py-2 text-gray-900">{item.description}</td>
-                          <td className="py-2 text-right text-gray-600">
-                            {item.quantity} {UNITS.find((u) => u.value === item.unit)?.label ?? item.unit}
-                          </td>
-                          <td className="py-2 text-right text-gray-600">
-                            {item.unitPrice.toFixed(2)} €
-                          </td>
-                          <td className="py-2 text-right font-medium text-gray-900">
-                            {calculateItemTotal(item).toFixed(2)} €
-                          </td>
-                        </tr>
-                      ))}
-                  </tbody>
-                </table>
-              </div>
-
-              {/* Totals */}
-              <div className="border-t border-gray-200 p-6">
-                <div className="ml-auto w-56">
-                  <div className="flex justify-between text-sm text-gray-600">
-                    <span>Base imposable</span>
-                    <span>{subtotal.toFixed(2)} €</span>
-                  </div>
-                  {formData.discountPercent > 0 && (
-                    <div className="flex justify-between text-sm text-red-600">
-                      <span>Descompte ({formData.discountPercent}%)</span>
-                      <span>-{generalDiscount.toFixed(2)} €</span>
-                    </div>
-                  )}
-                  <div className="flex justify-between text-sm text-gray-600">
-                    <span>IVA ({formData.taxRate}%)</span>
-                    <span>{taxAmount.toFixed(2)} €</span>
-                  </div>
-                  <div className="mt-2 flex justify-between border-t border-gray-200 pt-2 text-lg font-bold text-gray-900">
-                    <span>Total</span>
-                    <span>{total.toFixed(2)} €</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Notes */}
-              {formData.clientNotes && (
-                <div className="border-t border-gray-200 p-6">
-                  <h2 className="mb-2 text-xs font-semibold uppercase text-gray-500">Condicions</h2>
-                  <p className="whitespace-pre-wrap text-sm text-gray-600">{formData.clientNotes}</p>
-                </div>
-              )}
-
-              {/* Signature */}
-              <div className="border-t border-gray-200 p-6">
-                <div className="flex justify-between">
-                  <div>
-                    <p className="text-xs text-gray-500">Data: ___/___/______</p>
-                    <p className="mt-4 text-xs text-gray-500">Signatura: _____________</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-xs text-gray-500">D'acord amb el pressupost</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+          <QuotePdfPreview
+            quoteNumber={existingQuote?.number ?? "PRE-2026-0001"}
+            company={COMPANY_DATA}
+            client={
+              useCustomClient
+                ? customClient
+                : selectedClient ?? { name: "—", email: null, phone: null, address: null, taxId: null }
+            }
+            items={items
+              .filter((item) => item.description)
+              .map((item) => ({
+                description: item.description,
+                quantity: item.quantity,
+                unit: item.unit,
+                unitPrice: item.unitPrice,
+                total: calculateItemTotal(item),
+                category: item.category,
+              }))}
+            subtotal={subtotal}
+            discountPercent={formData.discountPercent}
+            discountAmount={generalDiscount}
+            taxRate={formData.taxRate}
+            taxAmount={taxAmount}
+            total={total}
+            validUntil={formData.validUntil}
+            description={formData.description}
+            clientNotes={formData.clientNotes}
+          />
         </div>
       </div>
 
