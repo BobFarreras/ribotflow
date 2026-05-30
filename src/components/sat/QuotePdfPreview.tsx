@@ -274,8 +274,8 @@ export function QuotePdfPreview({
                 </tr>
                 {discountPercent > 0 && (
                   <tr>
-                    <td style={{ padding: "8px 10px", fontSize: "10pt", color: "#ef4444" }}>Descompte ({discountPercent}%):</td>
-                    <td style={{ padding: "8px 10px", fontSize: "10pt", textAlign: "right", color: "#ef4444" }}>-{discountAmount.toFixed(2)} €</td>
+                    <td style={{ padding: "8px 10px", fontSize: "10pt", color: "#16a34a" }}>Descompte ({discountPercent}%):</td>
+                    <td style={{ padding: "8px 10px", fontSize: "10pt", textAlign: "right", color: "#16a34a" }}>-{discountAmount.toFixed(2)} €</td>
                   </tr>
                 )}
                 <tr>

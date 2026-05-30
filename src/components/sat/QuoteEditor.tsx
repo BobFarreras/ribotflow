@@ -125,6 +125,32 @@ const COMPANY_DATA = {
   website: "www.ditaistudios.com",
 };
 
+// Default values (will come from company settings later)
+const DEFAULT_VALIDITY_DAYS = 30;
+
+const DEFAULT_DESCRIPTION = `Descripció del treball a realitzar:
+
+• Revisió i diagnòstic de l'estat actual
+• Execució de les obres segons normativa vigent
+• Proves de funcionament i qualitat
+• Netegja final de la zona d'intervenció
+• Lliurament de documentació tècnica i garanties`;
+
+const DEFAULT_CONDITIONS = `Condicions generals i forma de pagament:
+
+• Forma de pagament: Transferència bancària al compte indicat.
+• Mètode de pagament: 50% en efectuar la comanda com a paga i senyal, i el 50% restant al lliurament final i conformitat dels treballs.
+• Preus: Aquests preus no inclouen IVA llevat que s'indiqui expressament.
+• Validesa: Aquest pressupost és vàlid durant ${DEFAULT_VALIDITY_DAYS} dies a partir de la data d'emissió.
+• Garantia: Els treballs disposen de garantia segons legislació vigent.
+• Modificacions: Qualsevol variació respecte al pressupost inicial serà comunicada prèviament per escrit.`;
+
+function getDefaultValidUntil(): string {
+  const date = new Date();
+  date.setDate(date.getDate() + DEFAULT_VALIDITY_DAYS);
+  return date.toISOString().split("T")[0];
+}
+
 /* ============================================================
    MAIN COMPONENT
    ============================================================ */
@@ -154,11 +180,11 @@ export function QuoteEditor({
 
   // Form state
   const [formData, setFormData] = useState({
-    description: existingQuote?.description ?? "",
-    validUntil: existingQuote?.validUntil?.split("T")[0] ?? "",
+    description: existingQuote?.description ?? DEFAULT_DESCRIPTION,
+    validUntil: existingQuote?.validUntil?.split("T")[0] ?? getDefaultValidUntil(),
     taxRate: Number(existingQuote?.taxRate ?? 21),
     discountPercent: Number(existingQuote?.discountPercent ?? 0),
-    clientNotes: existingQuote?.clientNotes ?? "",
+    clientNotes: existingQuote?.clientNotes ?? DEFAULT_CONDITIONS,
   });
 
   // Items
