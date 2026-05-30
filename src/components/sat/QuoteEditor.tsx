@@ -2,8 +2,8 @@
  * Creation/modification date: 28/05/2026
  * Path: src/components/sat/QuoteEditor.tsx
  * Description: Professional quote editor with split view (editor + PDF preview).
- *              Features: client auto-fill, IVA calculations, material/labor selection,
- *              real-time totals, and responsive layout.
+ *              Company data left, client data right. Intelligent units.
+ *              General discount. Real-time PDF preview.
  */
 
 "use client";
@@ -12,7 +12,7 @@ import { useState, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { createQuoteAction } from "@/actions/sat/createQuote";
 import { updateQuoteAction } from "@/actions/sat/updateQuote";
-import { Search, Plus, Trash2, Loader2, FileText, Eye, Edit3, Package, Users, Car, MoreHorizontal } from "lucide-react";
+import { Plus, Trash2, Loader2, Eye, Edit3, Package, Users, Car, MoreHorizontal } from "lucide-react";
 
 /* ============================================================
    TYPES
@@ -61,6 +61,7 @@ interface ExistingQuote {
   taxRate: string;
   notes: string | null;
   clientNotes: string | null;
+  discountPercent: string;
   items: Array<{
     id: string;
     description: string;
@@ -89,7 +90,7 @@ interface Props {
 }
 
 /* ============================================================
-   CATEGORY CONFIG
+   CONSTANTS
    ============================================================ */
 
 const CATEGORIES = [
@@ -99,17 +100,29 @@ const CATEGORIES = [
   { value: "other", label: "Altres", icon: MoreHorizontal, color: "text-gray-600" },
 ];
 
+// Units with step: "int" = step 1, "float" = step 0.01
 const UNITS = [
-  { value: "unit", label: "Unitat" },
-  { value: "kg", label: "kg" },
-  { value: "m", label: "m" },
-  { value: "m2", label: "m²" },
-  { value: "m3", label: "m³" },
-  { value: "l", label: "L" },
-  { value: "h", label: "Hora" },
-  { value: "day", label: "Dia" },
-  { value: "pack", label: "Paquet" },
+  { value: "unit", label: "Unitat", step: "1" },
+  { value: "kg", label: "kg", step: "0.01" },
+  { value: "g", label: "g", step: "0.01" },
+  { value: "m", label: "m", step: "0.01" },
+  { value: "m2", label: "m²", step: "0.01" },
+  { value: "m3", label: "m³", step: "0.01" },
+  { value: "l", label: "L", step: "0.01" },
+  { value: "h", label: "Hora", step: "0.5" },
+  { value: "day", label: "Dia", step: "0.5" },
+  { value: "pack", label: "Paquet", step: "1" },
 ];
+
+// Simulated company data (will come from settings later)
+const COMPANY_DATA = {
+  name: "DigitAIStudios",
+  nif: "B12345678",
+  address: "Carrer Nou 15, 17100 La Bisbal d'Empordà",
+  phone: "972 642 100",
+  email: "info@ditaistudios.com",
+  website: "www.ditaistudios.com",
+};
 
 /* ============================================================
    MAIN COMPONENT
@@ -127,10 +140,8 @@ export function QuoteEditor({
   const [error, setError] = useState<string | null>(null);
   const [view, setView] = useState<"split" | "editor" | "preview">("split");
 
-  // Form state
-  const [selectedClientId, setSelectedClientId] = useState<string>(
-    existingQuote?.items?.[0]?.productId ? "" : ""
-  );
+  // Client state
+  const [selectedClientId, setSelectedClientId] = useState<string>("");
   const [customClient, setCustomClient] = useState({
     name: "",
     email: "",
@@ -140,15 +151,16 @@ export function QuoteEditor({
   });
   const [useCustomClient, setUseCustomClient] = useState(false);
 
+  // Form state
   const [formData, setFormData] = useState({
-    title: existingQuote?.title ?? "",
     description: existingQuote?.description ?? "",
     validUntil: existingQuote?.validUntil?.split("T")[0] ?? "",
     taxRate: Number(existingQuote?.taxRate ?? 21),
-    notes: existingQuote?.notes ?? "",
+    discountPercent: Number(existingQuote?.discountPercent ?? 0),
     clientNotes: existingQuote?.clientNotes ?? "",
   });
 
+  // Items
   const [items, setItems] = useState<QuoteItemForm[]>(
     existingQuote?.items?.length
       ? existingQuote.items.map((item, index) => ({
@@ -188,43 +200,36 @@ export function QuoteEditor({
      CALCULATIONS
      ============================================================ */
 
-  const calculateItemTotal = useCallback(
-    (item: QuoteItemForm) => {
-      const subtotal = item.quantity * item.unitPrice;
-      const discount =
-        item.discountAmount > 0
-          ? item.discountAmount
-          : (subtotal * item.discountPercent) / 100;
-      return subtotal - discount;
-    },
-    []
-  );
+  const calculateItemTotal = useCallback((item: QuoteItemForm) => {
+    const subtotal = item.quantity * item.unitPrice;
+    const discount =
+      item.discountAmount > 0
+        ? item.discountAmount
+        : (subtotal * item.discountPercent) / 100;
+    return subtotal - discount;
+  }, []);
 
   const subtotal = useMemo(
     () => items.reduce((sum, item) => sum + calculateItemTotal(item), 0),
     [items, calculateItemTotal]
   );
 
-  const taxAmount = useMemo(
-    () => (subtotal * formData.taxRate) / 100,
-    [subtotal, formData.taxRate]
+  const generalDiscount = useMemo(
+    () => (subtotal * formData.discountPercent) / 100,
+    [subtotal, formData.discountPercent]
   );
 
-  const total = useMemo(() => subtotal + taxAmount, [subtotal, taxAmount]);
+  const subtotalAfterDiscount = useMemo(
+    () => subtotal - generalDiscount,
+    [subtotal, generalDiscount]
+  );
 
-  // Category subtotals
-  const categoryTotals = useMemo(() => {
-    const totals: Record<string, number> = {
-      material: 0,
-      labor: 0,
-      travel: 0,
-      other: 0,
-    };
-    items.forEach((item) => {
-      totals[item.category] += calculateItemTotal(item);
-    });
-    return totals;
-  }, [items, calculateItemTotal]);
+  const taxAmount = useMemo(
+    () => (subtotalAfterDiscount * formData.taxRate) / 100,
+    [subtotalAfterDiscount, formData.taxRate]
+  );
+
+  const total = useMemo(() => subtotalAfterDiscount + taxAmount, [subtotalAfterDiscount, taxAmount]);
 
   /* ============================================================
      CLIENT HANDLING
@@ -307,16 +312,14 @@ export function QuoteEditor({
     [products, productSearch]
   );
 
+  const getUnitStep = (unit: string) =>
+    UNITS.find((u) => u.value === unit)?.step ?? "1";
+
   /* ============================================================
      SUBMIT
      ============================================================ */
 
   const handleSubmit = async () => {
-    if (!formData.title) {
-      setError("El títol és obligatori");
-      return;
-    }
-
     if (!workOrderId) {
       setError("Ha d'estar vinculat a una OT");
       return;
@@ -334,11 +337,12 @@ export function QuoteEditor({
     const payload = {
       workOrderId,
       clientId: useCustomClient ? "00000000-0000-0000-0000-000000000000" : selectedClientId,
-      title: formData.title,
+      title: `${useCustomClient ? customClient.name : selectedClient?.name ?? "Pressupost"} - ${new Date().toLocaleDateString("ca-ES")}`,
       description: formData.description || null,
       validUntil: formData.validUntil || null,
       taxRate: formData.taxRate,
-      notes: formData.notes || null,
+      discountPercent: formData.discountPercent,
+      notes: null,
       clientNotes: formData.clientNotes || null,
       items: validItems.map((item, index) => ({
         ...item,
@@ -362,8 +366,6 @@ export function QuoteEditor({
   /* ============================================================
      RENDER
      ============================================================ */
-
-  const isLargeScreen = view === "split";
 
   return (
     <div className="flex h-full flex-col">
@@ -421,151 +423,160 @@ export function QuoteEditor({
             view === "split" ? "w-1/2" : "w-full"
           } ${view === "preview" ? "hidden" : ""}`}
         >
-          <div className="space-y-4 p-4">
+          <div className="mx-auto w-full max-w-2xl space-y-4 p-4">
             {error && (
               <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
                 {error}
               </div>
             )}
 
-            {/* Client Selection */}
-            <Section title="Client">
-              <div className="space-y-3">
-                <div className="flex gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setUseCustomClient(false)}
-                    className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
-                      !useCustomClient
-                        ? "bg-[var(--module-sat)]/10 text-[var(--module-sat)]"
-                        : "text-[var(--text-muted)] hover:bg-[var(--bg)]"
-                    }`}
-                  >
-                    Client existent
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setUseCustomClient(true)}
-                    className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
-                      useCustomClient
-                        ? "bg-[var(--module-sat)]/10 text-[var(--module-sat)]"
-                        : "text-[var(--text-muted)] hover:bg-[var(--bg)]"
-                    }`}
-                  >
-                    Client nou
-                  </button>
+            {/* Company + Client side by side */}
+            <div className="grid gap-4 sm:grid-cols-2">
+              {/* Company */}
+              <Section title="Empresa">
+                <div className="space-y-2 text-sm">
+                  <div className="flex items-center gap-2">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--module-sat)]/10 text-[var(--module-sat)] font-bold text-lg">
+                      {COMPANY_DATA.name.charAt(0)}
+                    </div>
+                    <div>
+                      <div className="font-semibold text-[var(--text)]">{COMPANY_DATA.name}</div>
+                      <div className="text-xs text-[var(--text-muted)]">NIF: {COMPANY_DATA.nif}</div>
+                    </div>
+                  </div>
+                  <div className="text-[var(--text-muted)]">{COMPANY_DATA.address}</div>
+                  <div className="text-[var(--text-muted)]">{COMPANY_DATA.phone}</div>
+                  <div className="text-[var(--text-muted)]">{COMPANY_DATA.email}</div>
                 </div>
+              </Section>
 
-                {!useCustomClient ? (
-                  <select
-                    value={selectedClientId}
-                    onChange={(e) => handleClientSelect(e.target.value)}
-                    className="w-full rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 py-2 text-sm text-[var(--text)] outline-none focus:border-[var(--module-sat)]"
-                  >
-                    <option value="">Seleccionar client...</option>
-                    {clients.map((client) => (
-                      <option key={client.id} value={client.id}>
-                        {client.name}
-                      </option>
-                    ))}
-                  </select>
-                ) : (
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    <Input
-                      label="Nom *"
-                      value={customClient.name}
-                      onChange={(v) => setCustomClient((p) => ({ ...p, name: v }))}
-                    />
-                    <Input
-                      label="Email"
-                      type="email"
-                      value={customClient.email}
-                      onChange={(v) => setCustomClient((p) => ({ ...p, email: v }))}
-                    />
-                    <Input
-                      label="Telèfon"
-                      type="tel"
-                      value={customClient.phone}
-                      onChange={(v) => setCustomClient((p) => ({ ...p, phone: v }))}
-                    />
-                    <Input
-                      label="NIF/CIF"
-                      value={customClient.taxId}
-                      onChange={(v) => setCustomClient((p) => ({ ...p, taxId: v }))}
-                    />
-                    <div className="sm:col-span-2">
-                      <Input
-                        label="Adreça"
+              {/* Client */}
+              <Section title="Client">
+                <div className="space-y-3">
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setUseCustomClient(false)}
+                      className={`rounded-md px-2 py-1 text-xs font-medium transition-colors ${
+                        !useCustomClient
+                          ? "bg-[var(--module-sat)]/10 text-[var(--module-sat)]"
+                          : "text-[var(--text-muted)] hover:bg-[var(--bg)]"
+                      }`}
+                    >
+                      Existents
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setUseCustomClient(true)}
+                      className={`rounded-md px-2 py-1 text-xs font-medium transition-colors ${
+                        useCustomClient
+                          ? "bg-[var(--module-sat)]/10 text-[var(--module-sat)]"
+                          : "text-[var(--text-muted)] hover:bg-[var(--bg)]"
+                      }`}
+                    >
+                      Nou
+                    </button>
+                  </div>
+
+                  {!useCustomClient ? (
+                    <select
+                      value={selectedClientId}
+                      onChange={(e) => handleClientSelect(e.target.value)}
+                      className="w-full rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 py-2 text-sm text-[var(--text)] outline-none focus:border-[var(--module-sat)]"
+                    >
+                      <option value="">Seleccionar...</option>
+                      {clients.map((client) => (
+                        <option key={client.id} value={client.id}>
+                          {client.name}
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <div className="space-y-2">
+                      <input
+                        type="text"
+                        value={customClient.name}
+                        onChange={(e) => setCustomClient((p) => ({ ...p, name: e.target.value }))}
+                        placeholder="Nom del client"
+                        className="w-full rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 py-2 text-sm text-[var(--text)] outline-none focus:border-[var(--module-sat)]"
+                      />
+                      <input
+                        type="email"
+                        value={customClient.email}
+                        onChange={(e) => setCustomClient((p) => ({ ...p, email: e.target.value }))}
+                        placeholder="Email"
+                        className="w-full rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 py-2 text-sm text-[var(--text)] outline-none focus:border-[var(--module-sat)]"
+                      />
+                      <input
+                        type="tel"
+                        value={customClient.phone}
+                        onChange={(e) => setCustomClient((p) => ({ ...p, phone: e.target.value }))}
+                        placeholder="Telèfon"
+                        className="w-full rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 py-2 text-sm text-[var(--text)] outline-none focus:border-[var(--module-sat)]"
+                      />
+                      <input
+                        type="text"
+                        value={customClient.taxId}
+                        onChange={(e) => setCustomClient((p) => ({ ...p, taxId: e.target.value }))}
+                        placeholder="NIF/CIF"
+                        className="w-full rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 py-2 text-sm text-[var(--text)] outline-none focus:border-[var(--module-sat)]"
+                      />
+                      <input
+                        type="text"
                         value={customClient.address}
-                        onChange={(v) => setCustomClient((p) => ({ ...p, address: v }))}
+                        onChange={(e) => setCustomClient((p) => ({ ...p, address: e.target.value }))}
+                        placeholder="Adreça"
+                        className="w-full rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 py-2 text-sm text-[var(--text)] outline-none focus:border-[var(--module-sat)]"
                       />
                     </div>
-                  </div>
-                )}
+                  )}
 
-                {/* Client info display */}
-                {selectedClient && !useCustomClient && (
-                  <div className="rounded-lg border border-[var(--border)] bg-[var(--bg)] p-3 text-sm">
-                    <div className="grid gap-2 sm:grid-cols-2">
-                      {selectedClient.email && (
-                        <div>
-                          <span className="text-[var(--text-muted)]">Email: </span>
-                          <span className="text-[var(--text)]">{selectedClient.email}</span>
-                        </div>
-                      )}
-                      {selectedClient.phone && (
-                        <div>
-                          <span className="text-[var(--text-muted)]">Telèfon: </span>
-                          <span className="text-[var(--text)]">{selectedClient.phone}</span>
-                        </div>
-                      )}
-                      {selectedClient.address && (
-                        <div className="sm:col-span-2">
-                          <span className="text-[var(--text-muted)]">Adreça: </span>
-                          <span className="text-[var(--text)]">{selectedClient.address}</span>
-                        </div>
-                      )}
-                      {selectedClient.taxId && (
-                        <div>
-                          <span className="text-[var(--text-muted)]">NIF/CIF: </span>
-                          <span className="text-[var(--text)]">{selectedClient.taxId}</span>
-                        </div>
-                      )}
+                  {/* Selected client info */}
+                  {selectedClient && !useCustomClient && (
+                    <div className="rounded-lg border border-[var(--border)] bg-[var(--bg)] p-2 text-xs text-[var(--text-muted)]">
+                      {selectedClient.email && <div>{selectedClient.email}</div>}
+                      {selectedClient.phone && <div>{selectedClient.phone}</div>}
+                      {selectedClient.address && <div>{selectedClient.address}</div>}
+                      {selectedClient.taxId && <div>NIF: {selectedClient.taxId}</div>}
                     </div>
-                  </div>
-                )}
-              </div>
-            </Section>
+                  )}
+                </div>
+              </Section>
+            </div>
 
-            {/* Basic Info */}
-            <Section title="Informació del pressupost">
-              <div className="grid gap-3 sm:grid-cols-2">
-                <div className="sm:col-span-2">
-                  <Input
-                    label="Títol *"
-                    value={formData.title}
-                    onChange={(v) => setFormData((p) => ({ ...p, title: v }))}
-                    placeholder="Ex: Reparació sistema elèctric"
-                  />
-                </div>
-                <div>
-                  <Input
-                    label="Data de caducitat"
-                    type="date"
-                    value={formData.validUntil}
-                    onChange={(v) => setFormData((p) => ({ ...p, validUntil: v }))}
-                  />
-                </div>
-                <div>
-                  <Input
-                    label="IVA (%)"
-                    type="number"
-                    value={formData.taxRate}
-                    onChange={(v) => setFormData((p) => ({ ...p, taxRate: Number(v) }))}
-                    min={0}
-                    max={100}
-                  />
-                </div>
+            {/* Quote Info */}
+            <Section title="Pressupost">
+              <div className="grid gap-3 sm:grid-cols-3">
+                <Input
+                  label="Data de caducitat"
+                  type="date"
+                  value={formData.validUntil}
+                  onChange={(v) => setFormData((p) => ({ ...p, validUntil: v }))}
+                />
+                <Input
+                  label="IVA (%)"
+                  type="number"
+                  value={formData.taxRate}
+                  onChange={(v) => setFormData((p) => ({ ...p, taxRate: Number(v) }))}
+                  min={0}
+                  max={100}
+                />
+                <Input
+                  label="Descompte general (%)"
+                  type="number"
+                  value={formData.discountPercent}
+                  onChange={(v) => setFormData((p) => ({ ...p, discountPercent: Number(v) }))}
+                  min={0}
+                  max={100}
+                />
+              </div>
+              <div className="mt-3">
+                <Textarea
+                  label="Descripció del treball"
+                  value={formData.description}
+                  onChange={(v) => setFormData((p) => ({ ...p, description: v }))}
+                  rows={2}
+                />
               </div>
             </Section>
 
@@ -589,7 +600,6 @@ export function QuoteEditor({
                     key={index}
                     item={item}
                     index={index}
-                    products={products}
                     filteredProducts={filteredProducts}
                     productSearch={productSearch}
                     setProductSearch={setProductSearch}
@@ -600,51 +610,21 @@ export function QuoteEditor({
                     onRemove={() => removeItem(index)}
                     canRemove={items.length > 1}
                     itemTotal={calculateItemTotal(item)}
+                    getUnitStep={getUnitStep}
                   />
-                ))}
-              </div>
-            </Section>
-
-            {/* Category Summary */}
-            <Section title="Resum per categories">
-              <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-                {CATEGORIES.map((cat) => (
-                  <div
-                    key={cat.value}
-                    className="rounded-lg border border-[var(--border)] bg-[var(--bg)] p-2"
-                  >
-                    <div className="flex items-center gap-1.5">
-                      <cat.icon className={`h-3 w-3 ${cat.color}`} />
-                      <span className="text-[11px] text-[var(--text-muted)]">{cat.label}</span>
-                    </div>
-                    <div className="mt-1 text-sm font-semibold text-[var(--text)]">
-                      {categoryTotals[cat.value].toFixed(2)} €
-                    </div>
-                  </div>
                 ))}
               </div>
             </Section>
 
             {/* Notes */}
-            <Section title="Notes">
-              <div className="grid gap-3 sm:grid-cols-2">
-                <div>
-                  <Textarea
-                    label="Notes internes"
-                    value={formData.notes}
-                    onChange={(v) => setFormData((p) => ({ ...p, notes: v }))}
-                    rows={3}
-                  />
-                </div>
-                <div>
-                  <Textarea
-                    label="Notes per al client"
-                    value={formData.clientNotes}
-                    onChange={(v) => setFormData((p) => ({ ...p, clientNotes: v }))}
-                    rows={3}
-                  />
-                </div>
-              </div>
+            <Section title="Condicions / Notes">
+              <Textarea
+                label="Notes visibles pel client"
+                value={formData.clientNotes}
+                onChange={(v) => setFormData((p) => ({ ...p, clientNotes: v }))}
+                rows={3}
+                placeholder="Ex: Pressupost vàlid 30 dies. Preus sense IVA. Desplaçament inclòs."
+              />
             </Section>
           </div>
         </div>
@@ -657,23 +637,35 @@ export function QuoteEditor({
         >
           <div className="p-4">
             <div className="mx-auto max-w-[595px] bg-white shadow-lg">
-              {/* PDF Header */}
+              {/* PDF Header with Company */}
               <div className="border-b-2 border-[var(--module-sat)] p-6">
                 <div className="flex items-start justify-between">
                   <div>
-                    <h1 className="text-2xl font-bold text-[var(--module-sat)]">PRESSUPOST</h1>
-                    <p className="mt-1 text-sm text-gray-600">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-[var(--module-sat)]/10 text-[var(--module-sat)] font-bold text-xl">
+                        {COMPANY_DATA.name.charAt(0)}
+                      </div>
+                      <div>
+                        <h1 className="text-xl font-bold text-gray-900">{COMPANY_DATA.name}</h1>
+                        <p className="text-xs text-gray-500">{COMPANY_DATA.nif}</p>
+                      </div>
+                    </div>
+                    <div className="mt-3 text-xs text-gray-500">
+                      <p>{COMPANY_DATA.address}</p>
+                      <p>{COMPANY_DATA.phone} · {COMPANY_DATA.email}</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <h2 className="text-2xl font-bold text-[var(--module-sat)]">PRESSUPOST</h2>
+                    <p className="mt-1 font-mono text-sm text-gray-600">
                       {existingQuote?.number ?? "PRE-2026-0001"}
                     </p>
-                  </div>
-                  <div className="text-right text-sm text-gray-600">
-                    <p>Data: {new Date().toLocaleDateString("ca-ES")}</p>
-                    {formData.validUntil && (
-                      <p>
-                        Vallidesa:{" "}
-                        {new Date(formData.validUntil).toLocaleDateString("ca-ES")}
-                      </p>
-                    )}
+                    <div className="mt-2 text-xs text-gray-500">
+                      <p>Data: {new Date().toLocaleDateString("ca-ES")}</p>
+                      {formData.validUntil && (
+                        <p>Vallidesa: {new Date(formData.validUntil).toLocaleDateString("ca-ES")}</p>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -685,44 +677,26 @@ export function QuoteEditor({
                   {useCustomClient ? customClient.name : selectedClient?.name ?? "—"}
                 </p>
                 {useCustomClient ? (
-                  <>
-                    {customClient.email && (
-                      <p className="text-sm text-gray-600">{customClient.email}</p>
-                    )}
-                    {customClient.phone && (
-                      <p className="text-sm text-gray-600">{customClient.phone}</p>
-                    )}
-                    {customClient.address && (
-                      <p className="text-sm text-gray-600">{customClient.address}</p>
-                    )}
-                    {customClient.taxId && (
-                      <p className="text-sm text-gray-600">NIF/CIF: {customClient.taxId}</p>
-                    )}
-                  </>
+                  <div className="text-sm text-gray-600">
+                    {customClient.email && <p>{customClient.email}</p>}
+                    {customClient.phone && <p>{customClient.phone}</p>}
+                    {customClient.address && <p>{customClient.address}</p>}
+                    {customClient.taxId && <p>NIF/CIF: {customClient.taxId}</p>}
+                  </div>
                 ) : (
-                  <>
-                    {selectedClient?.email && (
-                      <p className="text-sm text-gray-600">{selectedClient.email}</p>
-                    )}
-                    {selectedClient?.phone && (
-                      <p className="text-sm text-gray-600">{selectedClient.phone}</p>
-                    )}
-                    {selectedClient?.address && (
-                      <p className="text-sm text-gray-600">{selectedClient.address}</p>
-                    )}
-                    {selectedClient?.taxId && (
-                      <p className="text-sm text-gray-600">NIF/CIF: {selectedClient.taxId}</p>
-                    )}
-                  </>
+                  <div className="text-sm text-gray-600">
+                    {selectedClient?.email && <p>{selectedClient.email}</p>}
+                    {selectedClient?.phone && <p>{selectedClient.phone}</p>}
+                    {selectedClient?.address && <p>{selectedClient.address}</p>}
+                    {selectedClient?.taxId && <p>NIF/CIF: {selectedClient.taxId}</p>}
+                  </div>
                 )}
               </div>
 
               {/* Description */}
               {formData.description && (
                 <div className="border-b border-gray-200 p-6">
-                  <h2 className="mb-2 text-xs font-semibold uppercase text-gray-500">
-                    Descripció
-                  </h2>
+                  <h2 className="mb-2 text-xs font-semibold uppercase text-gray-500">Descripció</h2>
                   <p className="text-sm text-gray-700">{formData.description}</p>
                 </div>
               )}
@@ -733,9 +707,7 @@ export function QuoteEditor({
                   <thead>
                     <tr className="border-b border-gray-200">
                       <th className="pb-2 text-left text-xs font-semibold text-gray-500">#</th>
-                      <th className="pb-2 text-left text-xs font-semibold text-gray-500">
-                        Descripció
-                      </th>
+                      <th className="pb-2 text-left text-xs font-semibold text-gray-500">Descripció</th>
                       <th className="pb-2 text-right text-xs font-semibold text-gray-500">Qtat</th>
                       <th className="pb-2 text-right text-xs font-semibold text-gray-500">Preu</th>
                       <th className="pb-2 text-right text-xs font-semibold text-gray-500">Total</th>
@@ -749,7 +721,7 @@ export function QuoteEditor({
                           <td className="py-2 text-gray-500">{index + 1}</td>
                           <td className="py-2 text-gray-900">{item.description}</td>
                           <td className="py-2 text-right text-gray-600">
-                            {item.quantity} {item.unit}
+                            {item.quantity} {UNITS.find((u) => u.value === item.unit)?.label ?? item.unit}
                           </td>
                           <td className="py-2 text-right text-gray-600">
                             {item.unitPrice.toFixed(2)} €
@@ -765,11 +737,17 @@ export function QuoteEditor({
 
               {/* Totals */}
               <div className="border-t border-gray-200 p-6">
-                <div className="ml-auto w-48">
+                <div className="ml-auto w-56">
                   <div className="flex justify-between text-sm text-gray-600">
                     <span>Base imposable</span>
                     <span>{subtotal.toFixed(2)} €</span>
                   </div>
+                  {formData.discountPercent > 0 && (
+                    <div className="flex justify-between text-sm text-red-600">
+                      <span>Descompte ({formData.discountPercent}%)</span>
+                      <span>-{generalDiscount.toFixed(2)} €</span>
+                    </div>
+                  )}
                   <div className="flex justify-between text-sm text-gray-600">
                     <span>IVA ({formData.taxRate}%)</span>
                     <span>{taxAmount.toFixed(2)} €</span>
@@ -784,10 +762,8 @@ export function QuoteEditor({
               {/* Notes */}
               {formData.clientNotes && (
                 <div className="border-t border-gray-200 p-6">
-                  <h2 className="mb-2 text-xs font-semibold uppercase text-gray-500">
-                    Condicions
-                  </h2>
-                  <p className="text-sm text-gray-600">{formData.clientNotes}</p>
+                  <h2 className="mb-2 text-xs font-semibold uppercase text-gray-500">Condicions</h2>
+                  <p className="whitespace-pre-wrap text-sm text-gray-600">{formData.clientNotes}</p>
                 </div>
               )}
 
@@ -819,7 +795,7 @@ export function QuoteEditor({
         </button>
         <button
           onClick={handleSubmit}
-          disabled={isLoading || !formData.title}
+          disabled={isLoading}
           className="flex items-center gap-2 rounded-lg bg-[var(--module-sat)] px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50"
         >
           {isLoading && <Loader2 className="h-4 w-4 animate-spin" />}
@@ -892,11 +868,13 @@ function Textarea({
   value,
   onChange,
   rows = 3,
+  placeholder,
 }: {
   label: string;
   value: string;
   onChange: (v: string) => void;
   rows?: number;
+  placeholder?: string;
 }) {
   return (
     <div>
@@ -905,6 +883,7 @@ function Textarea({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         rows={rows}
+        placeholder={placeholder}
         className="w-full rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 py-2 text-sm text-[var(--text)] outline-none focus:border-[var(--module-sat)]"
       />
     </div>
@@ -914,7 +893,6 @@ function Textarea({
 function ItemRow({
   item,
   index,
-  products,
   filteredProducts,
   productSearch,
   setProductSearch,
@@ -925,10 +903,10 @@ function ItemRow({
   onRemove,
   canRemove,
   itemTotal,
+  getUnitStep,
 }: {
   item: QuoteItemForm;
   index: number;
-  products: Product[];
   filteredProducts: Product[];
   productSearch: string;
   setProductSearch: (v: string) => void;
@@ -939,9 +917,8 @@ function ItemRow({
   onRemove: () => void;
   canRemove: boolean;
   itemTotal: number;
+  getUnitStep: (unit: string) => string;
 }) {
-  const categoryConfig = CATEGORIES.find((c) => c.value === item.category);
-
   return (
     <div className="rounded-lg border border-[var(--border)] bg-[var(--bg)] p-3">
       <div className="flex items-start gap-2">
@@ -969,7 +946,6 @@ function ItemRow({
             onFocus={() => setShowProductPicker(index)}
           />
 
-          {/* Product picker dropdown */}
           {showProductPicker === index && (
             <div className="absolute left-0 top-full z-10 mt-1 w-full rounded-lg border border-[var(--border)] bg-[var(--surface)] shadow-lg">
               <div className="border-b border-[var(--border)] p-2">
@@ -984,9 +960,7 @@ function ItemRow({
               </div>
               <div className="max-h-40 overflow-y-auto">
                 {filteredProducts.length === 0 ? (
-                  <div className="p-3 text-center text-sm text-[var(--text-muted)]">
-                    Cap producte trobat
-                  </div>
+                  <div className="p-3 text-center text-sm text-[var(--text-muted)]">Cap producte</div>
                 ) : (
                   filteredProducts.map((product) => (
                     <button
@@ -1012,7 +986,7 @@ function ItemRow({
                 <button
                   type="button"
                   onClick={() => setShowProductPicker(null)}
-                  className="w-full rounded-md bg-[var(--bg)] px-3 py-1.5 text-xs text-[var(--text-muted)] hover:bg-[var(--surface-hover)]"
+                  className="w-full rounded-md bg-[var(--bg)] px-3 py-1.5 text-xs text-[var(--text-muted)]"
                 >
                   Tancar
                 </button>
@@ -1021,7 +995,7 @@ function ItemRow({
           )}
         </div>
 
-        {/* Remove button */}
+        {/* Remove */}
         <button
           type="button"
           onClick={onRemove}
@@ -1032,29 +1006,27 @@ function ItemRow({
         </button>
       </div>
 
-      {/* Quantity, Price, Discount row */}
+      {/* Quantity, Unit, Price, Discount */}
       <div className="mt-2 flex items-center gap-2">
-        <div className="flex items-center gap-1">
-          <input
-            type="number"
-            value={item.quantity}
-            onChange={(e) => onUpdate("quantity", Number(e.target.value))}
-            min="0.01"
-            step="0.01"
-            className="w-16 rounded-md border border-[var(--border)] bg-[var(--surface)] px-2 py-1.5 text-right text-sm text-[var(--text)] outline-none"
-          />
-          <select
-            value={item.unit}
-            onChange={(e) => onUpdate("unit", e.target.value)}
-            className="rounded-md border border-[var(--border)] bg-[var(--surface)] px-1 py-1.5 text-xs text-[var(--text)] outline-none"
-          >
-            {UNITS.map((u) => (
-              <option key={u.value} value={u.value}>
-                {u.label}
-              </option>
-            ))}
-          </select>
-        </div>
+        <input
+          type="number"
+          value={item.quantity}
+          onChange={(e) => onUpdate("quantity", Number(e.target.value))}
+          min={item.unit === "unit" || item.unit === "pack" ? "1" : "0.01"}
+          step={getUnitStep(item.unit)}
+          className="w-16 rounded-md border border-[var(--border)] bg-[var(--surface)] px-2 py-1.5 text-right text-sm text-[var(--text)] outline-none"
+        />
+        <select
+          value={item.unit}
+          onChange={(e) => onUpdate("unit", e.target.value)}
+          className="rounded-md border border-[var(--border)] bg-[var(--surface)] px-1 py-1.5 text-xs text-[var(--text)] outline-none"
+        >
+          {UNITS.map((u) => (
+            <option key={u.value} value={u.value}>
+              {u.label}
+            </option>
+          ))}
+        </select>
 
         <span className="text-[var(--text-muted)]">×</span>
 
