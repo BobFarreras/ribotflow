@@ -12,6 +12,7 @@ import { productService } from "@/services/sat/productService";
 import { attachmentService } from "@/services/sat/attachmentService";
 import { signatureService } from "@/services/sat/signatureService";
 import { locationService } from "@/services/sat/locationService";
+import { quoteService } from "@/services/sat/quoteService";
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -28,6 +29,7 @@ import { StatusHistorySection } from "@/components/sat/StatusHistorySection";
 import { GoogleMapsLink } from "@/components/sat/GoogleMapsLink";
 import { PdfGenerator } from "@/components/sat/PdfGenerator";
 import { CategoryIcon } from "@/components/sat/CategoryIcon";
+import { QuoteStatusBadge } from "@/components/sat/QuoteStatusBadge";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -52,6 +54,7 @@ export default async function WorkOrderDetailPage({ params }: Props) {
   const signature = await signatureService.getByEntity(companyId, "work_order", id);
   const locations = await locationService.getByWorkOrder(companyId, id);
   const lastLocation = await locationService.getLastLocation(companyId, id);
+  const quotes = await quoteService.getByWorkOrder(companyId, id);
   const userRole = session.user.role;
 
   const { workOrder, client, category } = order;
@@ -233,22 +236,59 @@ export default async function WorkOrderDetailPage({ params }: Props) {
             <PdfGenerator workOrderId={workOrder.id} pdfUrl={workOrder.pdfUrl} />
           </div>
 
-          {/* Quote (placeholder) */}
+          {/* Quotes */}
           <div className="shrink-0 rounded-lg border border-[var(--border)] bg-[var(--surface)] p-3">
-            <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
-              Pressupost
-            </h2>
-            <div className="flex items-center gap-2">
-              <FilePlus className="h-4 w-4 text-[var(--module-sat)]" />
-              <span className="text-sm text-[var(--text-muted)]">Sense pressupost associat</span>
+            <div className="mb-2 flex items-center justify-between">
+              <h2 className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
+                Pressupostos ({quotes.length})
+              </h2>
+              <Link
+                href={`/sat/quotes/new?otId=${workOrder.id}`}
+                className="flex items-center gap-1 rounded-md bg-[var(--module-sat)]/10 px-2 py-1 text-xs font-medium text-[var(--module-sat)] transition-colors hover:bg-[var(--module-sat)]/20"
+              >
+                <FilePlus className="h-3 w-3" />
+                Nou
+              </Link>
             </div>
-            <Link
-              href="#"
-              className="mt-2 inline-flex items-center gap-1 rounded-md bg-[var(--module-sat)]/10 px-2 py-1 text-xs font-medium text-[var(--module-sat)] transition-colors hover:bg-[var(--module-sat)]/20"
-            >
-              <FileText className="h-3 w-3" />
-              Crear pressupost
-            </Link>
+            {quotes.length === 0 ? (
+              <div className="flex items-center gap-2 text-sm text-[var(--text-muted)]">
+                <FileText className="h-4 w-4" />
+                Sense pressupostos
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {quotes.slice(0, 3).map((quote) => (
+                  <Link
+                    key={quote.id}
+                    href={`/sat/quotes/${quote.id}`}
+                    className="flex items-center justify-between rounded-md border border-[var(--border)] bg-[var(--bg)] px-2 py-1.5 transition-colors hover:border-[var(--module-sat)]/30"
+                  >
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[11px] font-mono text-[var(--text-muted)]">
+                          {quote.number}
+                        </span>
+                        <QuoteStatusBadge status={quote.status as any} size="sm" />
+                      </div>
+                      <div className="mt-0.5 text-xs text-[var(--text)] truncate">
+                        {quote.title}
+                      </div>
+                    </div>
+                    <span className="ml-2 text-sm font-semibold text-[var(--text)]">
+                      {Number(quote.total).toFixed(2)} €
+                    </span>
+                  </Link>
+                ))}
+                {quotes.length > 3 && (
+                  <Link
+                    href="/sat/quotes"
+                    className="block text-center text-xs text-[var(--module-sat)] hover:underline"
+                  >
+                    Veure tots ({quotes.length})
+                  </Link>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Check-in / Location */}
