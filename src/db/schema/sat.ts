@@ -1,9 +1,10 @@
 /**
- * Data de creació/modificació: 24/05/2026
+ * Data de creació/modificació: 28/05/2026
  * Ruta: src/db/schema/sat.ts
  * Descripció: Esquema de dades del Mòdul SAT (Servei d'Assistència Tècnica).
  *               Clients, categories d'ordre, ordres de treball, materials,
- *               adjunts, firmes, historial d'estats i geolocalització.
+ *               adjunts, firmes, historial d'estats, geolocalització,
+ *               pressupostos (quotes), línies de pressupost i plantilles.
  */
 
 import {
@@ -16,6 +17,7 @@ import {
   boolean,
   numeric,
   jsonb,
+  unique,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { companies } from "./auth";
@@ -314,6 +316,164 @@ export const workOrderLocations = pgTable(
 );
 
 /* ============================================================
+   PRESSUPOTOS (Quotes vinculats a OTs)
+   ============================================================ */
+
+export const quotes = pgTable(
+  "quotes",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    companyId: uuid("company_id")
+      .references(() => companies.id, { onDelete: "cascade" })
+      .notNull(),
+    workOrderId: uuid("work_order_id")
+      .references(() => workOrders.id, { onDelete: "cascade" })
+      .notNull(),
+    clientId: uuid("client_id")
+      .references(() => clients.id, { onDelete: "set null" })
+      .notNull(),
+    number: text("number").notNull(),
+    title: text("title").notNull(),
+    description: text("description"),
+    status: text("status")
+      .$type<
+        | "draft"
+        | "sent"
+        | "accepted"
+        | "rejected"
+        | "expired"
+        | "cancelled"
+      >()
+      .default("draft")
+      .notNull(),
+    version: integer("version").default(1).notNull(),
+    validUntil: timestamp("valid_until"),
+    subtotal: numeric("subtotal", { precision: 10, scale: 2 }).default("0").notNull(),
+    taxRate: numeric("tax_rate", { precision: 5, scale: 2 }).default("21").notNull(),
+    taxAmount: numeric("tax_amount", { precision: 10, scale: 2 }).default("0").notNull(),
+    total: numeric("total", { precision: 10, scale: 2 }).default("0").notNull(),
+    currency: text("currency").default("EUR").notNull(),
+    notes: text("notes"),
+    clientNotes: text("client_notes"),
+    templateId: uuid("template_id"),
+    acceptedAt: timestamp("accepted_at"),
+    rejectedAt: timestamp("rejected_at"),
+    sentAt: timestamp("sent_at"),
+    createdBy: uuid("created_by").notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (table) => ({
+    companyStatusIdx: index("idx_quotes_company_status").on(table.companyId, table.status),
+    companyCreatedIdx: index("idx_quotes_company_created").on(table.companyId, table.createdAt),
+    workOrderIdx: index("idx_quotes_work_order").on(table.workOrderId),
+    clientIdx: index("idx_quotes_client").on(table.clientId),
+    numberUnique: unique("idx_quotes_number_unique").on(table.companyId, table.number),
+  })
+);
+
+/* ============================================================
+   LÍNIES DE PRESSUPOST (Items del pressupost)
+   ============================================================ */
+
+export const quoteItems = pgTable(
+  "quote_items",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    quoteId: uuid("quote_id")
+      .references(() => quotes.id, { onDelete: "cascade" })
+      .notNull(),
+    productId: uuid("product_id").references(() => products.id, { onDelete: "set null" }),
+    description: text("description").notNull(),
+    quantity: numeric("quantity", { precision: 10, scale: 2 }).notNull(),
+    unit: text("unit").default("unit").notNull(),
+    unitPrice: numeric("unit_price", { precision: 10, scale: 2 }).notNull(),
+    unitCost: numeric("unit_cost", { precision: 10, scale: 2 }),
+    discountPercent: numeric("discount_percent", { precision: 5, scale: 2 }).default("0").notNull(),
+    discountAmount: numeric("discount_amount", { precision: 10, scale: 2 }).default("0").notNull(),
+    subtotal: numeric("subtotal", { precision: 10, scale: 2 }).notNull(),
+    taxRate: numeric("tax_rate", { precision: 5, scale: 2 }).default("21").notNull(),
+    taxAmount: numeric("tax_amount", { precision: 10, scale: 2 }).default("0").notNull(),
+    total: numeric("total", { precision: 10, scale: 2 }).notNull(),
+    sortOrder: integer("sort_order").default(0).notNull(),
+    category: text("category")
+      .$type<"material" | "labor" | "travel" | "other">()
+      .default("material")
+      .notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (table) => ({
+    quoteIdx: index("idx_quote_items_quote").on(table.quoteId),
+    productIdx: index("idx_quote_items_product").on(table.productId),
+  })
+);
+
+/* ============================================================
+   PLANTILLES DE PRESSUPOST
+   ============================================================ */
+
+export const quoteTemplates = pgTable(
+  "quote_templates",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    companyId: uuid("company_id")
+      .references(() => companies.id, { onDelete: "cascade" })
+      .notNull(),
+    name: text("name").notNull(),
+    description: text("description"),
+    categoryId: uuid("category_id")
+      .references(() => workOrderCategories.id, { onDelete: "set null" }),
+    defaultItems: jsonb("default_items").$type<
+      Array<{
+        description: string;
+        quantity: number;
+        unit: string;
+        unitPrice: number;
+        unitCost?: number;
+        category: "material" | "labor" | "travel" | "other";
+      }>
+    >(),
+    defaultNotes: text("default_notes"),
+    defaultTaxRate: numeric("default_tax_rate", { precision: 5, scale: 2 }).default("21").notNull(),
+    isActive: boolean("is_active").default(true).notNull(),
+    usageCount: integer("usage_count").default(0).notNull(),
+    createdBy: uuid("created_by").notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (table) => ({
+    companyActiveIdx: index("idx_templates_company_active").on(table.companyId, table.isActive),
+    categoryIdx: index("idx_templates_category").on(table.categoryId),
+  })
+);
+
+/* ============================================================
+   HISTORIAL D'ESTATS PRESSUPOST (genèric amb entity)
+   ============================================================ */
+
+export const quoteStatusHistory = pgTable(
+  "quote_status_history",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    quoteId: uuid("quote_id")
+      .references(() => quotes.id, { onDelete: "cascade" })
+      .notNull(),
+    statusFrom: text("status_from"),
+    statusTo: text("status_to").notNull(),
+    changedBy: uuid("changed_by").notNull(),
+    reason: text("reason"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (table) => ({
+    quoteCreatedIdx: index("idx_quote_status_history_quote_created").on(
+      table.quoteId,
+      table.createdAt
+    ),
+  })
+);
+
+/* ============================================================
    RELACIONS (Drizzle ORM)
    ============================================================ */
 
@@ -323,6 +483,7 @@ export const clientsRelations = relations(clients, ({ one, many }) => ({
     references: [companies.id],
   }),
   workOrders: many(workOrders),
+  quotes: many(quotes),
 }));
 
 export const workOrderCategoriesRelations = relations(workOrderCategories, ({ one, many }) => ({
@@ -331,6 +492,7 @@ export const workOrderCategoriesRelations = relations(workOrderCategories, ({ on
     references: [companies.id],
   }),
   workOrders: many(workOrders),
+  quoteTemplates: many(quoteTemplates),
 }));
 
 export const workOrdersRelations = relations(workOrders, ({ one, many }) => ({
@@ -350,6 +512,7 @@ export const workOrdersRelations = relations(workOrders, ({ one, many }) => ({
   materials: many(workOrderMaterials),
   attachments: many(workOrderAttachments),
   locations: many(workOrderLocations),
+  quotes: many(quotes),
 }));
 
 export const workOrderStatusHistoryRelations = relations(workOrderStatusHistory, ({ one }) => ({
@@ -379,5 +542,72 @@ export const workOrderLocationsRelations = relations(workOrderLocations, ({ one 
   workOrder: one(workOrders, {
     fields: [workOrderLocations.workOrderId],
     references: [workOrders.id],
+  }),
+}));
+
+/* ============================================================
+   RELACIONS PRODUCTES
+   ============================================================ */
+
+export const productsRelations = relations(products, ({ one, many }) => ({
+  company: one(companies, {
+    fields: [products.companyId],
+    references: [companies.id],
+  }),
+  workOrderMaterials: many(workOrderMaterials),
+  quoteItems: many(quoteItems),
+}));
+
+/* ============================================================
+   RELACIONS PRESSUPOTOS
+   ============================================================ */
+
+export const quotesRelations = relations(quotes, ({ one, many }) => ({
+  company: one(companies, {
+    fields: [quotes.companyId],
+    references: [companies.id],
+  }),
+  workOrder: one(workOrders, {
+    fields: [quotes.workOrderId],
+    references: [workOrders.id],
+  }),
+  client: one(clients, {
+    fields: [quotes.clientId],
+    references: [clients.id],
+  }),
+  template: one(quoteTemplates, {
+    fields: [quotes.templateId],
+    references: [quoteTemplates.id],
+  }),
+  items: many(quoteItems),
+  statusHistory: many(quoteStatusHistory),
+}));
+
+export const quoteItemsRelations = relations(quoteItems, ({ one }) => ({
+  quote: one(quotes, {
+    fields: [quoteItems.quoteId],
+    references: [quotes.id],
+  }),
+  product: one(products, {
+    fields: [quoteItems.productId],
+    references: [products.id],
+  }),
+}));
+
+export const quoteTemplatesRelations = relations(quoteTemplates, ({ one }) => ({
+  company: one(companies, {
+    fields: [quoteTemplates.companyId],
+    references: [companies.id],
+  }),
+  category: one(workOrderCategories, {
+    fields: [quoteTemplates.categoryId],
+    references: [workOrderCategories.id],
+  }),
+}));
+
+export const quoteStatusHistoryRelations = relations(quoteStatusHistory, ({ one }) => ({
+  quote: one(quotes, {
+    fields: [quoteStatusHistory.quoteId],
+    references: [quotes.id],
   }),
 }));
