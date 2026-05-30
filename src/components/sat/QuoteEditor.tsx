@@ -12,7 +12,7 @@ import { useState, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { createQuoteAction } from "@/actions/sat/createQuote";
 import { updateQuoteAction } from "@/actions/sat/updateQuote";
-import { Plus, Trash2, Loader2, Eye, Edit3, Package, Users, Car, MoreHorizontal } from "lucide-react";
+import { Plus, Trash2, Loader2, Eye, Edit3, Package, Users, Car, MoreHorizontal, ChevronDown } from "lucide-react";
 import { QuotePdfPreview } from "./QuotePdfPreview";
 
 /* ============================================================
@@ -733,18 +733,33 @@ function Section({
   title,
   children,
   action,
+  defaultOpen = true,
 }: {
   title: string;
   children: React.ReactNode;
   action?: React.ReactNode;
+  defaultOpen?: boolean;
 }) {
+  const [isOpen, setIsOpen] = useState(defaultOpen);
+
   return (
-    <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-4">
-      <div className="mb-3 flex items-center justify-between">
+    <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)]">
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex w-full items-center justify-between px-4 py-3 text-left"
+      >
         <h2 className="text-sm font-semibold text-[var(--text)]">{title}</h2>
-        {action}
-      </div>
-      {children}
+        <div className="flex items-center gap-2">
+          {action && <span onClick={(e) => e.stopPropagation()}>{action}</span>}
+          <ChevronDown
+            className={`h-4 w-4 text-[var(--text-muted)] transition-transform ${
+              isOpen ? "rotate-180" : ""
+            }`}
+          />
+        </div>
+      </button>
+      {isOpen && <div className="px-4 pb-4">{children}</div>}
     </div>
   );
 }

@@ -43,18 +43,6 @@ export default async function NewQuotePage({ searchParams }: Props) {
 
   return (
     <div className="flex h-[calc(100dvh-1px)] flex-col bg-[var(--bg)]">
-      {/* Header */}
-      <header className="shrink-0 border-b border-[var(--border)] bg-[var(--surface)] px-4 py-3">
-        <div className="mx-auto flex max-w-7xl items-center gap-3">
-          <h1 className="text-lg font-semibold text-[var(--text)]">Nou Pressupost</h1>
-          {workOrder && (
-            <span className="rounded bg-[var(--bg)] px-2 py-0.5 text-xs text-[var(--text-muted)]">
-              OT: {workOrder.number}
-            </span>
-          )}
-        </div>
-      </header>
-
       {/* Editor */}
       <main className="min-h-0 flex-1">
         <QuoteEditor
