@@ -1,12 +1,17 @@
 /**
- * Creation/modification date: 27/05/2026
+ * Creation/modification date: 28/05/2026
  * Path: src/lib/constants/statusTransitions.ts
- * Description: Shared status transition rules. Used by both server and client.
+ * Description: Shared status transition rules for work orders and quotes.
+ *              Used by both server and client for validation.
  */
 
 import type { WorkOrderStatus } from "@/types/sat";
 
-const ALL_STATUSES: WorkOrderStatus[] = [
+/* ============================================================
+   WORK ORDER STATUS TRANSITIONS (free: any → any)
+   ============================================================ */
+
+const ALL_WORK_ORDER_STATUSES: WorkOrderStatus[] = [
   "pending",
   "assigned",
   "scheduled",
@@ -19,19 +24,48 @@ const ALL_STATUSES: WorkOrderStatus[] = [
   "waiting_client",
 ];
 
-export const VALID_STATUS_TRANSITIONS: Record<WorkOrderStatus, WorkOrderStatus[]> = {
-  pending: ALL_STATUSES,
-  assigned: ALL_STATUSES,
-  scheduled: ALL_STATUSES,
-  in_progress: ALL_STATUSES,
-  paused: ALL_STATUSES,
-  completed: ALL_STATUSES,
-  closed: ALL_STATUSES,
-  cancelled: ALL_STATUSES,
-  waiting_parts: ALL_STATUSES,
-  waiting_client: ALL_STATUSES,
+export const VALID_WORK_ORDER_TRANSITIONS: Record<WorkOrderStatus, WorkOrderStatus[]> = {
+  pending: ALL_WORK_ORDER_STATUSES,
+  assigned: ALL_WORK_ORDER_STATUSES,
+  scheduled: ALL_WORK_ORDER_STATUSES,
+  in_progress: ALL_WORK_ORDER_STATUSES,
+  paused: ALL_WORK_ORDER_STATUSES,
+  completed: ALL_WORK_ORDER_STATUSES,
+  closed: ALL_WORK_ORDER_STATUSES,
+  cancelled: ALL_WORK_ORDER_STATUSES,
+  waiting_parts: ALL_WORK_ORDER_STATUSES,
+  waiting_client: ALL_WORK_ORDER_STATUSES,
 };
 
-export function isValidTransition(from: WorkOrderStatus, to: WorkOrderStatus): boolean {
-  return VALID_STATUS_TRANSITIONS[from]?.includes(to) ?? false;
+export function isValidWorkOrderTransition(from: WorkOrderStatus, to: WorkOrderStatus): boolean {
+  return VALID_WORK_ORDER_TRANSITIONS[from]?.includes(to) ?? false;
+}
+
+// Keep backward compatibility
+export const VALID_STATUS_TRANSITIONS = VALID_WORK_ORDER_TRANSITIONS;
+export const isValidTransition = isValidWorkOrderTransition;
+
+/* ============================================================
+   QUOTE STATUS TRANSITIONS
+   ============================================================ */
+
+export type QuoteStatus =
+  | "draft"
+  | "sent"
+  | "accepted"
+  | "rejected"
+  | "expired"
+  | "cancelled";
+
+export const VALID_QUOTE_TRANSITIONS: Record<QuoteStatus, QuoteStatus[]> = {
+  draft: ["sent", "cancelled"],
+  sent: ["accepted", "rejected", "cancelled"],
+  accepted: [],  // Final state
+  rejected: ["draft"],  // Can revise and resend
+  expired: ["draft"],  // Can revise and resend
+  cancelled: ["draft"],  // Can reactivate
+};
+
+export function isValidQuoteTransition(from: QuoteStatus, to: QuoteStatus): boolean {
+  return VALID_QUOTE_TRANSITIONS[from]?.includes(to) ?? false;
 }
