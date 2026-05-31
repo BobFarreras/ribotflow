@@ -161,14 +161,13 @@ This document contains all critical context from previous development sessions i
 **IMPORTANT:** Status transitions are now **FREE** — any status can transition to any other status. The `VALID_STATUS_TRANSITIONS` constant in `src/lib/constants/statusTransitions.ts` allows all transitions. No restrictive validation.
 
 ### Pending / Next Features (Priority Order)
-1. **Edició de Pressupostos** — Usar el mateix editor per editar pressupostos existents (mode edit)
-2. **Enviament per email** — Modal per enviar pressupost al client amb adjunt PDF
-3. **Vista pública del client** — Enllaç sense login perquè el client pugui acceptar/rebutjar
-4. **Edició de Clients** (`/sat/clients/[id]/edit`)
-5. **Personalització de PDF i Company Settings** (logo, colors, text legal, tarifa desplaçament)
-6. **Mode PWA Offline** per a tècnics
-7. **Email notifications** on status changes
-8. **Calendar integration** for scheduled dates
+1. **Enviament per email** — Modal per enviar pressupost al client amb adjunt PDF
+2. **Vista pública del client** — Enllaç sense login perquè el client pugui acceptar/rebutjar
+3. **Edició de Clients** (`/sat/clients/[id]/edit`)
+4. **Personalització de PDF i Company Settings** (logo, colors, text legal, tarifa desplaçament)
+5. **Mode PWA Offline** per a tècnics
+6. **Email notifications** on status changes
+7. **Calendar integration** for scheduled dates
 
 ---
 
@@ -600,6 +599,9 @@ quotes/Empresa_Test/PRES-2026-0001-signature.png
 | 28/05/2026 | General discount at quote level | `discountPercent` field on quotes, calculated before IVA. Shows in green (#16a34a) in preview. |
 | 28/05/2026 | Company data simulated in editor | `COMPANY_DATA` constant with DigitAIStudios info. Will come from DB when company settings implemented. |
 | 28/05/2026 | Single toolbar: all actions in one top bar | Removed duplicate header and footer. Title + OT badge + view buttons + total + action buttons in one line. |
+| 28/05/2026 | Quote edit saves all data (client, items, conditions) | quoteService.update now handles items (delete old + insert new). Initializes selectedClientId from existingQuote.clientId. |
+| 28/05/2026 | Enviar button in edit mode | Shows only for draft quotes. Toast notification for feedback. |
+| 28/05/2026 | Nova OT link in editor | Uses <Link> (same tab), not <a target='_blank'>. Proper flex sizing to prevent overflow. |
 
 ---
 
