@@ -348,6 +348,7 @@ export const quotes = pgTable(
     version: integer("version").default(1).notNull(),
     validUntil: timestamp("valid_until"),
     subtotal: numeric("subtotal", { precision: 10, scale: 2 }).default("0").notNull(),
+    discountPercent: numeric("discount_percent", { precision: 5, scale: 2 }).default("0").notNull(),
     taxRate: numeric("tax_rate", { precision: 5, scale: 2 }).default("21").notNull(),
     taxAmount: numeric("tax_amount", { precision: 10, scale: 2 }).default("0").notNull(),
     total: numeric("total", { precision: 10, scale: 2 }).default("0").notNull(),

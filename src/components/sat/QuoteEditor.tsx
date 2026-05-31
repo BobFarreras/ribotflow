@@ -157,7 +157,7 @@ function getDefaultValidUntil(): string {
    ============================================================ */
 
 export function QuoteEditor({
-  workOrderId,
+  workOrderId: workOrderIdProp,
   clients,
   products,
   existingQuote,
@@ -167,6 +167,7 @@ export function QuoteEditor({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [view, setView] = useState<"split" | "editor" | "preview">("split");
+  const [workOrderId, setWorkOrderId] = useState(workOrderIdProp);
 
   // Client state
   const [selectedClientId, setSelectedClientId] = useState<string>("");
@@ -599,6 +600,26 @@ export function QuoteEditor({
                 </div>
               </Section>
             </div>
+
+            {/* Work Order Link */}
+            <Section title="Vincular a OT" defaultOpen={false}>
+              <div className="space-y-3">
+                <p className="text-xs text-[var(--text-muted)]">
+                  Opcional. Vincula aquest pressupost a una ordre de treball existent.
+                </p>
+                <Input
+                  label="ID de l'OT"
+                  value={workOrderId}
+                  onChange={(v) => setWorkOrderId(v)}
+                  placeholder="Deixar buit si no vol vincular"
+                />
+                {workOrderId && (
+                  <div className="rounded-lg border border-[var(--module-sat)]/20 bg-[var(--module-sat)]/5 p-2 text-xs text-[var(--module-sat)]">
+                    Vinculat a OT
+                  </div>
+                )}
+              </div>
+            </Section>
 
             {/* Quote Info */}
             <Section title="Pressupost">

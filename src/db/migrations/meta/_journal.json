@@ -50,6 +50,13 @@
       "when": 1780210872331,
       "tag": "0006_sudden_phil_sheldon",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1780211515060,
+      "tag": "0007_unique_shinko_yamashiro",
+      "breakpoints": true
     }
   ]
 }
