@@ -50,12 +50,16 @@ export type CreateQuoteInput = z.infer<typeof createQuoteSchema>;
    ============================================================ */
 
 export const updateQuoteSchema = z.object({
+  workOrderId: z.string().uuid().nullable().optional(),
+  clientId: z.string().uuid().nullable().optional(),
   title: z.string().min(1).max(200).optional(),
   description: z.string().max(2000).nullable().optional(),
   validUntil: z.string().datetime().or(z.string().date()).nullable().optional(),
   taxRate: z.coerce.number().min(0).max(100).optional(),
+  discountPercent: z.coerce.number().min(0).max(100).optional(),
   notes: z.string().max(2000).nullable().optional(),
   clientNotes: z.string().max(2000).nullable().optional(),
+  items: z.array(quoteItemSchema).optional(),
 });
 
 export type UpdateQuoteInput = z.infer<typeof updateQuoteSchema>;

@@ -13,7 +13,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createQuoteAction } from "@/actions/sat/createQuote";
 import { updateQuoteAction } from "@/actions/sat/updateQuote";
-import { Plus, Trash2, Loader2, Eye, Edit3, Package, Users, Car, MoreHorizontal, ChevronDown, CheckCircle } from "lucide-react";
+import { Plus, Trash2, Loader2, Eye, Edit3, Package, Users, Car, MoreHorizontal, ChevronDown, CheckCircle, Send } from "lucide-react";
 import { QuotePdfPreview } from "./QuotePdfPreview";
 import { toast } from "sonner";
 
@@ -466,6 +466,17 @@ export function QuoteEditor({
             </div>
           </div>
           <div className="h-6 w-px bg-[var(--border)]" />
+          {mode === "edit" && existingQuote?.status === "draft" && (
+            <button
+              onClick={() => {
+                toast("Funcionalitat d'enviament properament");
+              }}
+              className="flex items-center gap-1.5 rounded-lg border border-[var(--module-sat)]/30 bg-[var(--module-sat)]/10 px-3 py-1.5 text-xs font-medium text-[var(--module-sat)] transition-colors hover:bg-[var(--module-sat)]/20"
+            >
+              <Send className="h-3 w-3" />
+              Enviar
+            </button>
+          )}
           <button
             type="button"
             onClick={() => router.back()}
@@ -623,7 +634,7 @@ export function QuoteEditor({
                   <select
                     value={workOrderId}
                     onChange={(e) => setWorkOrderId(e.target.value)}
-                    className="flex-1 rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 py-2 text-sm text-[var(--text)] outline-none focus:border-[var(--module-sat)]"
+                    className="min-w-0 flex-1 rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 py-2 text-sm text-[var(--text)] outline-none focus:border-[var(--module-sat)]"
                   >
                     <option value="">Sense vincular</option>
                     {workOrders.map((ot) => (
@@ -634,10 +645,10 @@ export function QuoteEditor({
                   </select>
                   <Link
                     href="/sat/new"
-                    className="flex items-center gap-1 rounded-lg border border-[var(--border)] px-2 py-2 text-xs font-medium text-[var(--text)] transition-colors hover:bg-[var(--bg)]"
+                    className="inline-flex shrink-0 items-center gap-1 rounded-lg border border-[var(--border)] px-2 py-2 text-xs font-medium text-[var(--text)] transition-colors hover:bg-[var(--bg)]"
                   >
                     <Plus className="h-3 w-3" />
-                    Nova OT
+                    <span className="hidden sm:inline">Nova OT</span>
                   </Link>
                 </div>
                 {workOrderId && (

@@ -263,22 +263,93 @@ export const quoteService = {
       throw new Error("Only draft quotes can be edited");
     }
 
-    const updateData: Record<string, unknown> = {
-      ...input,
-      updatedAt: new Date(),
-    };
+    // Update quote in a transaction
+    const result = await db.transaction(async (tx) => {
+      const updateData: Record<string, unknown> = {
+        updatedAt: new Date(),
+      };
 
-    if (input.validUntil) {
-      updateData.validUntil = new Date(input.validUntil);
-    }
+      // Only include fields that are defined
+      if (input.workOrderId !== undefined) updateData.workOrderId = input.workOrderId;
+      if (input.clientId !== undefined) updateData.clientId = input.clientId;
+      if (input.title !== undefined) updateData.title = input.title;
+      if (input.description !== undefined) updateData.description = input.description;
+      if (input.taxRate !== undefined) updateData.taxRate = String(input.taxRate);
+      if (input.discountPercent !== undefined) updateData.discountPercent = String(input.discountPercent);
+      if (input.notes !== undefined) updateData.notes = input.notes;
+      if (input.clientNotes !== undefined) updateData.clientNotes = input.clientNotes;
 
-    const [updated] = await db
-      .update(quotes)
-      .set(updateData)
-      .where(eq(quotes.id, quoteId))
-      .returning();
+      if (input.validUntil) {
+        updateData.validUntil = new Date(input.validUntil);
+      }
 
-    return updated;
+      const [updated] = await tx
+        .update(quotes)
+        .set(updateData)
+        .where(eq(quotes.id, quoteId))
+        .returning();
+
+      // Update items if provided
+      if (input.items && input.items.length > 0) {
+        // Delete existing items
+        await tx.delete(quoteItems).where(eq(quoteItems.quoteId, quoteId));
+
+        // Calculate tax rate from quote or use default
+        const taxRate = input.taxRate ?? Number(existing[0].taxRate);
+
+        // Insert new items
+        const itemsWithTotals = input.items.map((item, index) => {
+          const subtotal = item.quantity * item.unitPrice;
+          const discount = item.discountAmount > 0
+            ? item.discountAmount
+            : (subtotal * (item.discountPercent ?? 0)) / 100;
+          const itemSubtotal = subtotal - discount;
+          const taxAmount = (itemSubtotal * taxRate) / 100;
+          const total = itemSubtotal + taxAmount;
+
+          return {
+            quoteId,
+            productId: item.productId ?? null,
+            description: item.description,
+            quantity: String(item.quantity),
+            unit: item.unit,
+            unitPrice: String(item.unitPrice),
+            unitCost: item.unitCost ? String(item.unitCost) : null,
+            discountPercent: String(item.discountPercent ?? 0),
+            discountAmount: String(discount),
+            subtotal: String(Math.round(itemSubtotal * 100) / 100),
+            taxRate: String(taxRate),
+            taxAmount: String(Math.round(taxAmount * 100) / 100),
+            total: String(Math.round(total * 100) / 100),
+            sortOrder: index,
+            category: item.category,
+          };
+        });
+
+        await tx.insert(quoteItems).values(itemsWithTotals);
+
+        // Recalculate quote totals
+        const subtotal = itemsWithTotals.reduce((sum, item) => sum + Number(item.subtotal), 0);
+        const taxAmount = itemsWithTotals.reduce((sum, item) => sum + Number(item.taxAmount), 0);
+        const discountPercent = input.discountPercent ?? Number(existing[0].discountPercent ?? 0);
+        const discountAmount = (subtotal * discountPercent) / 100;
+        const total = subtotal - discountAmount + taxAmount;
+
+        await tx
+          .update(quotes)
+          .set({
+            subtotal: String(Math.round(subtotal * 100) / 100),
+            discountPercent: String(discountPercent),
+            taxAmount: String(Math.round(taxAmount * 100) / 100),
+            total: String(Math.round(total * 100) / 100),
+          })
+          .where(eq(quotes.id, quoteId));
+      }
+
+      return updated;
+    });
+
+    return result;
   },
 
   async updateStatus(
