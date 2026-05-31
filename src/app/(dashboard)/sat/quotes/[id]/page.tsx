@@ -64,6 +64,7 @@ export default async function QuoteDetailPage({ params }: Props) {
           existingQuote={{
             id: quote.id,
             number: quote.number,
+            clientId: quote.clientId,
             title: quote.title,
             description: quote.description,
             status: quote.status,

@@ -57,6 +57,7 @@ interface QuoteItemForm {
 interface ExistingQuote {
   id: string;
   number: string;
+  clientId: string;
   title: string;
   description: string | null;
   status: string;
@@ -173,7 +174,7 @@ export function QuoteEditor({
   const [workOrderId, setWorkOrderId] = useState(workOrderIdProp);
 
   // Client state
-  const [selectedClientId, setSelectedClientId] = useState<string>("");
+  const [selectedClientId, setSelectedClientId] = useState<string>(existingQuote?.clientId ?? "");
   const [customClient, setCustomClient] = useState({
     name: "",
     email: "",
