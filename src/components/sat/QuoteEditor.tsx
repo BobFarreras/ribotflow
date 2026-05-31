@@ -10,6 +10,7 @@
 
 import { useState, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { createQuoteAction } from "@/actions/sat/createQuote";
 import { updateQuoteAction } from "@/actions/sat/updateQuote";
 import { Plus, Trash2, Loader2, Eye, Edit3, Package, Users, Car, MoreHorizontal, ChevronDown, CheckCircle } from "lucide-react";
@@ -383,10 +384,12 @@ export function QuoteEditor({
     setIsLoading(false);
 
     if (result.success && result.data) {
-      toast.success("Pressupost creat correctament!");
-      setTimeout(() => {
-        router.push(`/sat/quotes/${result.data.id}`);
-      }, 1000);
+      toast.success(mode === "edit" ? "Pressupost actualitzat!" : "Pressupost creat!");
+      if (mode === "create") {
+        setTimeout(() => {
+          router.push(`/sat/quotes/${result.data.id}`);
+        }, 1000);
+      }
     } else {
       setError(result.error ?? "Error");
     }
@@ -403,8 +406,15 @@ export function QuoteEditor({
       <div className="flex items-center justify-between border-b border-[var(--border)] bg-[var(--surface)] px-4 py-2">
         {/* Left: Title + OT badge */}
         <div className="flex items-center gap-3">
-          <h1 className="text-sm font-semibold text-[var(--text)]">Nou Pressupost</h1>
-          {workOrderId && (
+          <h1 className="text-sm font-semibold text-[var(--text)]">
+            {mode === "edit" ? `Editar Pressupost` : "Nou Pressupost"}
+          </h1>
+          {existingQuote && (
+            <span className="rounded bg-[var(--bg)] px-2 py-0.5 text-[11px] font-mono text-[var(--text-muted)]">
+              {existingQuote.number}
+            </span>
+          )}
+          {workOrderId && !existingQuote && (
             <span className="rounded bg-[var(--bg)] px-2 py-0.5 text-[11px] font-mono text-[var(--text-muted)]">
               OT
             </span>
@@ -622,14 +632,13 @@ export function QuoteEditor({
                       </option>
                     ))}
                   </select>
-                  <a
+                  <Link
                     href="/sat/new"
-                    target="_blank"
-                    className="flex items-center gap-1 rounded-lg border border-[var(--border)] px-3 py-2 text-xs font-medium text-[var(--text)] transition-colors hover:bg-[var(--bg)]"
+                    className="flex items-center gap-1 rounded-lg border border-[var(--border)] px-2 py-2 text-xs font-medium text-[var(--text)] transition-colors hover:bg-[var(--bg)]"
                   >
                     <Plus className="h-3 w-3" />
                     Nova OT
-                  </a>
+                  </Link>
                 </div>
                 {workOrderId && (
                   <div className="flex items-center gap-2 rounded-lg border border-[var(--module-sat)]/20 bg-[var(--module-sat)]/5 px-3 py-2 text-xs text-[var(--module-sat)]">
