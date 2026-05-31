@@ -1,18 +1,16 @@
 /**
  * Creation/modification date: 28/05/2026
  * Path: src/app/(dashboard)/sat/quotes/[id]/page.tsx
- * Description: Quote detail page with items, status, and actions.
+ * Description: Quote detail/edit page using the same QuoteEditor as create.
+ *              Loads existing quote data, shows save/delete/send buttons.
  */
 
 import { auth } from "@/lib/auth";
+import { db } from "@/db";
+import { clients, products, workOrders } from "@/db/schema/sat";
+import { eq } from "drizzle-orm";
 import { quoteService } from "@/services/sat/quoteService";
-import { getTranslations } from "next-intl/server";
-import Link from "next/link";
-import { notFound } from "next/navigation";
-import { ArrowLeft, FileText, Send, CheckCircle, XCircle, Download, Trash2 } from "lucide-react";
-import { QuoteStatusBadge } from "@/components/sat/QuoteStatusBadge";
-import { QuoteItemTable } from "@/components/sat/QuoteItemTable";
-import { QuoteActions } from "@/components/sat/QuoteActions";
+import { QuoteEditor } from "@/components/sat/QuoteEditor";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -25,115 +23,75 @@ export default async function QuoteDetailPage({ params }: Props) {
   const { id } = await params;
   const companyId = session.user.companyId;
 
+  // Fetch quote with items
   const quote = await quoteService.getById(companyId, id);
-  if (!quote) notFound();
+  if (!quote) {
+    return (
+      <div className="flex h-[calc(100dvh-1px)] items-center justify-center bg-[var(--bg)]">
+        <p className="text-[var(--text-muted)]">Pressupost no trobat</p>
+      </div>
+    );
+  }
 
-  const history = await quoteService.getStatusHistory(id);
+  // Fetch clients, products, and work orders
+  const [clientList, productList, workOrderList] = await Promise.all([
+    db
+      .select()
+      .from(clients)
+      .where(eq(clients.companyId, companyId)),
+    db
+      .select()
+      .from(products)
+      .where(eq(products.companyId, companyId)),
+    db
+      .select({
+        id: workOrders.id,
+        number: workOrders.number,
+        title: workOrders.title,
+      })
+      .from(workOrders)
+      .where(eq(workOrders.companyId, companyId)),
+  ]);
 
   return (
     <div className="flex h-[calc(100dvh-1px)] flex-col bg-[var(--bg)]">
-      {/* Header */}
-      <header className="shrink-0 border-b border-[var(--border)] bg-[var(--surface)] px-4 py-3">
-        <div className="mx-auto flex max-w-7xl items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Link
-              href="/sat/quotes"
-              className="flex h-7 w-7 items-center justify-center rounded-md border border-[var(--border)] text-[var(--text-muted)] transition-colors hover:bg-[var(--bg)]"
-            >
-              <ArrowLeft className="h-3.5 w-3.5" />
-            </Link>
-            <div className="flex items-center gap-2">
-              <span className="rounded bg-[var(--bg)] px-1.5 py-0.5 text-xs font-mono font-medium text-[var(--text-muted)]">
-                {quote.number}
-              </span>
-              <h1 className="text-lg font-semibold text-[var(--text)]">{quote.title}</h1>
-            </div>
-          </div>
-          <QuoteStatusBadge status={quote.status as any} />
-        </div>
-      </header>
-
-      {/* Info strip */}
-      <div className="shrink-0 border-b border-[var(--border)] bg-[var(--surface)] px-4 py-2">
-        <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-4 gap-y-1 text-sm text-[var(--text-muted)]">
-          <span>
-            <Link href={`/sat/${quote.workOrderId}`} className="hover:text-[var(--module-sat)] hover:underline">
-              OT relacionada
-            </Link>
-          </span>
-          {quote.validUntil && (
-            <span>Vàlid fins al {new Date(quote.validUntil).toLocaleDateString("ca-ES")}</span>
-          )}
-          <span>
-            Creat el {new Date(quote.createdAt).toLocaleDateString("ca-ES")}
-          </span>
-        </div>
-      </div>
-
-      {/* Main content */}
-      <main className="mx-auto flex min-h-0 w-full max-w-7xl flex-1 gap-3 px-4 py-3">
-        {/* Left: Items */}
-        <div className="flex min-h-0 w-[65%] flex-col gap-3">
-          <div className="flex min-h-0 flex-1 flex-col rounded-lg border border-[var(--border)] bg-[var(--surface)] p-3">
-            <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
-              Línies del Pressupost
-            </h2>
-            <div className="min-h-0 overflow-y-auto">
-              <QuoteItemTable items={quote.items} quoteStatus={quote.status} quoteId={quote.id} />
-            </div>
-          </div>
-        </div>
-
-        {/* Right: Summary + Actions */}
-        <div className="flex min-h-0 w-[35%] flex-col gap-3">
-          {/* Totals */}
-          <div className="shrink-0 rounded-lg border border-[var(--border)] bg-[var(--surface)] p-3">
-            <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
-              Resum
-            </h2>
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span className="text-[var(--text-muted)]">Base imposable</span>
-                <span className="font-medium text-[var(--text)]">{Number(quote.subtotal).toFixed(2)} €</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-[var(--text-muted)]">IVA ({quote.taxRate}%)</span>
-                <span className="font-medium text-[var(--text)]">{Number(quote.taxAmount).toFixed(2)} €</span>
-              </div>
-              <div className="flex justify-between border-t border-[var(--border)] pt-2 text-base font-bold">
-                <span className="text-[var(--text)]">Total</span>
-                <span className="text-[var(--module-sat)]">{Number(quote.total).toFixed(2)} €</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Actions */}
-          <div className="shrink-0 rounded-lg border border-[var(--border)] bg-[var(--surface)] p-3">
-            <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
-              Accions
-            </h2>
-            <QuoteActions quote={quote} />
-          </div>
-
-          {/* Notes */}
-          {quote.notes && (
-            <div className="shrink-0 rounded-lg border border-[var(--border)] bg-[var(--surface)] p-3">
-              <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
-                Notes internes
-              </h2>
-              <p className="text-sm text-[var(--text)]">{quote.notes}</p>
-            </div>
-          )}
-
-          {quote.clientNotes && (
-            <div className="shrink-0 rounded-lg border border-[var(--border)] bg-[var(--surface)] p-3">
-              <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
-                Notes per al client
-              </h2>
-              <p className="text-sm text-[var(--text)]">{quote.clientNotes}</p>
-            </div>
-          )}
-        </div>
+      <main className="min-h-0 flex-1">
+        <QuoteEditor
+          workOrderId={quote.workOrderId ?? ""}
+          clients={clientList}
+          products={productList}
+          workOrders={workOrderList}
+          existingQuote={{
+            id: quote.id,
+            number: quote.number,
+            title: quote.title,
+            description: quote.description,
+            status: quote.status,
+            validUntil: quote.validUntil?.toISOString() ?? null,
+            taxRate: quote.taxRate,
+            notes: quote.notes,
+            clientNotes: quote.clientNotes,
+            discountPercent: quote.discountPercent ?? "0",
+            items: quote.items.map((item) => ({
+              id: item.id,
+              description: item.description,
+              quantity: item.quantity,
+              unit: item.unit,
+              unitPrice: item.unitPrice,
+              unitCost: item.unitCost,
+              discountPercent: item.discountPercent,
+              discountAmount: item.discountAmount,
+              subtotal: item.subtotal,
+              taxRate: item.taxRate,
+              taxAmount: item.taxAmount,
+              total: item.total,
+              category: item.category,
+              sortOrder: item.sortOrder,
+              productId: item.productId,
+            })),
+          }}
+          mode="edit"
+        />
       </main>
     </div>
   );

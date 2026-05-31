@@ -21,8 +21,8 @@ export default async function NewQuotePage({ searchParams }: Props) {
   const { otId } = await searchParams;
   const companyId = session.user.companyId;
 
-  // Fetch clients, products, and optionally the work order
-  const [clientList, productList, workOrder] = await Promise.all([
+  // Fetch clients, products, work orders, and optionally the work order
+  const [clientList, productList, workOrderList, workOrder] = await Promise.all([
     db
       .select()
       .from(clients)
@@ -31,6 +31,14 @@ export default async function NewQuotePage({ searchParams }: Props) {
       .select()
       .from(products)
       .where(eq(products.companyId, companyId)),
+    db
+      .select({
+        id: workOrders.id,
+        number: workOrders.number,
+        title: workOrders.title,
+      })
+      .from(workOrders)
+      .where(eq(workOrders.companyId, companyId)),
     otId
       ? db
           .select()
@@ -49,6 +57,7 @@ export default async function NewQuotePage({ searchParams }: Props) {
           workOrderId={otId ?? ""}
           clients={clientList}
           products={productList}
+          workOrders={workOrderList}
           mode="create"
         />
       </main>

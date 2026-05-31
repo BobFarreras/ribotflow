@@ -87,6 +87,7 @@ interface Props {
   workOrderId: string;
   clients: Client[];
   products: Product[];
+  workOrders?: Array<{ id: string; number: string; title: string }>;
   existingQuote?: ExistingQuote;
   mode?: "create" | "edit";
 }
@@ -160,6 +161,7 @@ export function QuoteEditor({
   workOrderId: workOrderIdProp,
   clients,
   products,
+  workOrders = [],
   existingQuote,
   mode = "create",
 }: Props) {
@@ -602,20 +604,36 @@ export function QuoteEditor({
             </div>
 
             {/* Work Order Link */}
-            <Section title="Vincular a OT" defaultOpen={false}>
+            <Section title="Vincular a OT" defaultOpen={!!workOrderId}>
               <div className="space-y-3">
                 <p className="text-xs text-[var(--text-muted)]">
                   Opcional. Vincula aquest pressupost a una ordre de treball existent.
                 </p>
-                <Input
-                  label="ID de l'OT"
-                  value={workOrderId}
-                  onChange={(v) => setWorkOrderId(v)}
-                  placeholder="Deixar buit si no vol vincular"
-                />
+                <div className="flex gap-2">
+                  <select
+                    value={workOrderId}
+                    onChange={(e) => setWorkOrderId(e.target.value)}
+                    className="flex-1 rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 py-2 text-sm text-[var(--text)] outline-none focus:border-[var(--module-sat)]"
+                  >
+                    <option value="">Sense vincular</option>
+                    {workOrders.map((ot) => (
+                      <option key={ot.id} value={ot.id}>
+                        {ot.number} — {ot.title}
+                      </option>
+                    ))}
+                  </select>
+                  <a
+                    href="/sat/new"
+                    target="_blank"
+                    className="flex items-center gap-1 rounded-lg border border-[var(--border)] px-3 py-2 text-xs font-medium text-[var(--text)] transition-colors hover:bg-[var(--bg)]"
+                  >
+                    <Plus className="h-3 w-3" />
+                    Nova OT
+                  </a>
+                </div>
                 {workOrderId && (
-                  <div className="rounded-lg border border-[var(--module-sat)]/20 bg-[var(--module-sat)]/5 p-2 text-xs text-[var(--module-sat)]">
-                    Vinculat a OT
+                  <div className="flex items-center gap-2 rounded-lg border border-[var(--module-sat)]/20 bg-[var(--module-sat)]/5 px-3 py-2 text-xs text-[var(--module-sat)]">
+                    <span>Vinculat a OT</span>
                   </div>
                 )}
               </div>
