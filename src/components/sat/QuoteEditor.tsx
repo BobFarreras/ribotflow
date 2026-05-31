@@ -12,7 +12,7 @@ import { useState, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { createQuoteAction } from "@/actions/sat/createQuote";
 import { updateQuoteAction } from "@/actions/sat/updateQuote";
-import { Plus, Trash2, Loader2, Eye, Edit3, Package, Users, Car, MoreHorizontal, ChevronDown } from "lucide-react";
+import { Plus, Trash2, Loader2, Eye, Edit3, Package, Users, Car, MoreHorizontal, ChevronDown, CheckCircle } from "lucide-react";
 import { QuotePdfPreview } from "./QuotePdfPreview";
 
 /* ============================================================
@@ -165,6 +165,7 @@ export function QuoteEditor({
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
   const [view, setView] = useState<"split" | "editor" | "preview">("split");
 
   // Client state
@@ -384,7 +385,10 @@ export function QuoteEditor({
     setIsLoading(false);
 
     if (result.success && result.data) {
-      router.push(`/sat/quotes/${result.data.id}`);
+      setSuccess("Pressupost creat correctament!");
+      setTimeout(() => {
+        router.push(`/sat/quotes/${result.data.id}`);
+      }, 1000);
     } else {
       setError(result.error ?? "Error");
     }
@@ -396,6 +400,7 @@ export function QuoteEditor({
 
   return (
     <div className="flex h-full flex-col">
+      {/* Success notification */}
       {/* Toolbar — all in one line */}
       <div className="flex items-center justify-between border-b border-[var(--border)] bg-[var(--surface)] px-4 py-2">
         {/* Left: Title + OT badge */}
@@ -480,6 +485,12 @@ export function QuoteEditor({
           } ${view === "preview" ? "hidden" : ""}`}
         >
           <div className="mx-auto w-full max-w-2xl space-y-4 p-4">
+            {success && (
+              <div className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700 flex items-center gap-2">
+                <CheckCircle className="h-4 w-4" />
+                {success}
+              </div>
+            )}
             {error && (
               <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
                 {error}
@@ -744,10 +755,17 @@ function Section({
 
   return (
     <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)]">
-      <button
-        type="button"
+      <div
+        role="button"
+        tabIndex={0}
         onClick={() => setIsOpen(!isOpen)}
-        className="flex w-full items-center justify-between px-4 py-3 text-left"
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            setIsOpen(!isOpen);
+          }
+        }}
+        className="flex w-full cursor-pointer items-center justify-between px-4 py-3 text-left"
       >
         <h2 className="text-sm font-semibold text-[var(--text)]">{title}</h2>
         <div className="flex items-center gap-2">
@@ -758,7 +776,7 @@ function Section({
             }`}
           />
         </div>
-      </button>
+      </div>
       {isOpen && <div className="px-4 pb-4">{children}</div>}
     </div>
   );
