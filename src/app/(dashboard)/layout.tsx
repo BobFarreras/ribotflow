@@ -8,12 +8,14 @@
 import { SidebarProvider } from "@/components/layout/SidebarContext";
 import Sidebar from "@/components/layout/Sidebar";
 import DashboardShell from "@/components/layout/DashboardShell";
+import { Toaster } from "@/components/ui/Toaster";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
     <SidebarProvider>
       <Sidebar />
       <DashboardShell>{children}</DashboardShell>
+      <Toaster />
     </SidebarProvider>
   );
 }

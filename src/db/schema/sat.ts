@@ -327,8 +327,7 @@ export const quotes = pgTable(
       .references(() => companies.id, { onDelete: "cascade" })
       .notNull(),
     workOrderId: uuid("work_order_id")
-      .references(() => workOrders.id, { onDelete: "cascade" })
-      .notNull(),
+      .references(() => workOrders.id, { onDelete: "set null" }),
     clientId: uuid("client_id")
       .references(() => clients.id, { onDelete: "set null" })
       .notNull(),
@@ -526,6 +525,10 @@ export const workOrderMaterialsRelations = relations(workOrderMaterials, ({ one 
   workOrder: one(workOrders, {
     fields: [workOrderMaterials.workOrderId],
     references: [workOrders.id],
+  }),
+  product: one(products, {
+    fields: [workOrderMaterials.productId],
+    references: [products.id],
   }),
 }));
 

@@ -19,7 +19,7 @@ interface Quote {
   status: string;
   total: string;
   clientId: string;
-  workOrderId: string;
+  workOrderId: string | null;
   createdAt: Date;
   validUntil: Date | null;
   sentAt: Date | null;

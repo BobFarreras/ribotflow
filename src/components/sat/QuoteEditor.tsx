@@ -14,6 +14,7 @@ import { createQuoteAction } from "@/actions/sat/createQuote";
 import { updateQuoteAction } from "@/actions/sat/updateQuote";
 import { Plus, Trash2, Loader2, Eye, Edit3, Package, Users, Car, MoreHorizontal, ChevronDown, CheckCircle } from "lucide-react";
 import { QuotePdfPreview } from "./QuotePdfPreview";
+import { toast } from "sonner";
 
 /* ============================================================
    TYPES
@@ -165,7 +166,6 @@ export function QuoteEditor({
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
   const [view, setView] = useState<"split" | "editor" | "preview">("split");
 
   // Client state
@@ -348,11 +348,6 @@ export function QuoteEditor({
      ============================================================ */
 
   const handleSubmit = async () => {
-    if (!workOrderId) {
-      setError("Ha d'estar vinculat a una OT");
-      return;
-    }
-
     const validItems = items.filter((item) => item.description);
     if (validItems.length === 0) {
       setError("Ha d'haver almenys una línia");
@@ -363,7 +358,7 @@ export function QuoteEditor({
     setError(null);
 
     const payload = {
-      workOrderId,
+      workOrderId: workOrderId || null,
       clientId: useCustomClient ? "00000000-0000-0000-0000-000000000000" : selectedClientId,
       title: `${useCustomClient ? customClient.name : selectedClient?.name ?? "Pressupost"} - ${new Date().toLocaleDateString("ca-ES")}`,
       description: formData.description || null,
@@ -385,7 +380,7 @@ export function QuoteEditor({
     setIsLoading(false);
 
     if (result.success && result.data) {
-      setSuccess("Pressupost creat correctament!");
+      toast.success("Pressupost creat correctament!");
       setTimeout(() => {
         router.push(`/sat/quotes/${result.data.id}`);
       }, 1000);
@@ -485,12 +480,6 @@ export function QuoteEditor({
           } ${view === "preview" ? "hidden" : ""}`}
         >
           <div className="mx-auto w-full max-w-2xl space-y-4 p-4">
-            {success && (
-              <div className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700 flex items-center gap-2">
-                <CheckCircle className="h-4 w-4" />
-                {success}
-              </div>
-            )}
             {error && (
               <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
                 {error}
