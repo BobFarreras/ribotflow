@@ -15,8 +15,8 @@
 | Acoblament critic (>15 imports) | 1 | 1 | 0 |
 | Dominis ben estructurats | 4 | 5 (+pdf) | +1 |
 
-**Monolits resolts**: `pdfService.ts` (1550→0), `QuoteEditor.tsx` (1077→236)
-**Monolit pendent mes gran**: `src/db/schema/sat.ts` (522 linies)
+**Monolits resolts**: `pdfService.ts` (1550→0), `QuoteEditor.tsx` (1077→236), `schema/sat.ts` (622→13 fitxers, max 95 línies)
+**Monolit pendent mes gran**: `src/services/sat/quoteService.ts` (361 linies)
 **Conclusio**: El modul SAT concentra el ~60% del deute tecnic. La Fase 1 ha eliminat els 2 monolits critics mes grans. El seguent critic es `schema/sat.ts`.
 
 ---
@@ -236,11 +236,13 @@ src/actions/sat/
 - [x] P1.2: Dividir `QuoteEditor.tsx` en subcomponents — `QuoteEditor.tsx` passa de 1077 a 236 línies, hook `useQuoteForm.ts` (342 línies), 4 components nous
 
 ### Setmana 2 (Següent)
-- [ ] **P2.1: Dividir schema `sat.ts` en fitxers per entitat** ← SEGÜENT PRIORITAT
-  - Monolit de 522 línies amb 10+ entitats (OTs, materials, pressupostos, signatures...)
-  - Risc alt de conflictes de merge entre desenvolupadors
-  - Target: un fitxer per entitat, <200 línies cadascun
-- [ ] P2.2: Reestructurar `src/services/sat/` amb subcarpetes
+- [x] **P2.1: Dividir schema `sat.ts` en fitxers per entitat** ← FET
+  - Monolit de 622 línies → 13 fitxers (max 95 línies cadascun)
+  - Estructura: `src/db/schema/sat/` amb un fitxer per entitat + `index.ts` barrel
+  - `sat.ts` es manté com a barrel (`export * from "./sat/index"`) per compatibilitat
+  - Cap import del projecte s'ha hagut de canviar
+- [ ] **P2.2: Reestructurar `src/services/sat/` amb subcarpetes** ← SEGÜENT PRIORITAT
+  - 10 fitxers plans → agrupar per domini (quotes/, work-orders/, clients/)
 
 ### Setmana 3
 - [ ] P2.3: Reestructurar `src/components/sat/` amb subcarpetes
