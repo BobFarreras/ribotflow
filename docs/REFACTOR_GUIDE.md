@@ -10,10 +10,14 @@
 | Metrica | Valor Inicial | Actual | Canvi |
 |---------|---------------|--------|-------|
 | Fitxers > 300 linies | 9 | 0 | -9 |
-| Fitxers > 500 linies (critics) | 3 | 1 | -2 |
-| Directoris monolitics | 3 | 2 | -1 |
-| Acoblament critic (>15 imports) | 1 | 1 | 0 |
+| Fitxers > 500 linies (critics) | 3 | 0 | -3 |
+| Fitxers > 200 linies | n/a | 0 | - |
+| Pagines > 100 linies (critic) | 2 | 0 | -2 |
+| Directoris monolitics | 3 | 0 | -3 |
+| Acoblament critic (>15 imports) | 1 | 0 | -1 |
 | Dominis ben estructurats | 4 | 7 (+pdf, +sat/services, +sat/components) | +3 |
+
+**Monolits resolts**: tots el fitxers >500, >300, >200 línies, i les 2 pàgines >100 línies. Cap directori monolític resta.
 
 **Monolits resolts**: `pdfService.ts` (1550→0), `QuoteEditor.tsx` (1077→236), `schema/sat.ts` (622→13 fitxers, max 95 línies), `services/sat/` (10 fitxers plans → 3 subdominis), 4 components >300 línies dividits
 **Monolit pendent mes gran**: `src/services/sat/quotes/quoteService.ts` (319 linies, acceptable - maxim 300 permes amb flexibilitat)
@@ -271,7 +275,10 @@ src/actions/sat/
   - Verificació: `pnpm tsc --noEmit` net, `pnpm test` 78/78
 
 ### Setmana 4
-- [ ] P3: Alliberar pagines grans (sat/[id]/page.tsx, register/page.tsx)
+- [x] P3: Alliberar pagines grans (sat/[id]/page.tsx, register/page.tsx) ← FET
+  - `sat/[id]/page.tsx` (325→100) + 6 components a `_components/` + helper `normalizeLocations` a `_lib/`
+  - `register/page.tsx` (280→92) + FormField, PasswordField, RegisterFormFields + `passwordStrength` helper
+  - Tots els components < 150 línies. typecheck net, 78/78 tests passen.
 
 ---
 
