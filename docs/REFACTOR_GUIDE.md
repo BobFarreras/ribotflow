@@ -259,8 +259,16 @@ src/actions/sat/
   - Cap import extern canviat (paths relatius interns)
 
 ### Setmana 3
-- [ ] P2.3: Reestructurar `src/components/sat/` amb subcarpetes
-- [ ] P2.4: Reestructurar `src/actions/sat/` amb subcarpetes
+- [x] P2.3: Reestructurar `src/components/sat/` amb subcarpetes ← FET
+  - 26 fitxers plans → 3 subdominis (`quotes/`, `work-orders/`, `shared/`)
+  - 26 shims `.tsx` a `src/components/sat/` (`export * from "./shared/..."`) per compatibilitat
+  - Imports interns corregits (`./work-orders/WorkOrderFilters/...` → `./WorkOrderFilters/...`)
+  - Verificació: `pnpm tsc --noEmit` net, `pnpm test` 78/78
+- [x] P2.4: Reestructurar `src/actions/sat/` amb subcarpetes ← FET
+  - 28 fitxers plans → 3 subdominis (`quotes/`, `work-orders/`, `clients/`)
+  - 28 shims `.ts` a `src/actions/sat/` per compatibilitat
+  - Script `scripts/create-shims.ps1` automatitza creació
+  - Verificació: `pnpm tsc --noEmit` net, `pnpm test` 78/78
 
 ### Setmana 4
 - [ ] P3: Alliberar pagines grans (sat/[id]/page.tsx, register/page.tsx)

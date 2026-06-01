@@ -316,62 +316,74 @@ src/
     SidebarNav.tsx          # Navigation with sub-menus
     SidebarFooter.tsx       # Theme, language, logout
     DashboardShell.tsx      # Content wrapper that adapts to sidebar
-  actions/sat/             # Server Actions
-    createWorkOrder.ts
-    updateStatus.ts
-    assignTechnician.ts
-    addMaterial.ts
-    removeMaterial.ts
-    getProducts.ts
-    addAttachment.ts
-    deleteAttachment.ts
-    saveSignature.ts        # Save digital signature (SVG + PNG)
-    generatePdf.ts          # Generate PDF report
-    deletePdf.ts            # Delete generated PDF
-    checkIn.ts              # GPS check-in with distance validation
-    createCategory.ts       # Create work order category
-    updateCategory.ts       # Update work order category
-    createClient.ts         # Create SAT client
-    createQuote.ts          # Create quote with items
-    updateQuote.ts          # Update quote (draft only)
-    deleteQuote.ts          # Delete quote (draft only)
-    updateQuoteStatus.ts    # Change quote status with validation
-    addQuoteItem.ts         # Add line item to quote
-    updateQuoteItem.ts      # Update quote line item
-    removeQuoteItem.ts      # Remove line item from quote
-    createQuoteTemplate.ts  # Create quote template
-    updateQuoteTemplate.ts  # Update quote template
-    deleteQuoteTemplate.ts  # Delete quote template
-    duplicateQuoteTemplate.ts # Duplicate quote template
-  components/sat/           # Client Components
-    WorkOrderForm.tsx
-    WorkOrderActions.tsx
-    TechnicianAssigner.tsx
-    MaterialList.tsx        # Product catalog + free-text materials (stepper +/-)
-    AttachmentSection.tsx   # Upload 2-step (preview → confirm) + grid
-    SignatureCanvas.tsx     # Canvas for digital signature (mouse/touch)
-    PdfGenerator.tsx        # Generate/download/regenerate/delete PDF
-    CheckInButton.tsx       # GPS check-in with distance validation
-    WorkOrderFilters.tsx    # Unified filter bar (one row)
-    WorkOrderList.tsx       # View wrapper: filters + pagination + switcher
-    WorkOrderCard.tsx       # Grid card with category icon + distance
-    WorkOrderTable.tsx      # Sortable table view
-    WorkOrderKanban.tsx     # Drag & drop board with horizontal panning
-    WorkOrderStatusBadge.tsx # Dot indicator badge (Linear/Attio style)
-    WorkOrderPriorityBadge.tsx # Dot + text (no background)
-    CategoryIcon.tsx        # SVG icon picker (~12 icons, reusable)
-    AddressAutocomplete.tsx # Nominatim geocoding autocomplete
-    GoogleMapsLink.tsx      # External Google Maps link with coords
-    MapView.tsx             # Leaflet map with category icons
-    TravelCostCard.tsx      # Distance, time, cost display
-    StatusHistorySection.tsx # Audit log timeline
-    Pagination.tsx          # Page size + page number controls
-    QuoteEditor.tsx         # Professional editor with split view + collapsible sections
-    QuotePdfPreview.tsx     # A4 PDF simulation with professional layout
-    QuoteList.tsx           # Quote list with filters
-    QuoteStatusBadge.tsx    # Quote status badge with colors
-    QuoteItemTable.tsx      # Quote items display table
-    QuoteActions.tsx        # Quote status change buttons
+  actions/sat/             # Server Actions (with shims for backward compat)
+    # Quotes (subdomain)
+    quotes/
+      createQuote.ts
+      updateQuote.ts
+      deleteQuote.ts
+      updateQuoteStatus.ts
+      addQuoteItem.ts
+      updateQuoteItem.ts
+      removeQuoteItem.ts
+      createQuoteTemplate.ts
+      updateQuoteTemplate.ts
+      deleteQuoteTemplate.ts
+      duplicateQuoteTemplate.ts
+      acceptQuote.ts        # Accept quote (client signature)
+      sendQuoteEmail.ts     # Send quote by email with PDF
+    # Work Orders (subdomain)
+    work-orders/
+      createWorkOrder.ts
+      updateStatus.ts
+      assignTechnician.ts
+      checkIn.ts            # GPS check-in with distance validation
+      saveSignature.ts      # Save digital signature (SVG + PNG)
+      generatePdf.ts        # Generate PDF report
+      deletePdf.ts          # Delete generated PDF
+      addMaterial.ts
+      removeMaterial.ts
+      addAttachment.ts
+      deleteAttachment.ts
+      getProducts.ts
+    # Clients (subdomain)
+    clients/
+      createClient.ts
+      createCategory.ts
+      updateCategory.ts
+  components/sat/           # Client Components (with shims for backward compat)
+    # Work Orders (subdomain)
+    work-orders/
+      WorkOrderForm.tsx
+      WorkOrderActions.tsx
+      TechnicianAssigner.tsx
+      MaterialList.tsx      # Product catalog + free-text materials
+      AttachmentSection.tsx # Upload 2-step (preview → confirm) + grid
+      SignatureCanvas.tsx   # Canvas for digital signature
+      PdfGenerator.tsx      # Generate/download/regenerate/delete PDF
+      CheckInButton.tsx     # GPS check-in with distance validation
+      WorkOrderFilters.tsx  # Unified filter bar (one row)
+      WorkOrderList.tsx     # View wrapper: filters + pagination + switcher
+      WorkOrderCard.tsx     # Grid card with category icon + distance
+      WorkOrderTable.tsx    # Sortable table view
+      WorkOrderKanban.tsx   # Drag & drop board with horizontal panning
+      MapView.tsx           # Leaflet map with category icons
+      StatusHistorySection.tsx # Audit log timeline
+      RoutePlanner.tsx      # Route optimizer UI
+    # Quotes (subdomain)
+    quotes/
+      QuoteEditor.tsx       # Professional editor with split view
+      QuotePdfPreview.tsx   # A4 PDF simulation
+      QuoteList.tsx         # Quote list with filters
+      QuoteStatusBadge.tsx  # Quote status badge
+      SendQuoteEmailModal.tsx # Email send modal
+    # Shared (used by both subdomains)
+    shared/
+      AddressAutocomplete.tsx # Nominatim geocoding autocomplete
+      GoogleMapsLink.tsx    # External Google Maps link
+      CategoryIcon.tsx      # SVG icon picker (~12 icons, reusable)
+      WorkOrderStatusBadge.tsx # Dot indicator badge
+      WorkOrderPriorityBadge.tsx # Dot + text (no background)
   services/sat/             # Business Logic
     workOrderService.ts
     materialService.ts
@@ -623,6 +635,7 @@ quotes/Empresa_Test/PRES-2026-0001-signature.png
 | 01/06/2026 | Quote PDF generation with email attachment | Commit b10c3a0. Migracions 0008-0009 afegeixen `pdf_url`, `accepted_by`, `signature` a quotes; `tax_id` i `phone` a companies. Storage keys jeràrquiques (tenantSlug/clientSlug). Mètode `generateSignedQuotePdf` per a la signatura del client. Accions `acceptQuote` i `rejectQuote`. |
 | 01/06/2026 | pdf-lib WinAnsi encoding bug fix | Helper `sanitizeForPdf` per netejar caràcters no suportats. Important per caràcters catalans/ciríl·lics. |
 | 01/06/2026 | Refactor Fases 1-2 completades | Fases 1 (monolits >500) i 2 (reestructuració directoris) del REFACTOR_GUIDE.md estan fetes. Veure `docs/REFACTOR_GUIDE.md` per detalls. Resta: Fase 2.3 components/sat, Fase 2.4 actions/sat, Fase 3 pàgines grans. |
+| 01/06/2026 | Refactor Fases 2.3-2.4 completades | `src/components/sat/` i `src/actions/sat/` ara tenen subcarpetes (quotes/, work-orders/, shared/ o clients/). S'han afegit shims `.tsx`/`.ts` de re-export per backward compat. Resta: Fase 3 (pàgines grans). |
 
 ---
 
@@ -672,12 +685,12 @@ Multiple agents (including this one) investigated the wrong causes:
 10. **[Oficina] Quote PDF generation amb email adjunt** — Commit b10c3a0. Migracions 0008-0009 afegeixen `pdf_url`, `accepted_by`, `signature` a quotes; `tax_id` i `phone` a companies. Mètode `generateSignedQuotePdf` per a la signatura del client. Accions `acceptQuote` i `rejectQuote`. Storage keys human-readable.
 11. **[Oficina] Refactor Fases 1-2 completades** — Monolits >500 línies dividits, `schema/sat.ts` separat en 13 fitxers, serveis SAT amb subcarpetes, 4 components >300 línies dividits. Veure `docs/REFACTOR_GUIDE.md`.
 12. **[Ara] Migracions 0008-0009 aplicades** — `pnpm db:migrate` les ha aplicades correctament. Tests 78/78 passen.
+13. **[Ara] Refactor Fases 2.3-2.4 completades** — `src/components/sat/` i `src/actions/sat/` ara tenen subcarpetes (`quotes/`, `work-orders/`, `shared/` o `clients/`). Shims de re-export per backward compat. 78/78 tests passen.
 
 ### Next Task for Next Agent
-1. **Refactor Fase 2.3** — Reestructurar `src/components/sat/` amb subcarpetes (`quotes/`, `work-orders/`, `clients/`, `shared/`)
-2. **Refactor Fase 2.4** — Reestructurar `src/actions/sat/` amb subcarpetes
-3. **Vista pública del client** — Enllaç sense login perquè el client pugui acceptar/rebutjar
-4. **Configuració d'empresa** — Logo, colors, text legal, tarifa desplaçament
+1. **Refactor Fase 3** — Dividir pàgines grans (`/sat/[id]/page.tsx` 299 línies, `register/page.tsx` 250 línies)
+2. **Vista pública del client** — Enllaç sense login perquè el client pugui acceptar/rebutjar
+3. **Configuració d'empresa** — Logo, colors, text legal, tarifa desplaçament
 
 ### Quick Commands for Next Session
 ```bash
@@ -812,7 +825,8 @@ When you start working on this project:
 - **Facturació:** ✅ Complete — Travel billing service
 - **Notificacions:** ✅ Complete — Email service (nodemailer lazy import) amb PDF adjunt
 - **Refactor Fases 1-2:** ✅ Fetes — Monolits dividits, schema per entitat, serveis amb subdominis
-- **Refactor Fases 2.3-2.4-3:** 🔲 Pendent — components/sat i actions/sat amb subcarpetes, pàgines grans
+- **Refactor Fases 2.3-2.4:** ✅ Fetes — components/sat i actions/sat amb subcarpetes (quotes/, work-orders/, shared/, clients/)
+- **Refactor Fase 3:** 🔲 Pendent — pàgines grans
 - **Facturació de clients:** 🔲 Pending — proper mòdul a implementar
 
 > **Tip for agents:** If you see `[Storage] Environment variables missing for provider 
