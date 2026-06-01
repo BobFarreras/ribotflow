@@ -81,14 +81,6 @@ async function sendEmail(payload: NotificationPayload): Promise<void> {
   }
 }
 
-export interface QuoteEmailData {
-  to: string;
-  subject: string;
-  html: string;
-  quoteNumber: string;
-  companyId: string;
-}
-
 async function sendEmailWithAttachment(
   payload: NotificationPayload,
   attachment?: { filename: string; content: Buffer; contentType: string }
@@ -153,6 +145,15 @@ async function sendEmailWithAttachment(
     console.error("[Notification] Failed to send email:", err);
     return { success: false, error: errMsg };
   }
+}
+
+export interface QuoteEmailData {
+  to: string;
+  subject: string;
+  html: string;
+  quoteNumber: string;
+  companyId: string;
+  attachment?: { filename: string; content: Buffer; contentType: string };
 }
 
 export const notificationService = {
@@ -248,14 +249,14 @@ export const notificationService = {
 
   async sendQuoteEmail(data: QuoteEmailData): Promise<{ success: boolean; error?: string }> {
     try {
-      // Send email (PDF attachment can be added later)
       const result = await sendEmailWithAttachment(
         {
           to: data.to,
           subject: data.subject,
           html: data.html,
           from: "RIBOTFLOW",
-        }
+        },
+        data.attachment
       );
 
       if (!result.success) {

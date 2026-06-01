@@ -7,9 +7,16 @@
  */
 
 import { db } from "@/db";
-import { signatures } from "@/db/schema/sat";
+import { signatures, quotes, clients } from "@/db/schema/sat";
+import { companies } from "@/db/schema/auth";
 import { eq, and } from "drizzle-orm";
-import { buildSignatureStorageKey } from "@/lib/utils/storageKeys";
+import {
+  buildWorkOrderSignatureKey,
+  buildQuoteSignatureKey,
+  type StorageContext,
+} from "@/lib/utils/storageKeys";
+import { workOrderService } from "./workOrderService";
+import { quoteService } from "./quoteService";
 import type { FileStorage } from "@/services/storage/interface";
 import { createFileStorage } from "@/services/storage/factory";
 
@@ -49,6 +56,53 @@ export class SignatureService {
     return result[0] ?? null;
   }
 
+  /**
+   * Resolve a full StorageContext for any entity type.
+   * Fetches the company (for tenantSlug) and the related client automatically.
+   */
+  private async resolveContext(
+    companyId: string,
+    entityType: SignatureEntityType,
+    entityId: string
+  ): Promise<StorageContext> {
+    const [company] = await db
+      .select({ tenantSlug: companies.tenantSlug })
+      .from(companies)
+      .where(eq(companies.id, companyId))
+      .limit(1);
+
+    let clientId: string;
+    let clientName: string;
+
+    if (entityType === "work_order") {
+      const orderData = await workOrderService.getByIdWithRelations(companyId, entityId);
+      if (!orderData) throw new Error("Work order not found");
+      clientId = orderData.client.id;
+      clientName = orderData.client.name;
+    } else if (entityType === "quote") {
+      const quote = await quoteService.getById(companyId, entityId);
+      if (!quote) throw new Error("Quote not found");
+      const [client] = await db
+        .select({ id: clients.id, name: clients.name })
+        .from(clients)
+        .where(eq(clients.id, quote.clientId))
+        .limit(1);
+      if (!client) throw new Error("Client not found for this quote");
+      clientId = client.id;
+      clientName = client.name;
+    } else {
+      throw new Error(`Unsupported entity type: ${entityType}`);
+    }
+
+    return {
+      mode: process.env.NEXT_PUBLIC_APP_MODE === "self-hosted" ? "self-hosted" : "cloud",
+      companyId,
+      tenantSlug: company?.tenantSlug,
+      clientId,
+      clientName,
+    };
+  }
+
   async save(companyId: string, entityNumber: string, input: SaveSignatureInput) {
     // Check if signature already exists for this entity
     const existing = await db
@@ -67,11 +121,15 @@ export class SignatureService {
 
     // Upload PNG to storage if provided
     if (input.signaturePngBuffer) {
-      const storageKey = buildSignatureStorageKey(
-        input.entityType,
-        companyId,
-        entityNumber
-      );
+      const ctx = await this.resolveContext(companyId, input.entityType, input.entityId);
+      let storageKey: string;
+      if (input.entityType === "work_order") {
+        storageKey = buildWorkOrderSignatureKey(ctx, entityNumber);
+      } else if (input.entityType === "quote") {
+        storageKey = buildQuoteSignatureKey(ctx, entityNumber);
+      } else {
+        throw new Error(`Unsupported entity type: ${input.entityType}`);
+      }
       const uploadResult = await this.storage.upload({
         buffer: input.signaturePngBuffer,
         storageKey,

@@ -13,6 +13,7 @@ import { companies } from "@/db/schema/auth";
 import { clients } from "@/db/schema/sat";
 import { eq } from "drizzle-orm";
 import { quoteService } from "@/services/sat/quoteService";
+import { pdfService } from "@/services/sat/pdfService";
 import { notificationService } from "@/services/notifications/notificationService";
 
 interface SendQuoteEmailInput {
@@ -88,6 +89,19 @@ export async function sendQuoteEmailAction(input: SendQuoteEmailInput) {
     </div>
   `;
 
+  // Generate PDF
+  let attachment: { filename: string; content: Buffer; contentType: string } | undefined;
+  try {
+    const pdfResult = await pdfService.generateQuotePdf(companyId, input.quoteId, "ca");
+    attachment = {
+      filename: `Pressupost_${quote.number}.pdf`,
+      content: pdfResult.buffer,
+      contentType: "application/pdf",
+    };
+  } catch (pdfErr) {
+    console.warn("[sendQuoteEmailAction] PDF generation failed, sending without attachment:", pdfErr);
+  }
+
   // Send email with PDF attachment
   const result = await notificationService.sendQuoteEmail({
     to: input.recipientEmail,
@@ -95,12 +109,13 @@ export async function sendQuoteEmailAction(input: SendQuoteEmailInput) {
     html,
     quoteNumber: quote.number,
     companyId,
+    attachment,
   });
 
   if (result.success) {
     return {
       success: true as const,
-      message: `Pressupost enviat a ${input.recipientEmail}`,
+      message: `Pressupost enviat a ${input.recipientEmail}${attachment ? " amb PDF adjunt" : ""}`,
     };
   }
 

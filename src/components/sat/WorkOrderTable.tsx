@@ -66,11 +66,12 @@ export function WorkOrderTable({ orders }: Props) {
           valA = a.workOrder.status;
           valB = b.workOrder.status;
           break;
-        case "priority":
+        case "priority": {
           const pMap = { low: 1, medium: 2, high: 3, urgent: 4 };
           valA = pMap[a.workOrder.priority] ?? 0;
           valB = pMap[b.workOrder.priority] ?? 0;
           break;
+        }
         case "category":
           valA = a.category.name;
           valB = b.category.name;

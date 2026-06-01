@@ -129,7 +129,6 @@ export function AttachmentSection({ attachments: initialAttachments, workOrderId
         <div className="mb-2 space-y-2 rounded-md border border-[var(--border)] bg-[var(--bg)] p-2">
           {/* Preview image */}
           <div className="relative w-full overflow-hidden rounded-md" style={{ aspectRatio: "16/9" }}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={previewUrl}
               alt="Vista prèvia"

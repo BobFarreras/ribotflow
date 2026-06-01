@@ -2,15 +2,18 @@
  * Creation/modification date: 26/05/2026
  * Path: src/actions/sat/addAttachment.ts
  * Description: Server Action to upload an attachment file and save metadata.
- *              Uses human-readable storage keys (workOrderNumber + fileName).
+ *              Uses human-readable storage keys organized by client folder.
  */
 
 "use server";
 
 import { auth } from "@/lib/auth";
+import { db } from "@/db";
+import { companies } from "@/db/schema/auth";
+import { eq } from "drizzle-orm";
 import { attachmentService } from "@/services/sat/attachmentService";
 import { workOrderService } from "@/services/sat/workOrderService";
-import { buildAttachmentStorageKey } from "@/lib/utils/storageKeys";
+import { buildWorkOrderAttachmentKey, type StorageContext } from "@/lib/utils/storageKeys";
 import { revalidatePath } from "next/cache";
 
 const ALLOWED_TYPES = {
@@ -55,18 +58,29 @@ export async function addAttachmentAction(formData: FormData) {
 
     const companyId = session.user.companyId;
 
-    // Fetch work order number for human-readable storage key
-    const order = await workOrderService.getById(companyId, workOrderId);
-    if (!order) {
+    // Fetch work order with relations (client info) for human-readable storage key
+    const orderData = await workOrderService.getByIdWithRelations(companyId, workOrderId);
+    if (!orderData) {
       return { success: false, error: "Work order not found" };
     }
+    const { workOrder, client } = orderData;
 
-    const storageKey = buildAttachmentStorageKey(
-      "sat",
+    // Fetch company for tenantSlug (cloud mode folder prefix)
+    const [company] = await db
+      .select({ tenantSlug: companies.tenantSlug })
+      .from(companies)
+      .where(eq(companies.id, companyId))
+      .limit(1);
+
+    const ctx: StorageContext = {
+      mode: process.env.NEXT_PUBLIC_APP_MODE === "self-hosted" ? "self-hosted" : "cloud",
       companyId,
-      order.number,
-      fileName
-    );
+      tenantSlug: company?.tenantSlug,
+      clientId: client.id,
+      clientName: client.name,
+    };
+
+    const storageKey = buildWorkOrderAttachmentKey(ctx, workOrder.number, fileName);
 
     const buffer = Buffer.from(await file.arrayBuffer());
 

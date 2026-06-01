@@ -33,7 +33,6 @@ function fallbackToLocal(provider: string): LocalFileStorage {
         "Check your production configuration."
     );
   }
-  // eslint-disable-next-line no-console
   console.warn(
     `[Storage] Environment variables missing for provider "${provider}". ` +
       "Falling back to local filesystem storage."

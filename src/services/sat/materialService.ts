@@ -51,7 +51,7 @@ export const materialService = {
     let name = input.name;
     let unitPrice = input.unitPrice ? String(input.unitPrice) : null;
     let unitCost = input.unitCost ? String(input.unitCost) : null;
-    let productId = input.productId;
+    const productId = input.productId;
 
     // If productId is provided, auto-fill from catalog
     if (productId) {

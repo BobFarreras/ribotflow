@@ -14,6 +14,8 @@ export const companies = pgTable(
     name: text("name").notNull(),
     tenantSlug: text("tenant_slug").notNull().unique(),
     plan: text("plan").$type<"free" | "plus" | "enterprise">().default("free").notNull(),
+    taxId: text("tax_id"),
+    phone: text("phone"),
     companyAddress: text("company_address"),
     companyLocation: jsonb("company_location").$type<{ lat: number; lng: number }>(),
     travelRatePerKm: numeric("travel_rate_per_km", { precision: 10, scale: 2 }),

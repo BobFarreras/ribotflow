@@ -7,7 +7,7 @@
 import { db } from "../src/db";
 import { companies } from "../src/db/schema/auth";
 import { workOrders, clients } from "../src/db/schema/sat";
-import { eq, and, isNotNull } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { createDistanceEngine } from "../src/services/routing/factory";
 import { workOrderService } from "../src/services/sat/workOrderService";
 
@@ -33,7 +33,7 @@ async function main() {
   const engine = createDistanceEngine();
 
   for (const order of orders) {
-    let destination = (order as any).location;
+    let destination = order.location as { lat: number; lng: number } | null;
 
     if (!destination && order.clientId) {
       const [client] = await db

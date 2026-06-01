@@ -81,7 +81,7 @@ export function SendQuoteEmailModal({
       <div className="absolute inset-0 bg-black/50" onClick={status === "sending" ? undefined : onClose} />
 
       {/* Modal */}
-      <div className="relative mx-4 w-full max-w-md rounded-xl border border-[var(--border)] bg-[var(--card)] shadow-xl">
+      <div className="relative mx-4 w-full max-w-md rounded-xl border border-[var(--border)] bg-[var(--surface)] shadow-xl">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-[var(--border)] px-5 py-4">
           <div className="flex items-center gap-3">

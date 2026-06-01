@@ -689,6 +689,85 @@ pnpm dev
 
 ---
 
+## Protocol de Sincronitzacio de Maquina (Machine Sync)
+
+> **Usa aquest protocol QUAN:** Arribes a una maquina nova, despres de fer `git pull` des de casa, o si un altre agent ha modificat l'esquema de la BD.
+
+### 1. Verifica l'Estat de les Migracions a la BD Local
+
+**Abans de res, comprova si la taula de control existeix i esta completa:**
+
+```bash
+# Quantes migracions te registrades la BD?
+docker exec ribotflow-dev-db psql -U postgres -d ribotflow -c \
+  "SELECT COUNT(*) FROM drizzle.__drizzle_migrations;"
+```
+
+- Si retorna **8** → Tot correcte. Ves al pas 3.
+- Si retorna **0, 3 o qualsevol altre numero** → La taula de control esta malmesa. Ves al pas 2.
+
+### 2. Reconstruccio de la Taula de Control (NOMES si esta malmesa)
+
+**Per que passa aixo?** Si la BD es va crear amb `db:push`, amb seed scripts, o si un altre ordinador va aplicar migracions manualment sense deixar rastre, la taula `drizzle.__drizzle_migrations` queda desfasada o buida. Aixo fa que `db:migrate` intenti reaplicar migracions antigues i falli amb `relation already exists`.
+
+**Solucio:** Reconstrueix la taula i la omple amb els hashos correctes (SHA256 dels fitxers `.sql` + `folderMillis` del `_journal.json`):
+
+```bash
+# 1. Asegura't que el schema drizzle existeix
+docker exec ribotflow-dev-db psql -U postgres -d ribotflow -c \
+  "CREATE SCHEMA IF NOT EXISTS drizzle;"
+
+# 2. Esborra i recrea la taula
+docker exec ribotflow-dev-db psql -U postgres -d ribotflow -c \
+  "DROP TABLE IF EXISTS drizzle.__drizzle_migrations; CREATE TABLE drizzle.__drizzle_migrations (id SERIAL PRIMARY KEY, hash text NOT NULL, created_at bigint);"
+
+# 3. Omple-la amb totes les migracions existents (fins a 0007)
+docker exec -i ribotflow-dev-db psql -U postgres -d ribotflow <<'EOF'
+INSERT INTO drizzle.__drizzle_migrations (hash, created_at) VALUES
+('fcdcd77092d11243d9d7867e6af494173f2dbb170810d9041d2d26e92d863109', 1779695842140),
+('3b84a91bea8a8f6a9343a3a0cbcd791955b55b3324e8e1587f379a779d137fef', 1779774463806),
+('ef928ac98a630e4355a24602a9b33dbe3f546a2a3b56867ea864e492ac21b79a', 1779792706330),
+('b67de1692bdf8844511d236d23ad072a5243d661c9c34d47ebf63844f37ff677', 1779818638878),
+('bbfa55db3628ccc525110380c7c6c7e2127ff3d6c4aef9b9350a7a37c7dfa7d4', 1779859659031),
+('72e0a849a48a9625d7ffd7e0599aa49beaf0b9f9df4d505c53da58736fd43a37', 1780119794106),
+('8d043230560f9da17a31facde76d96577da55ae017a94656802c730e687d64d0', 1780210872331),
+('6dc5e378d28e98987f5bc2a0a7f56461ed0a39a2825a5d4f77b6b81916916ae0', 1780211515060);
+EOF
+```
+
+> **Nota per agents:** Aquests hashos es calculen amb `SHA256(contingut del .sql)` en minuscules i el `created_at` ve de `_journal.json`. Si apareixen noves migracions (0008, 0009...), aquesta llista s'ha d'ampliar.
+
+### 3. Aplicar Migracions Pendents
+
+```bash
+pnpm db:migrate
+```
+
+Ara hauria de dir: `[✓] migrations applied successfully!` sense errors.
+
+### 4. Verificar Esquema
+
+```bash
+# Hauria de sortir 18 taules (incloent quotes, quote_items, quote_templates, quote_status_history)
+docker exec ribotflow-dev-db psql -U postgres -d ribotflow -c "\dt"
+```
+
+### 5. Seed de Dades Demo (si cal)
+
+```bash
+pnpm db:seed:demo
+```
+
+### 6. Verificar Tests
+
+```bash
+pnpm test
+```
+
+Haurien de passar **78 tests**.
+
+---
+
 ## For Future Agents
 
 When you start working on this project:
@@ -697,8 +776,7 @@ When you start working on this project:
 2. **Save critical decisions to your local memory** (Engram, notes, etc.)
 3. **Check the branch:** Should be `features/sat-work-orders`
 4. **Start PostgreSQL + MinIO:** `pnpm db:up` (starts both containers)
-5. **Apply pending migrations:** `pnpm db:migrate`
-   - If `__drizzle_migrations` table is missing, apply manually: `cat src/db/migrations/000X_*.sql | docker exec -i ribotflow-dev-db psql -U postgres -d ribotflow`
+5. **Sincronitza la BD:** Segueix el **Protocol de Sincronitzacio de Maquina** dalt (especialment si veus `relation already exists` o falten columnes/taules).
 6. **Seed demo data:** `pnpm db:seed:demo`
 7. **Configure `.env.local`** with MinIO variables (see Environment Variables section above)
 8. **Make MinIO bucket public:**

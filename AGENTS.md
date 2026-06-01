@@ -116,6 +116,12 @@ Todos los archivos `.ts` y `.tsx` deben comenzar con:
   4. Compañeros: `git pull && pnpm db:migrate`
 - **Setup diario:** `pnpm db:setup` (hace `db:up` + `db:migrate`)
 - **Reset completo (pierde datos):** `pnpm db:reset` + `pnpm db:setup:fresh`
+- **Sincronización entre máquinas (CRÍTICO):**
+  - Si un agente ha trabajado en otra máquina y modificado el schema, al volver a esta máquina y hacer `git pull`, las migraciones nuevas deben aplicarse con `pnpm db:migrate`.
+  - Si la BD local fue creada con `db:push` o seed scripts (sin pasar por `db:migrate`), la tabla `drizzle.__drizzle_migrations` puede estar vacía o incompleta.
+  - **Síntoma:** `pnpm db:migrate` falla con `relation already exists` porque intenta reaplicar migraciones antiguas.
+  - **Solución:** Seguir el **Protocol de Sincronització de Màquina** documentado en `docs/AGENT_CONTEXT.md` (reconstruir `__drizzle_migrations` y luego `db:migrate`).
+  - **Prevención:** Documentar en memoria (Engram) si una máquina específica tiene la BD desfasada para que el siguiente agente lo sepa inmediatamente.
 
 ## 🔒 Seguridad
 - **Cookies:** `httpOnly`, `secure`, `sameSite: "lax"`

@@ -73,7 +73,7 @@ export function MapView({ orders, hqLocation, companyName = "Seu" }: Props) {
     if (typeof window === "undefined" || !mapRef.current) return;
 
     let map: any;
-    let markers: any[] = [];
+    const markers: any[] = [];
 
     const initMap = async () => {
       const L = await import("leaflet");
