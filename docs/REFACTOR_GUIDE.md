@@ -7,15 +7,17 @@
 
 ## Resum Executiu
 
-| Metrica | Valor |
-|---------|-------|
-| Fitxers > 300 linies | 9 |
-| Fitxers > 500 linies (critics) | 3 |
-| Directoris monolitics | 3 (services/sat, components/sat, actions/sat) |
-| Acoblament critic (>15 imports) | 1 (sat/[id]/page.tsx) |
-| Dominis ben estructurats | 4 (auth, routing, storage, pdf) |
+| Metrica | Valor Inicial | Actual | Canvi |
+|---------|---------------|--------|-------|
+| Fitxers > 300 linies | 9 | 7 | -2 |
+| Fitxers > 500 linies (critics) | 3 | 1 | -2 |
+| Directoris monolitics | 3 | 3 | 0 |
+| Acoblament critic (>15 imports) | 1 | 1 | 0 |
+| Dominis ben estructurats | 4 | 5 (+pdf) | +1 |
 
-**Conclusio**: El modul SAT concentra el ~60% del deute tecnic. Es el prioritari.
+**Monolits resolts**: `pdfService.ts` (1550→0), `QuoteEditor.tsx` (1077→236)
+**Monolit pendent mes gran**: `src/db/schema/sat.ts` (522 linies)
+**Conclusio**: El modul SAT concentra el ~60% del deute tecnic. La Fase 1 ha eliminat els 2 monolits critics mes grans. El seguent critic es `schema/sat.ts`.
 
 ---
 
@@ -229,12 +231,15 @@ src/actions/sat/
 
 ## Calendari Suggerit
 
-### Setmana 1 (Ara)
-- [ ] P1.1: Migrar `pdfService.ts` SAT al framework `src/services/pdf/`
-- [ ] P1.2: Dividir `QuoteEditor.tsx` en subcomponents
+### Setmana 1 (Ara) ✅
+- [x] P1.1: Migrar `pdfService.ts` SAT al framework `src/services/pdf/` — `pdfService.ts` eliminat (1550→0 línies), 4 components nous, serveis ampliats
+- [x] P1.2: Dividir `QuoteEditor.tsx` en subcomponents — `QuoteEditor.tsx` passa de 1077 a 236 línies, hook `useQuoteForm.ts` (342 línies), 4 components nous
 
-### Setmana 2
-- [ ] P2.1: Dividir schema `sat.ts` en fitxers per entitat
+### Setmana 2 (Següent)
+- [ ] **P2.1: Dividir schema `sat.ts` en fitxers per entitat** ← SEGÜENT PRIORITAT
+  - Monolit de 522 línies amb 10+ entitats (OTs, materials, pressupostos, signatures...)
+  - Risc alt de conflictes de merge entre desenvolupadors
+  - Target: un fitxer per entitat, <200 línies cadascun
 - [ ] P2.2: Reestructurar `src/services/sat/` amb subcarpetes
 
 ### Setmana 3
