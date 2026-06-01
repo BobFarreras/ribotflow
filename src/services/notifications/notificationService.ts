@@ -37,40 +37,66 @@ export interface CompletionNotificationData {
   travelCost?: number | null;
 }
 
-async function sendEmail(payload: NotificationPayload): Promise<void> {
-  const smtpHost = process.env.SMTP_HOST;
-  const smtpPort = process.env.SMTP_PORT ? parseInt(process.env.SMTP_PORT, 10) : 587;
-  const smtpUser = process.env.SMTP_USER;
-  const smtpPass = process.env.SMTP_PASSWORD;
+interface SmtpConfig {
+  host: string;
+  port: number;
+  user: string;
+  pass: string;
+  rejectUnauthorized: boolean;
+  requireTLS: boolean;
+}
 
-  if (!smtpHost || !smtpUser || !smtpPass) {
-    console.warn("[Notification] SMTP not configured. Email would have been sent:");
+function readSmtpConfig(): { config: SmtpConfig | null; missing: string[] } {
+  const host = process.env.SMTP_HOST;
+  const port = process.env.SMTP_PORT ? parseInt(process.env.SMTP_PORT, 10) : 587;
+  const user = process.env.SMTP_USER;
+  const pass = process.env.SMTP_PASSWORD;
+  const rejectUnauthorized = process.env.SMTP_TLS_REJECT_UNAUTHORIZED !== "false";
+  const requireTLS = process.env.SMTP_REQUIRE_TLS !== "false";
+
+  if (!host || !user || !pass) {
+    const missing: string[] = [];
+    if (!host) missing.push("SMTP_HOST");
+    if (!user) missing.push("SMTP_USER");
+    if (!pass) missing.push("SMTP_PASSWORD (not SMTP_PASS!)");
+    return { config: null, missing };
+  }
+
+  return { config: { host, port, user, pass, rejectUnauthorized, requireTLS }, missing: [] };
+}
+
+function buildTransporter(config: SmtpConfig, nodemailer: typeof import("nodemailer")) {
+  return nodemailer.createTransport({
+    host: config.host,
+    port: config.port,
+    secure: config.port === 465,
+    requireTLS: config.requireTLS,
+    auth: { user: config.user, pass: config.pass },
+    tls: {
+      rejectUnauthorized: config.rejectUnauthorized,
+    },
+  });
+}
+
+async function sendEmail(payload: NotificationPayload): Promise<void> {
+  const { config, missing } = readSmtpConfig();
+  if (!config) {
+    console.warn(`[Notification] SMTP no configurat. Falten: ${missing.join(", ")}.`);
     console.warn(`  To: ${payload.to}`);
     console.warn(`  Subject: ${payload.subject}`);
     return;
   }
 
   try {
-    // Try to use nodemailer if available
     const nodemailer = await import("nodemailer").catch(() => null);
     if (!nodemailer) {
       console.warn("[Notification] nodemailer not installed. Run: pnpm add nodemailer");
-      console.warn(`  To: ${payload.to}`);
       return;
     }
 
-    const transporter = nodemailer.createTransport({
-      host: smtpHost,
-      port: smtpPort,
-      secure: smtpPort === 465,
-      auth: {
-        user: smtpUser,
-        pass: smtpPass,
-      },
-    });
-
+    const transporter = buildTransporter(config, nodemailer);
     await transporter.sendMail({
-      from: `"RIBOTFLOW" <${smtpUser}>`,
+      from: `"RIBOTFLOW" <${config.user}>`,
       to: payload.to,
       subject: payload.subject,
       text: payload.text ?? payload.html.replace(/<[^>]+>/g, ""),
@@ -85,16 +111,8 @@ async function sendEmailWithAttachment(
   payload: NotificationPayload,
   attachment?: { filename: string; content: Buffer; contentType: string }
 ): Promise<{ success: boolean; error?: string }> {
-  const smtpHost = process.env.SMTP_HOST;
-  const smtpPort = process.env.SMTP_PORT ? parseInt(process.env.SMTP_PORT, 10) : 587;
-  const smtpUser = process.env.SMTP_USER;
-  const smtpPass = process.env.SMTP_PASSWORD;
-
-  if (!smtpHost || !smtpUser || !smtpPass) {
-    const missing: string[] = [];
-    if (!smtpHost) missing.push("SMTP_HOST");
-    if (!smtpUser) missing.push("SMTP_USER");
-    if (!smtpPass) missing.push("SMTP_PASSWORD (not SMTP_PASS!)");
+  const { config, missing } = readSmtpConfig();
+  if (!config) {
     const msg = `SMTP no configurat. Falten: ${missing.join(", ")}. Veure docs/SMTP_SETUP.md`;
     console.warn(`[Notification] ${msg}`);
     console.warn(`  To: ${payload.to}`);
@@ -110,24 +128,14 @@ async function sendEmailWithAttachment(
       return { success: false, error: msg };
     }
 
-    const transporter = nodemailer.createTransport({
-      host: smtpHost,
-      port: smtpPort,
-      secure: smtpPort === 465,
-      auth: {
-        user: smtpUser,
-        pass: smtpPass,
-      },
-    });
-
+    const transporter = buildTransporter(config, nodemailer);
     const mailOptions: Record<string, unknown> = {
-      from: `"${payload.from ?? "RIBOTFLOW"}" <${smtpUser}>`,
+      from: `"${payload.from ?? "RIBOTFLOW"}" <${config.user}>`,
       to: payload.to,
       subject: payload.subject,
       text: payload.text ?? payload.html.replace(/<[^>]+>/g, ""),
       html: payload.html,
     };
-
     if (attachment) {
       mailOptions.attachments = [
         {
@@ -137,7 +145,6 @@ async function sendEmailWithAttachment(
         },
       ];
     }
-
     await transporter.sendMail(mailOptions);
     return { success: true };
   } catch (err) {

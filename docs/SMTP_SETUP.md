@@ -1,11 +1,14 @@
 # SMTP Configuration — Quote Email Sending
 
 > **Last updated:** 01/06/2026
-> **Why this exists:** Send-quote-by-email feature was added on 01/06/2026 but didn't work in dev because `.env.local` had `SMTP_PASS` while the service reads `SMTP_PASSWORD`. This document prevents that mistake from happening again.
+> **Why this exists:** Send-quote-by-email feature was added on 01/06/2026. Two distinct bugs found and fixed:
+> 1. `.env.local` had `SMTP_PASS` while the service reads `SMTP_PASSWORD`
+> 2. Home network couldn't connect due to "self-signed certificate in certificate chain"
+> This document prevents both mistakes from happening again.
 
 ---
 
-## The Bug (Found 01/06/2026)
+## Bug #1 — Wrong env var name (01/06/2026)
 
 When you click "Enviar" on a quote, **no email is sent** and there's no visible error in the UI.
 
@@ -13,52 +16,58 @@ When you click "Enviar" on a quote, **no email is sent** and there's no visible 
 The system reads these env vars (see `src/services/notifications/notificationService.ts`):
 
 ```ts
-const smtpHost = process.env.SMTP_HOST;
-const smtpPort = process.env.SMTP_PORT ? parseInt(...) : 587;
-const smtpUser = process.env.SMTP_USER;
-const smtpPass = process.env.SMTP_PASSWORD;  // ← expects SMTP_PASSWORD
+const pass = process.env.SMTP_PASSWORD;  // ← expects SMTP_PASSWORD
 ```
 
 But `.env.local` had `SMTP_PASS` (not `SMTP_PASSWORD`):
 
 ```env
-SMTP_HOST=smtp.hostinger.com
-SMTP_PORT=465
-SMTP_USER=info@digitaistudios.com
 SMTP_PASS=Adfama_69    # ← WRONG KEY
 ```
 
-Because `SMTP_PASSWORD` is undefined, the service silently falls into the "not configured" branch and only logs a warning to the server console — nothing happens client-side.
-
-### Why No Error Showed in UI
-The modal only catches errors that bubble up from the Server Action. But `sendEmailWithAttachment` swallows the "not configured" path as a `console.warn`, so the action returns `success: true` and the user sees a success toast. **Misleading UX.**
+### Fix
+Change `SMTP_PASS` to `SMTP_PASSWORD` in `.env.local`, restart dev server.
 
 ---
 
-## How to Fix It (1 minute)
+## Bug #2 — "self-signed certificate in certificate chain" (01/06/2026)
 
-### Option A — Edit `.env.local` (recommended)
+When sending from **home network** (or any network with a transparent HTTPS proxy / antivirus that intercepts TLS), nodemailer fails with:
 
-Open `.env.local` and **change `SMTP_PASS` to `SMTP_PASSWORD`**:
+```
+Error: self-signed certificate in certificate chain
+    at TLSSocket.<anonymous> (...)
+    at Transport.verify (...)
+```
+
+### Root Cause
+Some ISPs and security software replace the SMTP server's TLS certificate with their own self-signed one. Node.js (and nodemailer by default) reject self-signed certificates in the trust chain.
+
+### Fix
+Add this to `.env.local`:
 
 ```env
-# --- SMTP (Mailing) ---
-SMTP_HOST=smtp.hostinger.com
-SMTP_PORT=465
-SMTP_USER=info@digitaistudios.com
-SMTP_PASSWORD=Adfama_69
+# DEV ONLY: accept self-signed certificates in the SMTP TLS chain
+# Set to "true" (default) in production to enforce real cert validation
+SMTP_TLS_REJECT_UNAUTHORIZED=false
 ```
 
-Save, then **restart the dev server** (`pnpm dev`). Process restart required because env vars are read on boot.
+Restart the dev server. The service will pass `tls.rejectUnauthorized: false` to nodemailer.
 
-### Option B — Use the new system (port 465 = SSL)
+> ⚠️ **SECURITY WARNING:** Setting this to `false` disables TLS certificate validation. The connection is still encrypted (TLS is active), but the server identity is not verified. **Use only in dev with trusted networks.** Production MUST keep it `true` (the default).
 
-The service detects SSL from port number:
-```ts
-secure: smtpPort === 465
-```
+---
 
-Port 465 is the Hostinger recommended value, and the code already handles it correctly. **No code change needed.**
+## All SMTP Environment Variables
+
+| Var | Required | Default | Description |
+|-----|----------|---------|-------------|
+| `SMTP_HOST` | ✅ | — | SMTP server hostname (e.g. `smtp.hostinger.com`) |
+| `SMTP_PORT` | ❌ | `587` | `465` for implicit SSL, `587` for STARTTLS |
+| `SMTP_USER` | ✅ | — | Full mailbox address |
+| `SMTP_PASSWORD` | ✅ | — | Mailbox password (NOT `SMTP_PASS`) |
+| `SMTP_TLS_REJECT_UNAUTHORIZED` | ❌ | `true` | Set `false` to accept self-signed certs (DEV ONLY) |
+| `SMTP_REQUIRE_TLS` | ❌ | `true` | Set `false` to allow plain SMTP (insecure) |
 
 ---
 
@@ -67,11 +76,10 @@ Port 465 is the Hostinger recommended value, and the code already handles it cor
 | Field | Value |
 |-------|-------|
 | `SMTP_HOST` | `smtp.hostinger.com` |
-| `SMTP_PORT` | `465` |
-| `SMTP_USER` | `info@digitaistudios.com` (or your full mailbox) |
-| `SMTP_PASSWORD` | The mailbox password (use App Password if 2FA is on) |
-
-> ⚠️ Don't use `SMTP_PASS` — only `SMTP_PASSWORD` is read by the service.
+| `SMTP_PORT` | `465` (SSL) o `587` (STARTTLS) |
+| `SMTP_USER` | `info@digitaistudios.com` |
+| `SMTP_PASSWORD` | Mailbox password (use App Password if 2FA is on) |
+| `SMTP_TLS_REJECT_UNAUTHORIZED` | `false` (a casa), `true` (producció) |
 
 ---
 
@@ -84,15 +92,16 @@ Port 465 is the Hostinger recommended value, and the code already handles it cor
 5. Click **Enviar** in the modal
 6. Check your inbox (and spam)
 
-If you see in the server console:
+### Common Error Messages & Fixes
 
-```
-[Notification] SMTP not configured. Email would have been sent:
-  To: client@exemple.com
-  Subject: Pressupost PRE-2026-0001
-```
-
-…then the env vars are still wrong.
+| Error in console | Cause | Fix |
+|------------------|-------|-----|
+| `SMTP no configurat. Falten: SMTP_HOST` | env var missing | Add to `.env.local`, restart server |
+| `SMTP no configurat. Falten: SMTP_PASSWORD (not SMTP_PASS!)` | wrong key name | Rename `SMTP_PASS` to `SMTP_PASSWORD` |
+| `self-signed certificate in certificate chain` | network intercepts TLS | Add `SMTP_TLS_REJECT_UNAUTHORIZED=false` |
+| `nodemailer not installed` | missing dep | `pnpm add nodemailer` |
+| `Invalid login: 535 Authentication failed` | wrong password | Re-check SMTP_PASSWORD or create App Password |
+| `Connection timeout` | wrong host/port or firewall | Verify host, port, and that outgoing 465/587 is open |
 
 ---
 
@@ -100,19 +109,19 @@ If you see in the server console:
 
 | Layer | Status |
 |-------|--------|
-| `notificationService.sendEmailWithAttachment` | ✅ Done (lazy nodemailer import) |
+| `notificationService.sendEmailWithAttachment` | ✅ Done (lazy nodemailer import, `tls.rejectUnauthorized` configurable) |
 | `notificationService.sendQuoteEmail` | ✅ Done |
 | `actions/sat/sendQuoteEmail.ts` (Server Action) | ✅ Done |
 | `components/sat/SendQuoteEmailModal.tsx` | ✅ Done |
 | `QuoteEditor.tsx` "Enviar" button wired | ✅ Done |
-| i18n (toast messages) | ✅ Sonner library (no new keys needed) |
-| PDF attachment in email | 🔲 Pending (email sends HTML only for now) |
+| PDF attachment in email | ✅ Done (`generateSignedQuotePdf` mètode + `acceptQuote` action) |
+| TLS cert validation control | ✅ Done (`SMTP_TLS_REJECT_UNAUTHORIZED` env var) |
+| Better error feedback (return error to UI) | ✅ Done (toast shows real error message) |
 
 ---
 
 ## What's Pending
 
-1. **PDF attachment** — generate a real PDF of the quote and attach it to the email (currently only HTML body)
-2. **Better error feedback** — return the "SMTP not configured" warning to the user as a real toast, not just server log
-3. **CC to company** — always send a copy to the company mailbox for record
-4. **Per-company SMTP** — read SMTP creds from `companies` table instead of env (multi-tenant friendly)
+1. **CC to company** — always send a copy to the company mailbox for record
+2. **Per-company SMTP** — read SMTP creds from `companies` table instead of env (multi-tenant friendly)
+3. **Unit tests** for `notificationService` (mocking nodemailer) — see `tests/unit/services/notifications/notificationService.test.ts` (to be added)
