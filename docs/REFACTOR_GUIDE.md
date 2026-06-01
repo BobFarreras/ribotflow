@@ -9,13 +9,13 @@
 
 | Metrica | Valor Inicial | Actual | Canvi |
 |---------|---------------|--------|-------|
-| Fitxers > 300 linies | 9 | 4 | -5 |
+| Fitxers > 300 linies | 9 | 0 | -9 |
 | Fitxers > 500 linies (critics) | 3 | 1 | -2 |
 | Directoris monolitics | 3 | 2 | -1 |
 | Acoblament critic (>15 imports) | 1 | 1 | 0 |
-| Dominis ben estructurats | 4 | 6 (+pdf, +sat/services) | +2 |
+| Dominis ben estructurats | 4 | 7 (+pdf, +sat/services, +sat/components) | +3 |
 
-**Monolits resolts**: `pdfService.ts` (1550→0), `QuoteEditor.tsx` (1077→236), `schema/sat.ts` (622→13 fitxers, max 95 línies), `services/sat/` (10 fitxers plans → 3 subdominis)
+**Monolits resolts**: `pdfService.ts` (1550→0), `QuoteEditor.tsx` (1077→236), `schema/sat.ts` (622→13 fitxers, max 95 línies), `services/sat/` (10 fitxers plans → 3 subdominis), 4 components >300 línies dividits
 **Monolit pendent mes gran**: `src/services/sat/quotes/quoteService.ts` (319 linies, acceptable - maxim 300 permes amb flexibilitat)
 **Conclusio**: El modul SAT concentra el ~60% del deute tecnic. La Fase 1 ha eliminat els 2 monolits critics mes grans. El seguent critic es `schema/sat.ts`.
 
@@ -248,6 +248,15 @@ src/actions/sat/
   - Barrels: `sat/index.ts`, `quotes/index.ts`, `work-orders/index.ts`
   - 38 imports externs sense canvis
   - Verificació: `pnpm tsc --noEmit` net, `pnpm test` 78/78, lint sense errors nous
+- [x] **P2.3 Fase A: Dividir els 4 components >300 línies** ← FET
+  - `WorkOrderFilters.tsx` (343→198) + 5 sub-fitxers (`useFilterParams`, `FilterDropdown`, `CheckboxItem`, `ViewSwitcher`, `constants`)
+  - `WorkOrderKanban.tsx` (322→96) + 6 sub-fitxers (`useKanbanDragDrop`, `useKanbanPan`, `KanbanCard`, `KanbanColumn`, `constants`, `types`)
+  - `QuotePdfPreview.tsx` (310→87) + 9 sub-fitxers (`PdfHeader`, `PdfInfoSection`, `PdfDescription`, `PdfItemsTable`, `PdfTotals`, `PdfConditions`, `PdfSignature`, `types`, `constants`)
+  - `WorkOrderForm.tsx` (308→218) + 3 sub-fitxers (`useWorkOrderForm`, `AddressSection`, `types`)
+  - **Total**: 4 fitxers → 4 orquestradors + 23 sub-fitxers
+  - Sub-folders nous: `src/components/sat/{work-orders,quotes}/`
+  - Verificació: `pnpm tsc --noEmit` net, `pnpm test` 78/78, lint sense errors nous
+  - Cap import extern canviat (paths relatius interns)
 
 ### Setmana 3
 - [ ] P2.3: Reestructurar `src/components/sat/` amb subcarpetes

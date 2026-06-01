@@ -2,24 +2,18 @@
  * Creation/modification date: 27/05/2026
  * Path: src/components/sat/WorkOrderFilters.tsx
  * Description: Compact single-row filter bar. All controls on one line.
+ *              Sub-components live in ./work-orders/WorkOrderFilters/.
  */
 
 "use client";
 
-import { useCallback, useState } from "react";
-import { useRouter, useSearchParams, usePathname } from "next/navigation";
-import {
-  Search,
-  LayoutGrid,
-  Table2,
-  Columns3,
-  X,
-  ChevronDown,
-  Calendar,
-  User,
-  SlidersHorizontal,
-} from "lucide-react";
+import { Search, X, Calendar, User, SlidersHorizontal } from "lucide-react";
 import { CategoryIcon } from "./CategoryIcon";
+import { useFilterParams } from "./work-orders/WorkOrderFilters/useFilterParams";
+import { FilterDropdown } from "./work-orders/WorkOrderFilters/FilterDropdown";
+import { CheckboxItem } from "./work-orders/WorkOrderFilters/CheckboxItem";
+import { ViewSwitcher, type WorkOrderView } from "./work-orders/WorkOrderFilters/ViewSwitcher";
+import { STATUS_OPTIONS, PRIORITY_OPTIONS } from "./work-orders/WorkOrderFilters/constants";
 
 interface CategoryOption {
   id: string;
@@ -38,135 +32,6 @@ interface Props {
   technicians: TechnicianOption[];
 }
 
-const STATUS_OPTIONS = [
-  { key: "pending", label: "Pendent", color: "#ca8a04" },
-  { key: "assigned", label: "Assignada", color: "#3b82f6" },
-  { key: "scheduled", label: "Programada", color: "#8b5cf6" },
-  { key: "in_progress", label: "En curs", color: "#10b981" },
-  { key: "paused", label: "Pausada", color: "#6b7280" },
-  { key: "completed", label: "Completada", color: "#14b8a6" },
-  { key: "closed", label: "Tancada", color: "#6366f1" },
-  { key: "cancelled", label: "Cancel·lada", color: "#ef4444" },
-  { key: "waiting_parts", label: "Esperant peces", color: "#f97316" },
-];
-
-const PRIORITY_OPTIONS = [
-  { key: "low", label: "Baixa", color: "#6b7280" },
-  { key: "medium", label: "Mitja", color: "#3b82f6" },
-  { key: "high", label: "Alta", color: "#f59e0b" },
-  { key: "urgent", label: "Urgent", color: "#ef4444" },
-];
-
-function useFilterParams() {
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-
-  const setParams = useCallback(
-    (updates: Record<string, string | string[] | null>) => {
-      const params = new URLSearchParams(searchParams.toString());
-      Object.entries(updates).forEach(([key, value]) => {
-        if (value === null || (Array.isArray(value) && value.length === 0)) {
-          params.delete(key);
-        } else if (Array.isArray(value)) {
-          params.set(key, value.join(","));
-        } else {
-          params.set(key, value);
-        }
-      });
-      router.push(`${pathname}?${params.toString()}`);
-    },
-    [router, pathname, searchParams]
-  );
-
-  const getParamArray = useCallback(
-    (key: string) => {
-      const val = searchParams.get(key);
-      return val ? val.split(",") : [];
-    },
-    [searchParams]
-  );
-
-  const getParam = useCallback(
-    (key: string) => searchParams.get(key) ?? "",
-    [searchParams]
-  );
-
-  return { setParams, getParamArray, getParam };
-}
-
-function FilterDropdown({
-  label,
-  icon,
-  activeCount,
-  children,
-}: {
-  label: string;
-  icon?: React.ReactNode;
-  activeCount?: number;
-  children: React.ReactNode;
-}) {
-  const [open, setOpen] = useState(false);
-
-  return (
-    <div className="relative">
-      <button
-        onClick={() => setOpen(!open)}
-        className={`flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs font-medium transition-colors ${
-          activeCount
-            ? "border-[var(--module-sat)]/30 bg-[var(--module-sat)]/10 text-[var(--module-sat)]"
-            : "border-[var(--border)] bg-[var(--surface)] text-[var(--text-muted)] hover:border-[var(--border-strong)] hover:text-[var(--text)]"
-        }`}
-      >
-        {icon}
-        <span>{label}</span>
-        {activeCount ? (
-          <span className="flex h-4 min-w-[16px] items-center justify-center rounded-full bg-[var(--module-sat)] px-1 text-[10px] font-bold text-white">
-            {activeCount}
-          </span>
-        ) : null}
-        <ChevronDown className={`h-3 w-3 transition-transform ${open ? "rotate-180" : ""}`} />
-      </button>
-      {open && (
-        <>
-          <div className="fixed inset-0 z-30" onClick={() => setOpen(false)} />
-          <div className="absolute left-0 top-full z-40 mt-1 w-56 rounded-lg border border-[var(--border)] bg-[var(--surface)] p-2 shadow-lg">
-            {children}
-          </div>
-        </>
-      )}
-    </div>
-  );
-}
-
-function CheckboxItem({
-  checked,
-  onChange,
-  label,
-  color,
-  icon,
-}: {
-  checked: boolean;
-  onChange: () => void;
-  label: string;
-  color?: string | null;
-  icon?: React.ReactNode;
-}) {
-  return (
-    <label className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-[var(--bg)]">
-      <input
-        type="checkbox"
-        checked={checked}
-        onChange={onChange}
-        className="h-4 w-4 rounded border-[var(--border)]"
-      />
-      {icon}
-      {color && <span className="h-2 w-2 rounded-full" style={{ backgroundColor: color }} />}
-      <span className="text-[var(--text)]">{label}</span>
-    </label>
-  );
-}
-
 export function WorkOrderFilters({ categories, technicians }: Props) {
   const { setParams, getParamArray, getParam } = useFilterParams();
 
@@ -177,7 +42,7 @@ export function WorkOrderFilters({ categories, technicians }: Props) {
   const technicianFilter = getParam("technician");
   const dateFrom = getParam("dateFrom");
   const dateTo = getParam("dateTo");
-  const view = getParam("view") || "grid";
+  const view = (getParam("view") || "grid") as WorkOrderView;
 
   const toggleArrayFilter = (key: string, value: string) => {
     const current = getParamArray(key);
@@ -223,6 +88,7 @@ export function WorkOrderFilters({ categories, technicians }: Props) {
         />
         {search && (
           <button
+            type="button"
             onClick={() => setParams({ search: null, page: null })}
             className="absolute right-2 top-1/2 -translate-y-1/2 text-[var(--text-muted)] hover:text-[var(--text)]"
           >
@@ -231,7 +97,7 @@ export function WorkOrderFilters({ categories, technicians }: Props) {
         )}
       </div>
 
-      {/* Filters */}
+      {/* Status filter */}
       <FilterDropdown
         label="Estat"
         icon={<SlidersHorizontal className="h-3 w-3" />}
@@ -248,6 +114,7 @@ export function WorkOrderFilters({ categories, technicians }: Props) {
         ))}
       </FilterDropdown>
 
+      {/* Category filter */}
       <FilterDropdown
         label="Cat."
         icon={<CategoryIcon size={12} />}
@@ -264,6 +131,7 @@ export function WorkOrderFilters({ categories, technicians }: Props) {
         ))}
       </FilterDropdown>
 
+      {/* Priority filter */}
       <FilterDropdown
         label="Prio."
         activeCount={priorityFilters.length || undefined}
@@ -278,12 +146,14 @@ export function WorkOrderFilters({ categories, technicians }: Props) {
         ))}
       </FilterDropdown>
 
+      {/* Technician filter */}
       <FilterDropdown
         label="Tècnic"
         icon={<User className="h-3 w-3" />}
         activeCount={technicianFilter ? 1 : undefined}
       >
         <button
+          type="button"
           onClick={() => setParams({ technician: null, page: null })}
           className={`w-full rounded-md px-2 py-1.5 text-left text-sm ${!technicianFilter ? "bg-[var(--bg)] font-medium text-[var(--module-sat)]" : "text-[var(--text)] hover:bg-[var(--bg)]"}`}
         >
@@ -292,6 +162,7 @@ export function WorkOrderFilters({ categories, technicians }: Props) {
         {technicians.map((tech) => (
           <button
             key={tech.id}
+            type="button"
             onClick={() => setParams({ technician: tech.id, page: null })}
             className={`w-full rounded-md px-2 py-1.5 text-left text-sm ${
               technicianFilter === tech.id ? "bg-[var(--bg)] font-medium text-[var(--module-sat)]" : "text-[var(--text)] hover:bg-[var(--bg)]"
@@ -302,6 +173,7 @@ export function WorkOrderFilters({ categories, technicians }: Props) {
         ))}
       </FilterDropdown>
 
+      {/* Date range filter */}
       <FilterDropdown label="Dates" icon={<Calendar className="h-3 w-3" />} activeCount={dateFrom || dateTo ? 1 : undefined}>
         <div className="space-y-2 p-1">
           <div>
@@ -325,9 +197,10 @@ export function WorkOrderFilters({ categories, technicians }: Props) {
         </div>
       </FilterDropdown>
 
-      {/* Clear */}
+      {/* Clear all */}
       {hasFilters && (
         <button
+          type="button"
           onClick={clearAll}
           className="flex items-center gap-1 rounded-lg border border-red-200 px-2 py-1.5 text-xs font-medium text-red-600 transition-colors hover:bg-red-50"
         >
@@ -337,35 +210,7 @@ export function WorkOrderFilters({ categories, technicians }: Props) {
       )}
 
       {/* View switcher */}
-      <div className="ml-auto flex items-center rounded-lg border border-[var(--border)] bg-[var(--surface)] p-0.5">
-        <button
-          onClick={() => setParams({ view: "grid" })}
-          className={`rounded-md p-1.5 transition-colors ${
-            view === "grid" ? "bg-[var(--module-sat)] text-white" : "text-[var(--text-muted)] hover:text-[var(--text)]"
-          }`}
-          title="Caixes"
-        >
-          <LayoutGrid className="h-3.5 w-3.5" />
-        </button>
-        <button
-          onClick={() => setParams({ view: "table" })}
-          className={`rounded-md p-1.5 transition-colors ${
-            view === "table" ? "bg-[var(--module-sat)] text-white" : "text-[var(--text-muted)] hover:text-[var(--text)]"
-          }`}
-          title="Taula"
-        >
-          <Table2 className="h-3.5 w-3.5" />
-        </button>
-        <button
-          onClick={() => setParams({ view: "kanban" })}
-          className={`rounded-md p-1.5 transition-colors ${
-            view === "kanban" ? "bg-[var(--module-sat)] text-white" : "text-[var(--text-muted)] hover:text-[var(--text)]"
-          }`}
-          title="Kanban"
-        >
-          <Columns3 className="h-3.5 w-3.5" />
-        </button>
-      </div>
+      <ViewSwitcher currentView={view} onChange={(v) => setParams({ view: v })} />
     </div>
   );
 }
