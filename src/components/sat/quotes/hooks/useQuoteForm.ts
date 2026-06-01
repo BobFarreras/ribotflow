@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Creation/modification date: 01/06/2026
  * Path: src/components/sat/quotes/hooks/useQuoteForm.ts
  * Description: All form state, calculations and handlers for the quote editor.
@@ -6,8 +6,8 @@
 
 import { useState, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { createQuoteAction } from "@/actions/sat/createQuote";
-import { updateQuoteAction } from "@/actions/sat/updateQuote";
+import { createQuoteAction } from "@/actions/sat/quotes/createQuote";
+import { updateQuoteAction } from "@/actions/sat/quotes/updateQuote";
 import { toast } from "sonner";
 import type {
   Client,
@@ -20,20 +20,20 @@ const DEFAULT_VALIDITY_DAYS = 30;
 
 const DEFAULT_DESCRIPTION = `Descripcio del treball a realitzar:
 
-• Revisio i diagnostic de l'estat actual
-• Execucio de les obres segons normativa vigent
-• Proves de funcionament i qualitat
-• Neteja final de la zona d'intervencio
-• Lliurament de documentacio tecnica i garanties`;
+â€¢ Revisio i diagnostic de l'estat actual
+â€¢ Execucio de les obres segons normativa vigent
+â€¢ Proves de funcionament i qualitat
+â€¢ Neteja final de la zona d'intervencio
+â€¢ Lliurament de documentacio tecnica i garanties`;
 
 const DEFAULT_CONDITIONS = `Condicions generals i forma de pagament:
 
-• Forma de pagament: Transferencia bancaria al compte indicat.
-• Metode de pagament: 50% en efectuar la comanda com a paga i senyal, i el 50% restant al lliurament final i conformitat dels treballs.
-• Preus: Aquests preus no inclouen IVA llevat que s'indiqui expressament.
-• Validesa: Aquest pressupost es valid durant ${DEFAULT_VALIDITY_DAYS} dies a partir de la data d'emissio.
-• Garantia: Els treballs disposen de garantia segons legislacio vigent.
-• Modificacions: Qualsevol variacio respecte al pressupost inicial sera comunicada previament per escrit.`;
+â€¢ Forma de pagament: Transferencia bancaria al compte indicat.
+â€¢ Metode de pagament: 50% en efectuar la comanda com a paga i senyal, i el 50% restant al lliurament final i conformitat dels treballs.
+â€¢ Preus: Aquests preus no inclouen IVA llevat que s'indiqui expressament.
+â€¢ Validesa: Aquest pressupost es valid durant ${DEFAULT_VALIDITY_DAYS} dies a partir de la data d'emissio.
+â€¢ Garantia: Els treballs disposen de garantia segons legislacio vigent.
+â€¢ Modificacions: Qualsevol variacio respecte al pressupost inicial sera comunicada previament per escrit.`;
 
 function getDefaultValidUntil(): string {
   const date = new Date();

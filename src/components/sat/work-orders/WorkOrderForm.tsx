@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Creation/modification date: 24/05/2026
  * Path: src/components/sat/WorkOrderForm.tsx
  * Description: Client-side work order creation form with validation feedback.
@@ -11,7 +11,7 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
-import { createWorkOrderAction } from "@/actions/sat/createWorkOrder";
+import { createWorkOrderAction } from "@/actions/sat/work-orders/createWorkOrder";
 import { ArrowLeft, Save } from "lucide-react";
 import Link from "next/link";
 import { useWorkOrderForm } from "./WorkOrderForm/useWorkOrderForm";
@@ -90,7 +90,7 @@ export function WorkOrderForm({ clients, categories }: Props) {
               onChange={(e) => actions.handleClientChange(e.target.value)}
               className="w-full rounded-md border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-sm text-[var(--text)] focus:border-[var(--module-sat)] focus:outline-none focus:ring-1 focus:ring-[var(--module-sat)]"
             >
-              <option value="">— Selecciona —</option>
+              <option value="">â€” Selecciona â€”</option>
               {clients.map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.name}
@@ -130,7 +130,7 @@ export function WorkOrderForm({ clients, categories }: Props) {
             value={state.title}
             onChange={(e) => actions.setTitle(e.target.value)}
             className="w-full rounded-md border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-sm text-[var(--text)] focus:border-[var(--module-sat)] focus:outline-none focus:ring-1 focus:ring-[var(--module-sat)]"
-            placeholder="Ex: Reparació de caldera"
+            placeholder="Ex: ReparaciÃ³ de caldera"
           />
         </div>
 

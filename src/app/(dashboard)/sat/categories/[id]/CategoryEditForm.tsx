@@ -9,9 +9,9 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { updateCategoryAction } from "@/actions/sat/updateCategory";
+import { updateCategoryAction } from "@/actions/sat/clients/updateCategory";
 import { ArrowLeft, Tag, Loader2 } from "lucide-react";
-import { ICONS, CategoryIcon } from "@/components/sat/CategoryIcon";
+import { ICONS, CategoryIcon } from "@/components/sat/shared/CategoryIcon";
 
 const COLOR_OPTIONS = [
   "#3b82f6", "#10b981", "#f59e0b", "#ef4444",

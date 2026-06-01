@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Creation/modification date: 27/05/2026
  * Path: src/components/sat/WorkOrderActions.tsx
  * Description: Compact horizontal action buttons for work order status transitions.
@@ -9,7 +9,7 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
-import { updateWorkOrderStatusAction } from "@/actions/sat/updateStatus";
+import { updateWorkOrderStatusAction } from "@/actions/sat/work-orders/updateStatus";
 import type { WorkOrderStatus } from "@/types/sat";
 import { Play, Pause, RotateCcw, CheckCircle, XCircle, Lock } from "lucide-react";
 

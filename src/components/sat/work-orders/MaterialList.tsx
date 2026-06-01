@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Creation/modification date: 26/05/2026
  * Path: src/components/sat/MaterialList.tsx
  * Description: Client component for managing work order materials.
@@ -10,8 +10,8 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { useTransition } from "react";
-import { addMaterialAction } from "@/actions/sat/addMaterial";
-import { removeMaterialAction } from "@/actions/sat/removeMaterial";
+import { addMaterialAction } from "@/actions/sat/work-orders/addMaterial";
+import { removeMaterialAction } from "@/actions/sat/work-orders/removeMaterial";
 import type { WorkOrderMaterial, Product } from "@/types/sat";
 import { Plus, Trash2, Package, ShoppingCart, Minus } from "lucide-react";
 
@@ -232,13 +232,13 @@ export function MaterialList({ materials: initialMaterials, workOrderId, product
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium text-[var(--text)]">{m.name}</p>
                   <p className="text-xs text-[var(--text-muted)]">
-                    {m.quantity} {m.unitPrice && `× ${parseFloat(m.unitPrice).toFixed(2)} €`}
+                    {m.quantity} {m.unitPrice && `Ã— ${parseFloat(m.unitPrice).toFixed(2)} â‚¬`}
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
                   {m.unitPrice && (
                     <span className="text-xs font-medium text-[var(--text)]">
-                      {lineTotal.toFixed(2)} €
+                      {lineTotal.toFixed(2)} â‚¬
                     </span>
                   )}
                   <button
@@ -256,7 +256,7 @@ export function MaterialList({ materials: initialMaterials, workOrderId, product
           {totalPrice > 0 && (
             <div className="flex justify-end border-t border-[var(--border)] pt-1">
               <span className="text-sm font-semibold text-[var(--text)]">
-                {t("total")}: {totalPrice.toFixed(2)} €
+                {t("total")}: {totalPrice.toFixed(2)} â‚¬
               </span>
             </div>
           )}

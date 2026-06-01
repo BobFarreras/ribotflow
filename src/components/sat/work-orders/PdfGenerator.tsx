@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Creation/modification date: 26/05/2026
  * Path: src/components/sat/PdfGenerator.tsx
  * Description: Client button to generate, download or delete a work order PDF
@@ -9,8 +9,8 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { generatePdfAction } from "@/actions/sat/generatePdf";
-import { deletePdfAction } from "@/actions/sat/deletePdf";
+import { generatePdfAction } from "@/actions/sat/work-orders/generatePdf";
+import { deletePdfAction } from "@/actions/sat/work-orders/deletePdf";
 import { FileText, Loader2, Globe, Trash2 } from "lucide-react";
 
 interface Props {
@@ -21,7 +21,7 @@ interface Props {
 type Lang = "ca" | "es" | "en";
 
 const LANG_LABELS: Record<Lang, string> = {
-  ca: "Català",
+  ca: "CatalÃ ",
   es: "Castellano",
   en: "English",
 };

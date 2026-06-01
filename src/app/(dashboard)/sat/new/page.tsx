@@ -1,14 +1,14 @@
-/**
+﻿/**
  * Creation/modification date: 24/05/2026
  * Path: src/app/(dashboard)/sat/new/page.tsx
- * Description: New work order page – server component that fetches clients and categories.
+ * Description: New work order page â€“ server component that fetches clients and categories.
  */
 
 import { auth } from "@/lib/auth";
 import { db } from "@/db";
 import { clients, workOrderCategories } from "@/db/schema/sat";
 import { eq, asc } from "drizzle-orm";
-import { WorkOrderForm } from "@/components/sat/WorkOrderForm";
+import { WorkOrderForm } from "@/components/sat/work-orders/WorkOrderForm";
 
 export default async function NewWorkOrderPage() {
   const session = await auth();

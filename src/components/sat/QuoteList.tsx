@@ -1,1 +1,0 @@
-/** * Creation/modification date: 01/06/2026 * Path: src/components/sat/QuoteList.tsx * Description: Re-export shim for backward compatibility (Fase 2.3). */export * from "./quotes/QuoteList";

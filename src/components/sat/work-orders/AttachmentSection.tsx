@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Creation/modification date: 27/05/2026
  * Path: src/components/sat/AttachmentSection.tsx
  * Description: Client component for uploading and displaying work order attachments.
@@ -10,8 +10,8 @@
 import { useState, useRef } from "react";
 import { useTranslations } from "next-intl";
 import { useTransition } from "react";
-import { addAttachmentAction } from "@/actions/sat/addAttachment";
-import { deleteAttachmentAction } from "@/actions/sat/deleteAttachment";
+import { addAttachmentAction } from "@/actions/sat/work-orders/addAttachment";
+import { deleteAttachmentAction } from "@/actions/sat/work-orders/deleteAttachment";
 import type { WorkOrderAttachment } from "@/types/sat";
 import { Upload, X, ImageIcon, Trash2, ChevronLeft, ChevronRight, Edit3 } from "lucide-react";
 
@@ -131,12 +131,12 @@ export function AttachmentSection({ attachments: initialAttachments, workOrderId
           <div className="relative w-full overflow-hidden rounded-md" style={{ aspectRatio: "16/9" }}>
             <img
               src={previewUrl}
-              alt="Vista prèvia"
+              alt="Vista prÃ¨via"
               className="h-full w-full object-contain"
             />
           </div>
 
-          {/* File name — editable */}
+          {/* File name â€” editable */}
           <div className="flex items-center gap-2">
             {renameMode ? (
               <input
@@ -167,7 +167,7 @@ export function AttachmentSection({ attachments: initialAttachments, workOrderId
               onClick={handleCancelUpload}
               className="rounded-md px-2.5 py-1 text-xs text-[var(--text-muted)] transition-colors hover:bg-[var(--surface-hover)]"
             >
-              Cancel·lar
+              CancelÂ·lar
             </button>
             <button
               onClick={handleUpload}

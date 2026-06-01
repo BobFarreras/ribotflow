@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Creation/modification date: 26/05/2026
  * Path: src/app/(dashboard)/sat/routes/page.tsx
  * Description: Route planning page. Server Component fetches data,
@@ -11,7 +11,7 @@ import { workOrders, clients } from "@/db/schema/sat";
 import { companies } from "@/db/schema/auth";
 import { eq, and, gte, lte } from "drizzle-orm";
 import { getTranslations } from "next-intl/server";
-import { RoutePlanner } from "@/components/sat/RoutePlanner";
+import { RoutePlanner } from "@/components/sat/work-orders/RoutePlanner";
 
 interface Props {
   searchParams: Promise<{ date?: string }>;

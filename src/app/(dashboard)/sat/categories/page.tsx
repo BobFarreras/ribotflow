@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Creation/modification date: 27/05/2026
  * Path: src/app/(dashboard)/sat/categories/page.tsx
  * Description: Work order category management page.
@@ -11,7 +11,7 @@ import { eq, asc } from "drizzle-orm";
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { Tag, Plus, Star } from "lucide-react";
-import { CategoryIcon } from "@/components/sat/CategoryIcon";
+import { CategoryIcon } from "@/components/sat/shared/CategoryIcon";
 
 export default async function CategoriesPage() {
   const session = await auth();

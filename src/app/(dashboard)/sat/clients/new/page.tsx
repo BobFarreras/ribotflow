@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Creation/modification date: 27/05/2026
  * Path: src/app/(dashboard)/sat/clients/new/page.tsx
  * Description: Create new SAT client page.
@@ -9,7 +9,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { createClientAction } from "@/actions/sat/createClient";
+import { createClientAction } from "@/actions/sat/clients/createClient";
 import { ArrowLeft, UserPlus, Loader2, MapPin } from "lucide-react";
 
 export default function NewClientPage() {
@@ -104,7 +104,7 @@ export default function NewClientPage() {
               />
             </div>
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-[var(--text)]">Telèfon</label>
+              <label className="mb-1.5 block text-sm font-medium text-[var(--text)]">TelÃ¨fon</label>
               <input
                 type="tel"
                 value={formData.phone}
@@ -117,12 +117,12 @@ export default function NewClientPage() {
 
           {/* Address */}
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-[var(--text)]">Adreça</label>
+            <label className="mb-1.5 block text-sm font-medium text-[var(--text)]">AdreÃ§a</label>
             <input
               type="text"
               value={formData.address}
               onChange={(e) => setFormData((p) => ({ ...p, address: e.target.value }))}
-              placeholder="Carrer, número, ciutat, CP"
+              placeholder="Carrer, nÃºmero, ciutat, CP"
               className="w-full rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 py-2 text-sm text-[var(--text)] outline-none placeholder:text-[var(--text-muted)] focus:border-[var(--module-sat)]"
             />
           </div>
@@ -164,7 +164,7 @@ export default function NewClientPage() {
               />
             </div>
             <p className="mt-1 text-xs text-[var(--text-muted)]">
-              Opcional. Permet calcular distàncies per als desplaçaments.
+              Opcional. Permet calcular distÃ ncies per als desplaÃ§aments.
             </p>
           </div>
 
@@ -174,7 +174,7 @@ export default function NewClientPage() {
               href="/sat/clients"
               className="rounded-lg border border-[var(--border)] px-4 py-2 text-sm font-medium text-[var(--text)] transition-colors hover:bg-[var(--bg)]"
             >
-              Cancel·lar
+              CancelÂ·lar
             </Link>
             <button
               type="submit"

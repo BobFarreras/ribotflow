@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Creation/modification date: 28/05/2026
  * Path: src/app/(dashboard)/sat/quotes/page.tsx
  * Description: Quote management page with list, filters, and stats.
@@ -9,7 +9,7 @@ import { quoteService } from "@/services/sat/quoteService";
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { FileText, Plus, Clock, CheckCircle, XCircle, Send, AlertCircle } from "lucide-react";
-import { QuoteList } from "@/components/sat/QuoteList";
+import { QuoteList } from "@/components/sat/quotes/QuoteList";
 
 export default async function QuotesPage() {
   const session = await auth();

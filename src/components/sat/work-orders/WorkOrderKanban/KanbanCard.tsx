@@ -8,8 +8,8 @@
 
 import Link from "next/link";
 import { Calendar, GripVertical } from "lucide-react";
-import { WorkOrderPriorityBadge } from "../../WorkOrderPriorityBadge";
-import { CategoryIcon } from "../../CategoryIcon";
+import { WorkOrderPriorityBadge } from "../../shared/WorkOrderPriorityBadge";
+import { CategoryIcon } from "../../shared/CategoryIcon";
 import type { KanbanOrder } from "./types";
 
 interface KanbanCardProps {

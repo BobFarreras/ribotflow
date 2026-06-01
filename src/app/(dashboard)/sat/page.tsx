@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Creation/modification date: 27/05/2026
  * Path: src/app/(dashboard)/sat/page.tsx
  * Description: Work order list page with 3 views (grid/table/kanban),
@@ -14,7 +14,7 @@ import { eq } from "drizzle-orm";
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { Wrench, Plus } from "lucide-react";
-import { WorkOrderList } from "@/components/sat/WorkOrderList";
+import { WorkOrderList } from "@/components/sat/work-orders/WorkOrderList";
 
 interface Props {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
@@ -75,7 +75,7 @@ export default async function SatListPage({ searchParams }: Props) {
         </div>
       </header>
 
-      {/* Content — fills remaining viewport, children handle internal scroll */}
+      {/* Content â€” fills remaining viewport, children handle internal scroll */}
       <main className="mx-auto flex min-h-0 w-full max-w-7xl flex-1 flex-col px-4 py-4 sm:px-6">
         <WorkOrderList orders={orders} categories={categories} technicians={technicians} />
       </main>

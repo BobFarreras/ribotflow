@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Creation/modification date: 27/05/2026
  * Path: src/app/(dashboard)/sat/categories/new/page.tsx
  * Description: Create new work order category page with visual icon picker.
@@ -9,9 +9,9 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { createCategoryAction } from "@/actions/sat/createCategory";
+import { createCategoryAction } from "@/actions/sat/clients/createCategory";
 import { ArrowLeft, Tag, Loader2 } from "lucide-react";
-import { ICONS, CategoryIcon } from "@/components/sat/CategoryIcon";
+import { ICONS, CategoryIcon } from "@/components/sat/shared/CategoryIcon";
 
 const COLOR_OPTIONS = [
   "#3b82f6", "#10b981", "#f59e0b", "#ef4444",
@@ -127,7 +127,7 @@ export default function NewCategoryPage() {
               className="w-full rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 py-2 text-sm text-[var(--text)] outline-none placeholder:text-[var(--text-muted)] focus:border-[var(--module-sat)]"
             />
             <p className="mt-1 text-xs text-[var(--text-muted)]">
-              Identificador únic. Només minúscules, números, guions i guions baixos.
+              Identificador Ãºnic. NomÃ©s minÃºscules, nÃºmeros, guions i guions baixos.
             </p>
           </div>
 
@@ -187,7 +187,7 @@ export default function NewCategoryPage() {
               className="h-4 w-4 rounded border-[var(--border)]"
             />
             <span className="text-sm text-[var(--text)]">Categoria per defecte</span>
-            <span className="text-xs text-[var(--text-muted)]">(surt pré-seleccionada en crear OT)</span>
+            <span className="text-xs text-[var(--text-muted)]">(surt prÃ©-seleccionada en crear OT)</span>
           </label>
 
           <div className="flex justify-end gap-3 pt-2">
@@ -195,7 +195,7 @@ export default function NewCategoryPage() {
               href="/sat/categories"
               className="rounded-lg border border-[var(--border)] px-4 py-2 text-sm font-medium text-[var(--text)] transition-colors hover:bg-[var(--bg)]"
             >
-              Cancel·lar
+              CancelÂ·lar
             </Link>
             <button
               type="submit"

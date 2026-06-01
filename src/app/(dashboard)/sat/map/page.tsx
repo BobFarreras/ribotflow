@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Creation/modification date: 27/05/2026
  * Path: src/app/(dashboard)/sat/map/page.tsx
  * Description: Map view of all work orders. Server Component fetches data
@@ -7,7 +7,7 @@
 
 import { auth } from "@/lib/auth";
 import { getTranslations } from "next-intl/server";
-import { MapView } from "@/components/sat/MapView";
+import { MapView } from "@/components/sat/work-orders/MapView";
 import { db } from "@/db";
 import { workOrders, clients, workOrderCategories } from "@/db/schema/sat";
 import { companies, users } from "@/db/schema/auth";

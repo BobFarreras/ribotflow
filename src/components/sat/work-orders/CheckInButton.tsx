@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Creation/modification date: 26/05/2026
  * Path: src/components/sat/CheckInButton.tsx
  * Description: Client component for GPS check-in. Captures geolocation,
@@ -9,7 +9,7 @@
 
 import { useState, useCallback } from "react";
 import { useTranslations } from "next-intl";
-import { checkInAction } from "@/actions/sat/checkIn";
+import { checkInAction } from "@/actions/sat/work-orders/checkIn";
 import { MapPin, Loader2, Navigation, AlertCircle, CheckCircle2 } from "lucide-react";
 
 interface Props {

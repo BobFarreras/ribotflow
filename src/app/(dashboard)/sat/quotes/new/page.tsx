@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Creation/modification date: 28/05/2026
  * Path: src/app/(dashboard)/sat/quotes/new/page.tsx
  * Description: Create new quote page using the professional QuoteEditor.
@@ -8,7 +8,7 @@ import { auth } from "@/lib/auth";
 import { db } from "@/db";
 import { clients, products, workOrders } from "@/db/schema/sat";
 import { eq } from "drizzle-orm";
-import { QuoteEditor } from "@/components/sat/QuoteEditor";
+import { QuoteEditor } from "@/components/sat/quotes/QuoteEditor";
 
 interface Props {
   searchParams: Promise<{ otId?: string; templateId?: string }>;

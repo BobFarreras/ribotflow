@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Creation/modification date: 01/06/2026
  * Path: src/components/sat/work-orders/WorkOrderKanban/useKanbanDragDrop.ts
  * Description: Encapsulates Kanban drag-and-drop state + handlers.
@@ -10,7 +10,7 @@
 
 import { useCallback, useRef, useState } from "react";
 import { isValidTransition } from "@/lib/constants/statusTransitions";
-import { updateWorkOrderStatusAction } from "@/actions/sat/updateStatus";
+import { updateWorkOrderStatusAction } from "@/actions/sat/work-orders/updateStatus";
 import type { KanbanOrder } from "./types";
 
 interface UseKanbanDragDropOptions {

@@ -7,7 +7,7 @@
 "use client";
 
 import { MapPin, Home } from "lucide-react";
-import { AddressAutocomplete } from "../../AddressAutocomplete";
+import { AddressAutocomplete } from "../../shared/AddressAutocomplete";
 import type { WorkOrderFormState, WorkOrderFormActions, WorkOrderLocation } from "./types";
 
 interface AddressSectionProps {

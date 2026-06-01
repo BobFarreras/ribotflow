@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Creation/modification date: 24/05/2026
  * Path: src/components/sat/TechnicianAssigner.tsx
  * Description: Client component to assign or unassign a technician.
@@ -9,7 +9,7 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
-import { assignTechnicianAction } from "@/actions/sat/assignTechnician";
+import { assignTechnicianAction } from "@/actions/sat/work-orders/assignTechnician";
 import { UserX } from "lucide-react";
 
 interface TechnicianOption {
@@ -46,7 +46,7 @@ export function TechnicianAssigner({ workOrderId, currentTechnicianId, technicia
   }
 
   if (technicians.length === 0) {
-    return <p className="text-sm text-[var(--text-muted)]">No hi ha tècnics disponibles</p>;
+    return <p className="text-sm text-[var(--text-muted)]">No hi ha tÃ¨cnics disponibles</p>;
   }
 
   return (

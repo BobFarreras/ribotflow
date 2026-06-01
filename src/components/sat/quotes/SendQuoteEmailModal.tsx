@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Creation/modification date: 01/06/2026
  * Path: src/components/sat/SendQuoteEmailModal.tsx
  * Description: Modal dialog to send a quote via email.
@@ -9,7 +9,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { sendQuoteEmailAction } from "@/actions/sat/sendQuoteEmail";
+import { sendQuoteEmailAction } from "@/actions/sat/quotes/sendQuoteEmail";
 import { X, Mail, Loader2, CheckCircle, AlertCircle } from "lucide-react";
 
 interface Props {
@@ -42,7 +42,7 @@ export function SendQuoteEmailModal({
     e.preventDefault();
 
     if (!email.trim()) {
-      setErrorMsg("Introdueix una adreça d'email");
+      setErrorMsg("Introdueix una adreÃ§a d'email");
       setStatus("error");
       return;
     }
@@ -70,7 +70,7 @@ export function SendQuoteEmailModal({
         setStatus("error");
       }
     } catch {
-      setErrorMsg("Error de connexió");
+      setErrorMsg("Error de connexiÃ³");
       setStatus("error");
     }
   };
@@ -178,7 +178,7 @@ export function SendQuoteEmailModal({
                   disabled={status === "sending"}
                   className="flex-1 rounded-lg border border-[var(--border)] px-3 py-2 text-sm font-medium text-[var(--text)] transition-colors hover:bg-[var(--bg)] disabled:opacity-50"
                 >
-                  Cancel·lar
+                  CancelÂ·lar
                 </button>
                 <button
                   type="submit"

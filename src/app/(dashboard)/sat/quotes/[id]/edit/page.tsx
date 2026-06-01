@@ -9,7 +9,7 @@ import { db } from "@/db";
 import { clients, products, quotes } from "@/db/schema/sat";
 import { eq, and } from "drizzle-orm";
 import { notFound } from "next/navigation";
-import { QuoteEditor } from "@/components/sat/QuoteEditor";
+import { QuoteEditor } from "@/components/sat/quotes/QuoteEditor";
 import { quoteService } from "@/services/sat/quoteService";
 
 interface Props {

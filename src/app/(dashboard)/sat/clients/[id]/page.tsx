@@ -11,7 +11,7 @@ import { eq, desc } from "drizzle-orm";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, Phone, Mail, MapPin, FileText, User, Wrench } from "lucide-react";
-import { WorkOrderStatusBadge } from "@/components/sat/WorkOrderStatusBadge";
+import { WorkOrderStatusBadge } from "@/components/sat/shared/WorkOrderStatusBadge";
 
 interface Props {
   params: Promise<{ id: string }>;

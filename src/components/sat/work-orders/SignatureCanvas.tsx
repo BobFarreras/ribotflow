@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Creation/modification date: 26/05/2026
  * Path: src/components/sat/SignatureCanvas.tsx
  * Description: Client canvas component for capturing digital signatures
@@ -9,7 +9,7 @@
 
 import { useRef, useState, useCallback } from "react";
 import { useTranslations } from "next-intl";
-import { saveSignatureAction } from "@/actions/sat/saveSignature";
+import { saveSignatureAction } from "@/actions/sat/work-orders/saveSignature";
 
 interface Props {
   workOrderId: string;
