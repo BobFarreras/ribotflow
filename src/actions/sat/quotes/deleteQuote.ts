@@ -7,7 +7,7 @@
 "use server";
 
 import { auth } from "@/lib/auth";
-import { quoteService } from "@/services/sat/quoteService";
+import { quoteService } from "@/services/sat/quotes/quoteService";
 import { revalidatePath } from "next/cache";
 
 export async function deleteQuoteAction(quoteId: string) {

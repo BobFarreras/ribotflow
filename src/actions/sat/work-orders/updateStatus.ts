@@ -8,7 +8,7 @@
 
 import { auth } from "@/lib/auth";
 import { updateStatusSchema } from "@/lib/validators/sat/workOrderSchema";
-import { workOrderService } from "@/services/sat/workOrderService";
+import { workOrderService } from "@/services/sat/work-orders/workOrderService";
 import { notificationService } from "@/services/notifications/notificationService";
 import { travelBillingService } from "@/services/billing/travelBillingService";
 import { revalidatePath } from "next/cache";

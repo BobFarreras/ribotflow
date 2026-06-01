@@ -217,7 +217,7 @@ export class PdfService {
 
   /* ---------- Helpers ---------- */
   private async fetchQuoteData(companyId: string, quoteId: string) {
-    const { quoteService } = await import("@/services/sat/quoteService");
+    const { quoteService } = await import("@/services/sat/quotes/quoteService");
     const quote = await quoteService.getById(companyId, quoteId);
     if (!quote) throw new Error("Quote not found or access denied");
 
@@ -231,10 +231,10 @@ export class PdfService {
   }
 
   private async fetchWorkOrderData(companyId: string, workOrderId: string) {
-    const { workOrderService } = await import("@/services/sat/workOrderService");
-    const { materialService } = await import("@/services/sat/materialService");
-    const { attachmentService } = await import("@/services/sat/attachmentService");
-    const { signatureService } = await import("@/services/sat/signatureService");
+    const { workOrderService } = await import("@/services/sat/work-orders/workOrderService");
+    const { materialService } = await import("@/services/sat/work-orders/materialService");
+    const { attachmentService } = await import("@/services/sat/work-orders/attachmentService");
+    const { signatureService } = await import("@/services/sat/work-orders/signatureService");
 
     const orderData = await workOrderService.getByIdWithRelations(companyId, workOrderId);
     if (!orderData) throw new Error("Work order not found or access denied");

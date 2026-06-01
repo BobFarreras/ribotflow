@@ -12,7 +12,7 @@ import { db } from "@/db";
 import { companies } from "@/db/schema/auth";
 import { clients } from "@/db/schema/sat";
 import { eq } from "drizzle-orm";
-import { quoteService } from "@/services/sat/quoteService";
+import { quoteService } from "@/services/sat/quotes/quoteService";
 import { pdfService } from "@/services/pdf";
 import { notificationService } from "@/services/notifications/notificationService";
 

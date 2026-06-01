@@ -5,8 +5,8 @@
  */
 
 import { describe, it, expect, beforeAll } from "vitest";
-import { attachmentService } from "@/services/sat/attachmentService";
-import { workOrderService } from "@/services/sat/workOrderService";
+import { attachmentService } from "@/services/sat/work-orders/attachmentService";
+import { workOrderService } from "@/services/sat/work-orders/workOrderService";
 import { seedTestDatabase } from "../../../db-seed";
 
 let testData: Awaited<ReturnType<typeof seedTestDatabase>>;

@@ -8,7 +8,7 @@
 "use server";
 
 import { auth } from "@/lib/auth";
-import { attachmentService } from "@/services/sat/attachmentService";
+import { attachmentService } from "@/services/sat/work-orders/attachmentService";
 import { revalidatePath } from "next/cache";
 
 export async function deleteAttachmentAction(attachmentId: string, workOrderId: string) {

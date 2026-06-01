@@ -7,7 +7,7 @@
 "use server";
 
 import { auth } from "@/lib/auth";
-import { productService } from "@/services/sat/productService";
+import { productService } from "@/services/sat/work-orders/productService";
 
 export async function getProductsByCompanyAction(search?: string) {
   try {

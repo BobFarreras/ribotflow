@@ -11,7 +11,7 @@ import { auth } from "@/lib/auth";
 import { db } from "@/db";
 import { quotes, quoteStatusHistory } from "@/db/schema/sat";
 import { eq, and } from "drizzle-orm";
-import { signatureService } from "@/services/sat/signatureService";
+import { signatureService } from "@/services/sat/work-orders/signatureService";
 import { pdfService } from "@/services/pdf";
 import { revalidatePath } from "next/cache";
 

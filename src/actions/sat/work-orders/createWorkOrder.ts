@@ -8,7 +8,7 @@
 
 import { auth } from "@/lib/auth";
 import { createWorkOrderSchema } from "@/lib/validators/sat/workOrderSchema";
-import { workOrderService } from "@/services/sat/workOrderService";
+import { workOrderService } from "@/services/sat/work-orders/workOrderService";
 import { createDistanceEngine } from "@/services/routing/factory";
 import { db } from "@/db";
 import { companies } from "@/db/schema/auth";

@@ -7,7 +7,7 @@
 "use server";
 
 import { auth } from "@/lib/auth";
-import { workOrderService } from "@/services/sat/workOrderService";
+import { workOrderService } from "@/services/sat/work-orders/workOrderService";
 import { revalidatePath } from "next/cache";
 
 export async function assignTechnicianAction(workOrderId: string, technicianId: string | null) {

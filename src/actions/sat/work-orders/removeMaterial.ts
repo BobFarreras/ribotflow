@@ -7,7 +7,7 @@
 "use server";
 
 import { auth } from "@/lib/auth";
-import { materialService } from "@/services/sat/materialService";
+import { materialService } from "@/services/sat/work-orders/materialService";
 import { revalidatePath } from "next/cache";
 
 export async function removeMaterialAction(materialId: string, workOrderId: string) {

@@ -10,7 +10,7 @@ import { clients, products, quotes } from "@/db/schema/sat";
 import { eq, and } from "drizzle-orm";
 import { notFound } from "next/navigation";
 import { QuoteEditor } from "@/components/sat/quotes/QuoteEditor";
-import { quoteService } from "@/services/sat/quoteService";
+import { quoteService } from "@/services/sat/quotes/quoteService";
 
 interface Props {
   params: Promise<{ id: string }>;

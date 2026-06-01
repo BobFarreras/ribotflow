@@ -9,8 +9,8 @@
 "use server";
 
 import { auth } from "@/lib/auth";
-import { workOrderService } from "@/services/sat/workOrderService";
-import { signatureService } from "@/services/sat/signatureService";
+import { workOrderService } from "@/services/sat/work-orders/workOrderService";
+import { signatureService } from "@/services/sat/work-orders/signatureService";
 import { revalidatePath } from "next/cache";
 
 const MAX_SVG_LENGTH = 500_000; // 500KB max SVG string

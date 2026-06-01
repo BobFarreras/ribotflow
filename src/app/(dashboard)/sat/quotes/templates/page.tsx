@@ -5,7 +5,7 @@
  */
 
 import { auth } from "@/lib/auth";
-import { quoteTemplateService } from "@/services/sat/quoteTemplateService";
+import { quoteTemplateService } from "@/services/sat/quotes/quoteTemplateService";
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { FolderOpen, Plus, Copy, Pencil, Trash2 } from "lucide-react";

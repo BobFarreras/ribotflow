@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Creation/modification date: 27/05/2026
  * Path: src/app/(dashboard)/sat/page.tsx
  * Description: Work order list page with 3 views (grid/table/kanban),
@@ -6,7 +6,7 @@
  */
 
 import { auth } from "@/lib/auth";
-import { workOrderService } from "@/services/sat/workOrderService";
+import { workOrderService } from "@/services/sat/work-orders/workOrderService";
 import { db } from "@/db";
 import { workOrderCategories } from "@/db/schema/sat";
 import { users } from "@/db/schema/auth";

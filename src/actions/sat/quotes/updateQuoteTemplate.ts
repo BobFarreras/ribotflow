@@ -7,7 +7,7 @@
 "use server";
 
 import { auth } from "@/lib/auth";
-import { quoteTemplateService } from "@/services/sat/quoteTemplateService";
+import { quoteTemplateService } from "@/services/sat/quotes/quoteTemplateService";
 import { updateTemplateSchema } from "@/lib/validators/sat/quoteSchema";
 import { revalidatePath } from "next/cache";
 

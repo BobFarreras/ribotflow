@@ -6,8 +6,8 @@
  */
 
 import { describe, it, expect, beforeAll } from "vitest";
-import { signatureService } from "@/services/sat/signatureService";
-import { workOrderService } from "@/services/sat/workOrderService";
+import { signatureService } from "@/services/sat/work-orders/signatureService";
+import { workOrderService } from "@/services/sat/work-orders/workOrderService";
 import type { WorkOrderStatus } from "@/types/sat";
 import { seedTestDatabase } from "../../../db-seed";
 

@@ -11,8 +11,8 @@ import { auth } from "@/lib/auth";
 import { db } from "@/db";
 import { companies } from "@/db/schema/auth";
 import { eq } from "drizzle-orm";
-import { attachmentService } from "@/services/sat/attachmentService";
-import { workOrderService } from "@/services/sat/workOrderService";
+import { attachmentService } from "@/services/sat/work-orders/attachmentService";
+import { workOrderService } from "@/services/sat/work-orders/workOrderService";
 import { buildWorkOrderAttachmentKey, type StorageContext } from "@/lib/utils/storageKeys";
 import { revalidatePath } from "next/cache";
 

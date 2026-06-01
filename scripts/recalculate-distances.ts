@@ -9,7 +9,7 @@ import { companies } from "../src/db/schema/auth";
 import { workOrders, clients } from "../src/db/schema/sat";
 import { eq } from "drizzle-orm";
 import { createDistanceEngine } from "../src/services/routing/factory";
-import { workOrderService } from "../src/services/sat/workOrderService";
+import { workOrderService } from "../src/services/sat/work-orders/workOrderService";
 
 async function main() {
   const [company] = await db

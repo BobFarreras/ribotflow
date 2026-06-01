@@ -9,8 +9,8 @@
 
 import { z } from "zod";
 import { auth } from "@/lib/auth";
-import { locationService, calculateDistance } from "@/services/sat/locationService";
-import { workOrderService } from "@/services/sat/workOrderService";
+import { locationService, calculateDistance } from "@/services/sat/work-orders/locationService";
+import { workOrderService } from "@/services/sat/work-orders/workOrderService";
 import { notificationService } from "@/services/notifications/notificationService";
 import { revalidatePath } from "next/cache";
 

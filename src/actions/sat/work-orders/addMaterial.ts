@@ -8,7 +8,7 @@
 
 import { auth } from "@/lib/auth";
 import { addMaterialSchema } from "@/lib/validators/sat/materialSchema";
-import { materialService } from "@/services/sat/materialService";
+import { materialService } from "@/services/sat/work-orders/materialService";
 import { revalidatePath } from "next/cache";
 
 export async function addMaterialAction(rawInput: unknown) {
