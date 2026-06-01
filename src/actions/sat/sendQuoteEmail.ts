@@ -13,7 +13,7 @@ import { companies } from "@/db/schema/auth";
 import { clients } from "@/db/schema/sat";
 import { eq } from "drizzle-orm";
 import { quoteService } from "@/services/sat/quoteService";
-import { pdfService } from "@/services/sat/pdfService";
+import { pdfService } from "@/services/pdf";
 import { notificationService } from "@/services/notifications/notificationService";
 
 interface SendQuoteEmailInput {

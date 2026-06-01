@@ -72,11 +72,11 @@ const LABELS: Record<Lang, Record<string, string>> = {
     client: "CLIENT",
     workOrderDetails: "DETALLS DE L'ORDRE",
     quoteDetails: "DETALLS DEL PRESSUPOST",
-    description: "DESCRIPCI√ì",
+    description: "DESCRIPCI+Ù",
     materials: "MATERIALS",
     attachments: "IMATGES ADJUNTES",
     signature: "SIGNATURA DIGITAL",
-    itemDescription: "Descripci√≥",
+    itemDescription: "Descripci+¶",
     itemQty: "Qtat",
     itemUnit: "Unitat",
     itemUnitPrice: "Preu Unit.",
@@ -84,17 +84,17 @@ const LABELS: Record<Lang, Record<string, string>> = {
     subtotal: "Base Imposable",
     discount: "Descompte",
     tax: "IVA",
-    validUntil: "V√†lid fins",
+    validUntil: "V+·lid fins",
     conditions: "Condicions",
     notes: "Notes",
     company: "EMPRESA",
     total: "TOTAL",
     generated: "Generat",
-    reportFooter: "RIBOTFLOW ‚Äî Informe generat autom√†ticament",
+    reportFooter: "RIBOTFLOW ‘«ˆ Informe generat autom+·ticament",
     name: "Nom",
-    phone: "Tel√®fon",
+    phone: "Tel+øfon",
     email: "Correu",
-    address: "Adre√ßa",
+    address: "Adre+∫a",
     status: "Estat",
     priority: "Prioritat",
     category: "Categoria",
@@ -105,9 +105,9 @@ const LABELS: Record<Lang, Record<string, string>> = {
     unitPrice: "Preu Unit.",
     lineTotal: "Import",
     before: "Abans",
-    after: "Despr√©s",
+    after: "Despr+Æs",
     signedBy: "Signada per",
-    none: "‚Äî",
+    none: "‘«ˆ",
     // Quote document labels (match QuotePdfPreview)
     quoteDocTitle: "Pressupost",
     quoteNum: "NUM.",
@@ -127,7 +127,7 @@ const LABELS: Record<Lang, Record<string, string>> = {
     signatureTitle: "Acceptacio del Pressupost",
     signatureCaption: "Per aprovar i formalitzar la comanda, si us plau, signeu i retorneu aquest document.",
     signatureLine: "Signatura del client i data",
-    signatureThanks: "Gracies per la seva confian√ßa.",
+    signatureThanks: "Gracies per la seva confian+∫a.",
     signedOn: "Signat el",
     acceptedBy: "Acceptat per",
     acceptanceConfirmed: "Acceptacio confirmada",
@@ -139,11 +139,11 @@ const LABELS: Record<Lang, Record<string, string>> = {
     client: "CLIENTE",
     workOrderDetails: "DETALLES DE LA ORDEN",
     quoteDetails: "DETALLES DEL PRESUPUESTO",
-    description: "DESCRIPCI√ìN",
+    description: "DESCRIPCI+ÙN",
     materials: "MATERIALES",
-    attachments: "IM√ÅGENES ADJUNTAS",
+    attachments: "IM+¸GENES ADJUNTAS",
     signature: "FIRMA DIGITAL",
-    itemDescription: "Descripci√≥n",
+    itemDescription: "Descripci+¶n",
     itemQty: "Cant.",
     itemUnit: "Unidad",
     itemUnitPrice: "Precio Unit.",
@@ -151,20 +151,20 @@ const LABELS: Record<Lang, Record<string, string>> = {
     subtotal: "Base Imponible",
     discount: "Descuento",
     tax: "IVA",
-    validUntil: "V√°lido hasta",
+    validUntil: "V+Ìlido hasta",
     conditions: "Condiciones",
     notes: "Notas",
     company: "EMPRESA",
     total: "TOTAL",
     generated: "Generado",
-    reportFooter: "RIBOTFLOW ‚Äî Informe generado autom√°ticamente",
+    reportFooter: "RIBOTFLOW ‘«ˆ Informe generado autom+Ìticamente",
     name: "Nombre",
-    phone: "Tel√©fono",
+    phone: "Tel+Æfono",
     email: "Correo",
-    address: "Direcci√≥n",
+    address: "Direcci+¶n",
     status: "Estado",
     priority: "Prioridad",
-    category: "Categor√≠a",
+    category: "Categor+°a",
     scheduled: "Programada",
     started: "Iniciada",
     completed: "Completada",
@@ -172,9 +172,9 @@ const LABELS: Record<Lang, Record<string, string>> = {
     unitPrice: "Precio Unit.",
     lineTotal: "Importe",
     before: "Antes",
-    after: "Despu√©s",
+    after: "Despu+Æs",
     signedBy: "Firmada por",
-    none: "‚Äî",
+    none: "‘«ˆ",
     quoteDocTitle: "Presupuesto",
     quoteNum: "NUM.",
     from: "De:",
@@ -223,7 +223,7 @@ const LABELS: Record<Lang, Record<string, string>> = {
     company: "COMPANY",
     total: "TOTAL",
     generated: "Generated",
-    reportFooter: "RIBOTFLOW ‚Äî Automatically generated report",
+    reportFooter: "RIBOTFLOW ‘«ˆ Automatically generated report",
     name: "Name",
     phone: "Phone",
     email: "Email",
@@ -240,7 +240,7 @@ const LABELS: Record<Lang, Record<string, string>> = {
     before: "Before",
     after: "After",
     signedBy: "Signed by",
-    none: "‚Äî",
+    none: "‘«ˆ",
     quoteDocTitle: "Quote",
     quoteNum: "NO.",
     from: "From:",
@@ -272,21 +272,21 @@ const LABELS: Record<Lang, Record<string, string>> = {
 
 /**
  * Sanitize text for use with StandardFonts (Helvetica, Times, Courier).
- * pdf-lib's WinAnsi encoding cannot represent Unicode chars like ‚Ç¨, √†, √©, √±.
- * Strategy: strip accents, replace ‚Ç¨ with EUR, drop other non-ASCII.
+ * pdf-lib's WinAnsi encoding cannot represent Unicode chars like ‘Èº, +·, +Æ, +¶.
+ * Strategy: strip accents, replace ‘Èº with EUR, drop other non-ASCII.
  */
 function sanitizeForPdf(text: string): string {
   if (!text) return "";
   return text
     .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "") // remove accents (√† ‚Üí a, √© ‚Üí e, √± ‚Üí n, √ß ‚Üí c)
-    .replace(/‚Ç¨/g, "EUR") // euro symbol ‚Üí "EUR"
-    .replace(/‚Äî/g, "-") // em dash ‚Üí hyphen (also not in WinAnsi)
-    .replace(/‚Äì/g, "-") // en dash ‚Üí hyphen
-    .replace(/[‚Äò‚Äô]/g, "'") // smart single quotes
-    .replace(/[‚Äú‚Äù]/g, '"') // smart double quotes
-    .replace(/¬∑/g, "*") // middle dot
-    .replace(/‚Ä¶/g, "...") // ellipsis
+    .replace(/[\u0300-\u036f]/g, "") // remove accents (+· ‘Â∆ a, +Æ ‘Â∆ e, +¶ ‘Â∆ n, +∫ ‘Â∆ c)
+    .replace(/‘Èº/g, "EUR") // euro symbol ‘Â∆ "EUR"
+    .replace(/‘«ˆ/g, "-") // em dash ‘Â∆ hyphen (also not in WinAnsi)
+    .replace(/‘«Ù/g, "-") // en dash ‘Â∆ hyphen
+    .replace(/[‘«ˇ‘«÷]/g, "'") // smart single quotes
+    .replace(/[‘«£‘«ÿ]/g, '"') // smart double quotes
+    .replace(/-¿/g, "*") // middle dot
+    .replace(/‘«™/g, "...") // ellipsis
     .replace(/[^\u0020-\u007E]/g, ""); // strip any remaining non-ASCII (keep printable only)
 }
 
@@ -313,7 +313,7 @@ async function embedImage(pdfDoc: PDFDocument, imageUrl: string) {
 }
 
 /* ================================================================
-   PDF BUILDER ‚Äî handles layout, pages, drawing primitives
+   PDF BUILDER ‘«ˆ handles layout, pages, drawing primitives
    ================================================================ */
 class PdfBuilder {
   pdfDoc: PDFDocument;
@@ -501,7 +501,7 @@ class PdfBuilder {
       this.drawText(mat.name, cols[0] + 4, this.y, { size: 9 });
       this.drawText(String(mat.quantity), cols[1] + 4, this.y, { size: 9 });
       this.drawText(fmtCurrency(mat.unitPrice), cols[2] + 4, this.y, { size: 9 });
-      this.drawText(`${lineTotal.toFixed(2)} ‚Ç¨`, cols[3] + 4, this.y, { size: 9 });
+      this.drawText(`${lineTotal.toFixed(2)} ‘Èº`, cols[3] + 4, this.y, { size: 9 });
 
       this.addSpace(rowH);
     }
@@ -510,7 +510,7 @@ class PdfBuilder {
     this.drawLine(this.y + 4, COLORS.border, 0.5);
     this.addSpace(6);
     this.drawText(`${LABELS[this.lang].total}:`, cols[2] + 4, this.y, { bold: true, size: 10 });
-    this.drawText(`${grandTotal.toFixed(2)} ‚Ç¨`, cols[3] + 4, this.y, { bold: true, size: 10, color: COLORS.primaryDark });
+    this.drawText(`${grandTotal.toFixed(2)} ‘Èº`, cols[3] + 4, this.y, { bold: true, size: 10, color: COLORS.primaryDark });
     this.addSpace(14);
   }
 
@@ -562,7 +562,7 @@ class PdfBuilder {
 
         this.page.drawImage(img, { x, y: yImg, width: imgWidth, height: h });
 
-        // Label (Before / caption only ‚Äî no fileName)
+        // Label (Before / caption only ‘«ˆ no fileName)
         const label = photo.isBefore ? LABELS[this.lang].before : (photo.caption ?? "");
         if (label) {
           this.drawText(label, x, yImg - 14, { size: 8, color: COLORS.textMuted });

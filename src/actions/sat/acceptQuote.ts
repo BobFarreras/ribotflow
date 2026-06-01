@@ -12,7 +12,7 @@ import { db } from "@/db";
 import { quotes, quoteStatusHistory } from "@/db/schema/sat";
 import { eq, and } from "drizzle-orm";
 import { signatureService } from "@/services/sat/signatureService";
-import { pdfService } from "@/services/sat/pdfService";
+import { pdfService } from "@/services/pdf";
 import { revalidatePath } from "next/cache";
 
 const MAX_SVG_LENGTH = 500_000;
