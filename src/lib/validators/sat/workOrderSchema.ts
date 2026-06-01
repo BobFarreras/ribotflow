@@ -5,6 +5,20 @@
  */
 
 import { z } from "zod";
+import type { WorkOrderStatus } from "@/types/sat";
+
+const WORK_ORDER_STATUS_VALUES = [
+  "pending",
+  "assigned",
+  "scheduled",
+  "in_progress",
+  "paused",
+  "completed",
+  "closed",
+  "cancelled",
+  "waiting_parts",
+  "waiting_client",
+] as const satisfies readonly WorkOrderStatus[];
 
 const locationSchema = z.object({
   lat: z.number(),
@@ -44,15 +58,7 @@ export type UpdateWorkOrderInput = z.infer<typeof updateWorkOrderSchema>;
 
 export const updateStatusSchema = z.object({
   workOrderId: z.string().uuid(),
-  status: z.enum([
-    "pending",
-    "assigned",
-    "in_progress",
-    "paused",
-    "completed",
-    "closed",
-    "cancelled",
-  ]),
+  status: z.enum(WORK_ORDER_STATUS_VALUES),
   reason: z.string().max(500).optional(),
 });
 
