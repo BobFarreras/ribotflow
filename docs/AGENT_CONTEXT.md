@@ -636,22 +636,24 @@ Multiple agents (including this one) investigated the wrong causes:
 
 ---
 
-## Session Handoff — Last Update: 28/05/2026
+## Session Handoff — Last Update: 01/06/2026
 
 ### What Was Done Today
-1. **Category Edit page** (`/sat/categories/[id]`): Server component fetches category, delegates to `CategoryEditForm.tsx`. Includes color picker, visual icon picker (~12 SVGs), auto-slug, default checkbox.
-2. **Fixed category icon propagation bug**: Changing a category's icon now reflects immediately in ALL work order views (Grid, Table, Kanban, Detail). See Known Issues above for root cause.
-3. **Fixed client list hydration error**: Restructured card with overlay pattern to avoid `<a>` inside `<a>`.
-4. **Seed updated**: `seed-demo.ts` now populates `icon` field on default categories.
-5. **All tests passing**: 78 tests, 13 suites.
+1. **Mòdul Pressupostos complet** — 4 taules (quotes, quote_items, quote_templates, quote_status_history) + migracions 0005-0007
+2. **3 Serveis CRUD** — quoteService, quoteItemService, quoteTemplateService (numeració PRE-{YYYY}-{SEQ}, càlculs automàtics)
+3. **11 Server Actions** — createQuote, updateQuote, deleteQuote, updateQuoteStatus, addQuoteItem, updateQuoteItem, removeQuoteItem, createQuoteTemplate, updateQuoteTemplate, deleteQuoteTemplate, duplicateQuoteTemplate
+4. **Editor professional** — Split view (editor esquerra + preview A4 dreta), seccions col·lapsables, selector d'OT amb dropdown
+5. **Pàgina edit** — `/sat/quotes/[id]` reutilitza el mateix editor que new
+6. **Vinculació OT** — Selector de totes les OTs + botó "Nova OT" que obre nova OT
+7. **Guardat correcte** — quoteService.update() transactional (delete old items + insert new + recalculate)
+8. **Botó Enviar** — Al toolbar per a pressupostos draft, amb toast notification
+9. **Notificacions** — Sonner (no custom) amb missatges dinàmics segons acció
+10. **Schema actualitzat** — nullable workOrderId + discountPercent + relació quote→client
 
 ### Next Task for Next Agent
-**Implement Pressupostos (Quotes) module** — this is the #1 priority.
-- Schema: `quotes` + `quote_items` tables (add to `src/db/schema/sat.ts`)
-- Server Actions: `createQuote`, `updateQuote`, `addQuoteItem`, `removeQuoteItem`, `generateQuotePdf`
-- UI: Add to `/sat/[id]/page.tsx` (replace the placeholder "Crear pressupost" button)
-- Reuse: `signatures` table (generic), `pdfService.ts` for PDF generation
-- Flow: Draft → Sent → Accepted/Rejected
+1. **Enviament per email** — Modal per enviar pressupost al client amb adjunt PDF
+2. **Vista pública del client** — Enllaç sense login perquè el client pugui acceptar/rebutjar
+3. **Configuració d'empresa** — Logo, colors, text legal, tarifa desplaçament
 
 ### Quick Commands for Next Session
 ```bash
@@ -696,5 +698,15 @@ When you start working on this project:
 9. **Run tests:** `pnpm test` (ensure 78 tests pass)
 10. **Start dev server:** `pnpm dev`
 11. **Login with:** dais@test.com / 12345678
+
+### Current Module Status (June 2026)
+- **SAT (Work Orders):** ✅ Complete — CRUD, 3 views (Grid/Table/Kanban), filters, pagination
+- **Pressupostos (Quotes):** ✅ Complete — CRUD, editor professional, preview A4, vinculació OT
+- **Clients:** ✅ Complete — List, detail, create (edit pending)
+- **Categories:** ✅ Complete — CRUD with icon/color picker
+- **Geolocalització:** ✅ Complete — Check-in GPS, mapa Leaflet, routing engine
+- **Facturació:** ✅ Complete — Travel billing service
+- **Notificacions:** ✅ Complete — Email service (nodemailer lazy import)
+- **Facturació de clients:** 🔲 Pending — proper mòdul a implementar
 
 > **Tip for agents:** If you see `[Storage] Environment variables missing for provider 
