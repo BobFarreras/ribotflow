@@ -10,11 +10,15 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { updateQuoteStatusAction } from "@/actions/sat/updateQuoteStatus";
 import { deleteQuoteAction } from "@/actions/sat/deleteQuote";
+import { SendQuoteEmailModal } from "./SendQuoteEmailModal";
 import { Send, CheckCircle, XCircle, Trash2, RotateCcw, Loader2 } from "lucide-react";
 
 interface Quote {
   id: string;
+  number: string;
   status: string;
+  clientEmail?: string;
+  clientName?: string;
 }
 
 interface Props {
@@ -24,6 +28,7 @@ interface Props {
 export function QuoteActions({ quote }: Props) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const [showEmailModal, setShowEmailModal] = useState(false);
 
   const handleStatusChange = async (status: string, reason?: string) => {
     setIsLoading(true);
@@ -68,7 +73,7 @@ export function QuoteActions({ quote }: Props) {
       {quote.status === "draft" && (
         <>
           <button
-            onClick={() => handleStatusChange("sent")}
+            onClick={() => setShowEmailModal(true)}
             className="flex w-full items-center justify-center gap-2 rounded-lg bg-[var(--module-sat)] px-3 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90"
           >
             <Send className="h-4 w-4" />

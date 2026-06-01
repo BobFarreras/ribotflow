@@ -14,6 +14,7 @@ export interface NotificationPayload {
   subject: string;
   html: string;
   text?: string;
+  from?: string;
 }
 
 export interface CheckInNotificationData {
@@ -75,6 +76,71 @@ async function sendEmail(payload: NotificationPayload): Promise<void> {
       text: payload.text ?? payload.html.replace(/<[^>]+>/g, ""),
       html: payload.html,
     });
+  } catch (err) {
+    console.error("[Notification] Failed to send email:", err);
+  }
+}
+
+export interface QuoteEmailData {
+  to: string;
+  subject: string;
+  html: string;
+  quoteNumber: string;
+  companyId: string;
+}
+
+async function sendEmailWithAttachment(
+  payload: NotificationPayload,
+  attachment?: { filename: string; content: Buffer; contentType: string }
+): Promise<void> {
+  const smtpHost = process.env.SMTP_HOST;
+  const smtpPort = process.env.SMTP_PORT ? parseInt(process.env.SMTP_PORT, 10) : 587;
+  const smtpUser = process.env.SMTP_USER;
+  const smtpPass = process.env.SMTP_PASSWORD;
+
+  if (!smtpHost || !smtpUser || !smtpPass) {
+    console.warn("[Notification] SMTP not configured. Email would have been sent:");
+    console.warn(`  To: ${payload.to}`);
+    console.warn(`  Subject: ${payload.subject}`);
+    return;
+  }
+
+  try {
+    const nodemailer = await import("nodemailer").catch(() => null);
+    if (!nodemailer) {
+      console.warn("[Notification] nodemailer not installed. Run: pnpm add nodemailer");
+      return;
+    }
+
+    const transporter = nodemailer.createTransport({
+      host: smtpHost,
+      port: smtpPort,
+      secure: smtpPort === 465,
+      auth: {
+        user: smtpUser,
+        pass: smtpPass,
+      },
+    });
+
+    const mailOptions: Record<string, unknown> = {
+      from: `"${payload.from ?? "RIBOTFLOW"}" <${smtpUser}>`,
+      to: payload.to,
+      subject: payload.subject,
+      text: payload.text ?? payload.html.replace(/<[^>]+>/g, ""),
+      html: payload.html,
+    };
+
+    if (attachment) {
+      mailOptions.attachments = [
+        {
+          filename: attachment.filename,
+          content: attachment.content,
+          contentType: attachment.contentType,
+        },
+      ];
+    }
+
+    await transporter.sendMail(mailOptions);
   } catch (err) {
     console.error("[Notification] Failed to send email:", err);
   }
@@ -168,6 +234,25 @@ export const notificationService = {
         subject: `[${companyName}] Completada: ${data.workOrderNumber} — ${data.workOrderTitle}`,
         html,
       });
+    }
+  },
+
+  async sendQuoteEmail(data: QuoteEmailData): Promise<{ success: boolean; error?: string }> {
+    try {
+      // Send email (PDF attachment can be added later)
+      await sendEmailWithAttachment(
+        {
+          to: data.to,
+          subject: data.subject,
+          html: data.html,
+          from: "RIBOTFLOW",
+        }
+      );
+
+      return { success: true };
+    } catch (err) {
+      console.error("[Notification] Failed to send quote email:", err);
+      return { success: false, error: "Error en enviar el pressupost" };
     }
   },
 };

@@ -15,6 +15,7 @@ import { createQuoteAction } from "@/actions/sat/createQuote";
 import { updateQuoteAction } from "@/actions/sat/updateQuote";
 import { Plus, Trash2, Loader2, Eye, Edit3, Package, Users, Car, MoreHorizontal, ChevronDown, CheckCircle, Send } from "lucide-react";
 import { QuotePdfPreview } from "./QuotePdfPreview";
+import { SendQuoteEmailModal } from "./SendQuoteEmailModal";
 import { toast } from "sonner";
 
 /* ============================================================
@@ -172,6 +173,7 @@ export function QuoteEditor({
   const [error, setError] = useState<string | null>(null);
   const [view, setView] = useState<"split" | "editor" | "preview">("split");
   const [workOrderId, setWorkOrderId] = useState(workOrderIdProp);
+  const [showEmailModal, setShowEmailModal] = useState(false);
 
   // Client state
   const [selectedClientId, setSelectedClientId] = useState<string>(existingQuote?.clientId ?? "");
@@ -469,9 +471,7 @@ export function QuoteEditor({
           <div className="h-6 w-px bg-[var(--border)]" />
           {mode === "edit" && existingQuote?.status === "draft" && (
             <button
-              onClick={() => {
-                toast("Funcionalitat d'enviament properament");
-              }}
+              onClick={() => setShowEmailModal(true)}
               className="flex items-center gap-1.5 rounded-lg border border-[var(--module-sat)]/30 bg-[var(--module-sat)]/10 px-3 py-1.5 text-xs font-medium text-[var(--module-sat)] transition-colors hover:bg-[var(--module-sat)]/20"
             >
               <Send className="h-3 w-3" />
@@ -781,6 +781,21 @@ export function QuoteEditor({
           />
         </div>
       </div>
+
+      {showEmailModal && existingQuote && (
+        <SendQuoteEmailModal
+          quoteId={existingQuote.id}
+          quoteNumber={existingQuote.number}
+          clientEmail={
+            useCustomClient ? customClient.email : selectedClient?.email ?? undefined
+          }
+          clientName={
+            useCustomClient ? customClient.name : selectedClient?.name ?? undefined
+          }
+          isOpen={showEmailModal}
+          onClose={() => setShowEmailModal(false)}
+        />
+      )}
     </div>
   );
 }
