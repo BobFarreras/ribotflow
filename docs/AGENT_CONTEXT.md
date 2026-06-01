@@ -161,13 +161,15 @@ This document contains all critical context from previous development sessions i
 **IMPORTANT:** Status transitions are now **FREE** — any status can transition to any other status. The `VALID_STATUS_TRANSITIONS` constant in `src/lib/constants/statusTransitions.ts` allows all transitions. No restrictive validation.
 
 ### Pending / Next Features (Priority Order)
-1. **Enviament per email** — Modal per enviar pressupost al client amb adjunt PDF
+1. **PDF attachment to quote email** — Currently sends HTML only. Need to generate a real PDF and attach it.
 2. **Vista pública del client** — Enllaç sense login perquè el client pugui acceptar/rebutjar
 3. **Edició de Clients** (`/sat/clients/[id]/edit`)
 4. **Personalització de PDF i Company Settings** (logo, colors, text legal, tarifa desplaçament)
 5. **Mode PWA Offline** per a tècnics
-6. **Email notifications** on status changes
+6. **Email notifications on status changes** for work orders
 7. **Calendar integration** for scheduled dates
+
+> ⚠️ **SMTP Setup** — See `docs/SMTP_SETUP.md`. The system reads `SMTP_PASSWORD` (NOT `SMTP_PASS`). If env vars are missing, errors now show in the UI toast, not just server logs.
 
 ---
 
@@ -269,6 +271,14 @@ cat src/db/migrations/0002_eminent_blink.sql | docker exec -i ribotflow-dev-db p
 
 ### Issue: Sidebar flash on navigation (RESOLVED — see Critical Bug section below)
 **If it returns:** Verify ALL navigation uses `<Link>` from `next/link`, NEVER `<a href>`. Check `SidebarNav.tsx`, `Sidebar.tsx`, and any custom nav components.
+
+### Issue: Quote email doesn't send (silent failure)
+**Root Cause:** The service reads `SMTP_PASSWORD`, but `.env.local` had `SMTP_PASS`. When env vars were missing, the service only logged a warning to the server console and returned `success: true` to the action, showing a misleading success toast.
+**Solution:**
+1. Use `SMTP_PASSWORD` (not `SMTP_PASS`) in `.env.local`
+2. `sendEmailWithAttachment` now returns `{success, error?}` and propagates errors to the UI toast
+3. Error message lists which env vars are missing
+**See:** `docs/SMTP_SETUP.md` for full guide.
 
 ---
 
@@ -602,6 +612,9 @@ quotes/Empresa_Test/PRES-2026-0001-signature.png
 | 28/05/2026 | Quote edit saves all data (client, items, conditions) | quoteService.update now handles items (delete old + insert new). Initializes selectedClientId from existingQuote.clientId. |
 | 28/05/2026 | Enviar button in edit mode | Shows only for draft quotes. Toast notification for feedback. |
 | 28/05/2026 | Nova OT link in editor | Uses <Link> (same tab), not <a target='_blank'>. Proper flex sizing to prevent overflow. |
+| 01/06/2026 | Email enviat des de pressupost | Server Action `sendQuoteEmailAction` + modal `SendQuoteEmailModal` + mètode `notificationService.sendQuoteEmail`. Pre-replega email del client. |
+| 01/06/2026 | SMTP env key MUST be `SMTP_PASSWORD` | `.env.local` tenia `SMTP_PASS` (typo). El service no ho trobava i només feia `console.warn` — sense error visible a UI. Fixat a `.env.local` i propagat error al toast. Veure `docs/SMTP_SETUP.md`. |
+| 01/06/2026 | sendEmailWithAttachment returns object with success/error | Abans retornava void i els errors quedaven només al log. Ara es mostren al toast de Sonner. |
 
 ---
 
@@ -639,19 +652,18 @@ Multiple agents (including this one) investigated the wrong causes:
 ## Session Handoff — Last Update: 01/06/2026
 
 ### What Was Done Today
-1. **Mòdul Pressupostos complet** — 4 taules (quotes, quote_items, quote_templates, quote_status_history) + migracions 0005-0007
-2. **3 Serveis CRUD** — quoteService, quoteItemService, quoteTemplateService (numeració PRE-{YYYY}-{SEQ}, càlculs automàtics)
-3. **11 Server Actions** — createQuote, updateQuote, deleteQuote, updateQuoteStatus, addQuoteItem, updateQuoteItem, removeQuoteItem, createQuoteTemplate, updateQuoteTemplate, deleteQuoteTemplate, duplicateQuoteTemplate
-4. **Editor professional** — Split view (editor esquerra + preview A4 dreta), seccions col·lapsables, selector d'OT amb dropdown
-5. **Pàgina edit** — `/sat/quotes/[id]` reutilitza el mateix editor que new
-6. **Vinculació OT** — Selector de totes les OTs + botó "Nova OT" que obre nova OT
-7. **Guardat correcte** — quoteService.update() transactional (delete old items + insert new + recalculate)
-8. **Botó Enviar** — Al toolbar per a pressupostos draft, amb toast notification
-9. **Notificacions** — Sonner (no custom) amb missatges dinàmics segons acció
-10. **Schema actualitzat** — nullable workOrderId + discountPercent + relació quote→client
+1. **Mòdul Pressupostos complet** — 4 taules + migracions 0005-0007
+2. **3 Serveis CRUD** — quoteService, quoteItemService, quoteTemplateService
+3. **11 Server Actions** — CRUD de pressupostos, items, plantilles
+4. **Editor professional** — Split view (editor + preview A4), seccions col·lapsables
+5. **Pàgina edit** — `/sat/quotes/[id]` reutilitza el mateix editor
+6. **Vinculació OT** — Selector + botó "Nova OT"
+7. **Enviament per email (HTML)** — Server Action `sendQuoteEmailAction` + modal `SendQuoteEmailModal` + mètode `notificationService.sendQuoteEmail`. Pre-replega email del client.
+8. **Fix SMTP env var** — `.env.local` tenia `SMTP_PASS` (typo), ara `SMTP_PASSWORD`. La funció `sendEmailWithAttachment` retorna `{success, error?}` i els errors es mostren al toast (no només al log).
+9. **Doc nova** — `docs/SMTP_SETUP.md` amb la configuració completa
 
 ### Next Task for Next Agent
-1. **Enviament per email** — Modal per enviar pressupost al client amb adjunt PDF
+1. **PDF attachment to quote email** — Generate real PDF and attach it to the email
 2. **Vista pública del client** — Enllaç sense login perquè el client pugui acceptar/rebutjar
 3. **Configuració d'empresa** — Logo, colors, text legal, tarifa desplaçament
 
@@ -671,7 +683,7 @@ docker exec ribotflow-dev-minio mc anonymous set public local/ribotflow
 # 4. Verify tests
 pnpm test
 
-# 5. Start dev
+# 5. Start dev (AFTER editing .env.local — see docs/SMTP_SETUP.md)
 pnpm dev
 ```
 

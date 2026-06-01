@@ -92,24 +92,30 @@ export interface QuoteEmailData {
 async function sendEmailWithAttachment(
   payload: NotificationPayload,
   attachment?: { filename: string; content: Buffer; contentType: string }
-): Promise<void> {
+): Promise<{ success: boolean; error?: string }> {
   const smtpHost = process.env.SMTP_HOST;
   const smtpPort = process.env.SMTP_PORT ? parseInt(process.env.SMTP_PORT, 10) : 587;
   const smtpUser = process.env.SMTP_USER;
   const smtpPass = process.env.SMTP_PASSWORD;
 
   if (!smtpHost || !smtpUser || !smtpPass) {
-    console.warn("[Notification] SMTP not configured. Email would have been sent:");
+    const missing: string[] = [];
+    if (!smtpHost) missing.push("SMTP_HOST");
+    if (!smtpUser) missing.push("SMTP_USER");
+    if (!smtpPass) missing.push("SMTP_PASSWORD (not SMTP_PASS!)");
+    const msg = `SMTP no configurat. Falten: ${missing.join(", ")}. Veure docs/SMTP_SETUP.md`;
+    console.warn(`[Notification] ${msg}`);
     console.warn(`  To: ${payload.to}`);
     console.warn(`  Subject: ${payload.subject}`);
-    return;
+    return { success: false, error: msg };
   }
 
   try {
     const nodemailer = await import("nodemailer").catch(() => null);
     if (!nodemailer) {
-      console.warn("[Notification] nodemailer not installed. Run: pnpm add nodemailer");
-      return;
+      const msg = "Paquet 'nodemailer' no instal·lat. Executa: pnpm add nodemailer";
+      console.warn(`[Notification] ${msg}`);
+      return { success: false, error: msg };
     }
 
     const transporter = nodemailer.createTransport({
@@ -141,8 +147,11 @@ async function sendEmailWithAttachment(
     }
 
     await transporter.sendMail(mailOptions);
+    return { success: true };
   } catch (err) {
+    const errMsg = err instanceof Error ? err.message : String(err);
     console.error("[Notification] Failed to send email:", err);
+    return { success: false, error: errMsg };
   }
 }
 
@@ -240,7 +249,7 @@ export const notificationService = {
   async sendQuoteEmail(data: QuoteEmailData): Promise<{ success: boolean; error?: string }> {
     try {
       // Send email (PDF attachment can be added later)
-      await sendEmailWithAttachment(
+      const result = await sendEmailWithAttachment(
         {
           to: data.to,
           subject: data.subject,
@@ -249,10 +258,15 @@ export const notificationService = {
         }
       );
 
+      if (!result.success) {
+        return { success: false, error: result.error };
+      }
+
       return { success: true };
     } catch (err) {
+      const errMsg = err instanceof Error ? err.message : String(err);
       console.error("[Notification] Failed to send quote email:", err);
-      return { success: false, error: "Error en enviar el pressupost" };
+      return { success: false, error: errMsg };
     }
   },
 };
