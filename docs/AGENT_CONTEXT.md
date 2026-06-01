@@ -115,7 +115,7 @@ This document contains all critical context from previous development sessions i
 - [x] **Quote service** (CRUD + workflow + PRE-{YYYY}-{SEQ} numbering + calculations)
 - [x] **Quote item service** (line items with auto-recalculation of totals)
 - [x] **Quote template service** (templates with duplicate and usage tracking)
-- [x] Server Actions: createWorkOrder, updateStatus, assignTechnician, addMaterial, removeMaterial, getProducts, addAttachment, deleteAttachment, saveSignature, generatePdf, deletePdf, createCategory, updateCategory, createClient, **createQuote**, **updateQuote**, **deleteQuote**, **updateQuoteStatus**, **addQuoteItem**, **updateQuoteItem**, **removeQuoteItem**, **createQuoteTemplate**, **updateQuoteTemplate**, **deleteQuoteTemplate**, **duplicateQuoteTemplate**
+- [x] Server Actions: createWorkOrder, updateStatus, assignTechnician, addMaterial, removeMaterial, getProducts, addAttachment, deleteAttachment, saveSignature, generatePdf, deletePdf, createCategory, updateCategory, createClient, **createQuote**, **updateQuote**, **deleteQuote**, **updateQuoteStatus**, **addQuoteItem**, **updateQuoteItem**, **removeQuoteItem**, **createQuoteTemplate**, **updateQuoteTemplate**, **deleteQuoteTemplate**, **duplicateQuoteTemplate**, **acceptQuote**, **rejectQuote**
 - [x] UI pages: List (`/sat`), Detail (`/sat/[id]`), Create (`/sat/new`), Map (`/sat/map`), Routes (`/sat/routes`), Clients (`/sat/clients`), Client Detail (`/sat/clients/[id]`), Client New (`/sat/clients/new`), Categories (`/sat/categories`), Category New (`/sat/categories/new`), Category Edit (`/sat/categories/[id]`), **Quotes (`/sat/quotes`)**, **Quote Detail (`/sat/quotes/[id]`)**, **Quote New (`/sat/quotes/new`)**, **Quote Templates (`/sat/quotes/templates`)**
 - [x] Client components: WorkOrderForm, WorkOrderActions, TechnicianAssigner, MaterialList, AttachmentSection, SignatureCanvas, PdfGenerator, CheckInButton, AddressAutocomplete, GoogleMapsLink, MapView, TravelCostCard, WorkOrderFilters, Pagination, WorkOrderCard, WorkOrderTable, WorkOrderKanban, CategoryIcon, StatusHistorySection, **QuoteEditor**, **QuotePdfPreview**, **QuoteList**, **QuoteStatusBadge**, **QuoteItemTable**, **QuoteActions**
 - [x] i18n translations (ca/es) for all SAT strings including materials, attachments, signatures, PDF, work orders, clients, categories, **quotes**, **quote templates**
@@ -161,13 +161,12 @@ This document contains all critical context from previous development sessions i
 **IMPORTANT:** Status transitions are now **FREE** — any status can transition to any other status. The `VALID_STATUS_TRANSITIONS` constant in `src/lib/constants/statusTransitions.ts` allows all transitions. No restrictive validation.
 
 ### Pending / Next Features (Priority Order)
-1. **PDF attachment to quote email** — Currently sends HTML only. Need to generate a real PDF and attach it.
-2. **Vista pública del client** — Enllaç sense login perquè el client pugui acceptar/rebutjar
-3. **Edició de Clients** (`/sat/clients/[id]/edit`)
-4. **Personalització de PDF i Company Settings** (logo, colors, text legal, tarifa desplaçament)
-5. **Mode PWA Offline** per a tècnics
-6. **Email notifications on status changes** for work orders
-7. **Calendar integration** for scheduled dates
+1. **Vista pública del client** — Enllaç sense login perquè el client pugui acceptar/rebutjar
+2. **Edició de Clients** (`/sat/clients/[id]/edit`)
+3. **Personalització de PDF i Company Settings** (logo, colors, text legal, tarifa desplaçament)
+4. **Mode PWA Offline** per a tècnics
+5. **Email notifications on status changes** for work orders
+6. **Calendar integration** for scheduled dates
 
 > ⚠️ **SMTP Setup** — See `docs/SMTP_SETUP.md`. The system reads `SMTP_PASSWORD` (NOT `SMTP_PASS`). If env vars are missing, errors now show in the UI toast, not just server logs.
 
@@ -183,6 +182,8 @@ This document contains all critical context from previous development sessions i
 - **Full CI check:** `pnpm ci:check` (typecheck + lint + format + test + build)
 
 **Current Test Count:** 78 tests passing across 13 test files
+
+> **IMPORTANT:** Si els tests fallen amb `column "tax_id" of relation "companies" does not exist`, vol dir que la BD no té les migracions 0008-0009. Executa: `pnpm db:migrate`.
 
 | Test File | Tests | Description |
 |-----------|-------|-------------|
@@ -279,6 +280,10 @@ cat src/db/migrations/0002_eminent_blink.sql | docker exec -i ribotflow-dev-db p
 2. `sendEmailWithAttachment` now returns `{success, error?}` and propagates errors to the UI toast
 3. Error message lists which env vars are missing
 **See:** `docs/SMTP_SETUP.md` for full guide.
+
+### Issue: Tests fail with `column "tax_id" of relation "companies" does not exist`
+**Root Cause:** Les migracions 0008 i 0009 (afegides per la feature de PDF signat + email) no estaven aplicades a la BD local. La taula `drizzle.__drizzle_migrations` estava desfasada.
+**Solution:** Executar `pnpm db:migrate`. Si la taula `__drizzle_migrations` està buida o inconsistent, seguir el Protocol de Sincronitzacio de Maquina (més avall).
 
 ---
 
@@ -615,6 +620,9 @@ quotes/Empresa_Test/PRES-2026-0001-signature.png
 | 01/06/2026 | Email enviat des de pressupost | Server Action `sendQuoteEmailAction` + modal `SendQuoteEmailModal` + mètode `notificationService.sendQuoteEmail`. Pre-replega email del client. |
 | 01/06/2026 | SMTP env key MUST be `SMTP_PASSWORD` | `.env.local` tenia `SMTP_PASS` (typo). El service no ho trobava i només feia `console.warn` — sense error visible a UI. Fixat a `.env.local` i propagat error al toast. Veure `docs/SMTP_SETUP.md`. |
 | 01/06/2026 | sendEmailWithAttachment returns object with success/error | Abans retornava void i els errors quedaven només al log. Ara es mostren al toast de Sonner. |
+| 01/06/2026 | Quote PDF generation with email attachment | Commit b10c3a0. Migracions 0008-0009 afegeixen `pdf_url`, `accepted_by`, `signature` a quotes; `tax_id` i `phone` a companies. Storage keys jeràrquiques (tenantSlug/clientSlug). Mètode `generateSignedQuotePdf` per a la signatura del client. Accions `acceptQuote` i `rejectQuote`. |
+| 01/06/2026 | pdf-lib WinAnsi encoding bug fix | Helper `sanitizeForPdf` per netejar caràcters no suportats. Important per caràcters catalans/ciríl·lics. |
+| 01/06/2026 | Refactor Fases 1-2 completades | Fases 1 (monolits >500) i 2 (reestructuració directoris) del REFACTOR_GUIDE.md estan fetes. Veure `docs/REFACTOR_GUIDE.md` per detalls. Resta: Fase 2.3 components/sat, Fase 2.4 actions/sat, Fase 3 pàgines grans. |
 
 ---
 
@@ -661,11 +669,15 @@ Multiple agents (including this one) investigated the wrong causes:
 7. **Enviament per email (HTML)** — Server Action `sendQuoteEmailAction` + modal `SendQuoteEmailModal` + mètode `notificationService.sendQuoteEmail`. Pre-replega email del client.
 8. **Fix SMTP env var** — `.env.local` tenia `SMTP_PASS` (typo), ara `SMTP_PASSWORD`. La funció `sendEmailWithAttachment` retorna `{success, error?}` i els errors es mostren al toast (no només al log).
 9. **Doc nova** — `docs/SMTP_SETUP.md` amb la configuració completa
+10. **[Oficina] Quote PDF generation amb email adjunt** — Commit b10c3a0. Migracions 0008-0009 afegeixen `pdf_url`, `accepted_by`, `signature` a quotes; `tax_id` i `phone` a companies. Mètode `generateSignedQuotePdf` per a la signatura del client. Accions `acceptQuote` i `rejectQuote`. Storage keys human-readable.
+11. **[Oficina] Refactor Fases 1-2 completades** — Monolits >500 línies dividits, `schema/sat.ts` separat en 13 fitxers, serveis SAT amb subcarpetes, 4 components >300 línies dividits. Veure `docs/REFACTOR_GUIDE.md`.
+12. **[Ara] Migracions 0008-0009 aplicades** — `pnpm db:migrate` les ha aplicades correctament. Tests 78/78 passen.
 
 ### Next Task for Next Agent
-1. **PDF attachment to quote email** — Generate real PDF and attach it to the email
-2. **Vista pública del client** — Enllaç sense login perquè el client pugui acceptar/rebutjar
-3. **Configuració d'empresa** — Logo, colors, text legal, tarifa desplaçament
+1. **Refactor Fase 2.3** — Reestructurar `src/components/sat/` amb subcarpetes (`quotes/`, `work-orders/`, `clients/`, `shared/`)
+2. **Refactor Fase 2.4** — Reestructurar `src/actions/sat/` amb subcarpetes
+3. **Vista pública del client** — Enllaç sense login perquè el client pugui acceptar/rebutjar
+4. **Configuració d'empresa** — Logo, colors, text legal, tarifa desplaçament
 
 ### Quick Commands for Next Session
 ```bash
@@ -703,7 +715,7 @@ docker exec ribotflow-dev-db psql -U postgres -d ribotflow -c \
   "SELECT COUNT(*) FROM drizzle.__drizzle_migrations;"
 ```
 
-- Si retorna **8** → Tot correcte. Ves al pas 3.
+- Si retorna **10** → Tot correcte. Ves al pas 3.
 - Si retorna **0, 3 o qualsevol altre numero** → La taula de control esta malmesa. Ves al pas 2.
 
 ### 2. Reconstruccio de la Taula de Control (NOMES si esta malmesa)
@@ -721,17 +733,19 @@ docker exec ribotflow-dev-db psql -U postgres -d ribotflow -c \
 docker exec ribotflow-dev-db psql -U postgres -d ribotflow -c \
   "DROP TABLE IF EXISTS drizzle.__drizzle_migrations; CREATE TABLE drizzle.__drizzle_migrations (id SERIAL PRIMARY KEY, hash text NOT NULL, created_at bigint);"
 
-# 3. Omple-la amb totes les migracions existents (fins a 0007)
+# 3. Omple-la amb totes les migracions existents (fins a 0009)
 docker exec -i ribotflow-dev-db psql -U postgres -d ribotflow <<'EOF'
 INSERT INTO drizzle.__drizzle_migrations (hash, created_at) VALUES
 ('fcdcd77092d11243d9d7867e6af494173f2dbb170810d9041d2d26e92d863109', 1779695842140),
-('3b84a91bea8a8f6a9343a3a0cbcd791955b55b3324e8e1587f379a779d137fef', 1779774463806),
-('ef928ac98a630e4355a24602a9b33dbe3f546a2a3b56867ea864e492ac21b79a', 1779792706330),
-('b67de1692bdf8844511d236d23ad072a5243d661c9c34d47ebf63844f37ff677', 1779818638878),
-('bbfa55db3628ccc525110380c7c6c7e2127ff3d6c4aef9b9350a7a37c7dfa7d4', 1779859659031),
-('72e0a849a48a9625d7ffd7e0599aa49beaf0b9f9df4d505c53da58736fd43a37', 1780119794106),
-('8d043230560f9da17a31facde76d96577da55ae017a94656802c730e687d64d0', 1780210872331),
-('6dc5e378d28e98987f5bc2a0a7f56461ed0a39a2825a5d4f77b6b81916916ae0', 1780211515060);
+('0090c35dfb363cce7685b9090008255925aa73dc39564db663e936c72cd5c530', 1779774463806),
+('3669f5a4f59a9e3ca6bf3a0ade64f31115d3e7a2d07e3b036d8e1f19105ec32d', 1779792706330),
+('51edefe1cfb98cb820ea4c53e40a66fbbf7287304fbb5aa34ebb3fe1d69b3e76', 1779818638878),
+('5aac13ef107d95da1be7a687843a204ca0bd5403e162c4c331964bda5dd76c17', 1779859659031),
+('72ee099e2a1e4221fc1b2a2ede4935901efc14badbcd8623eb2badf635ddc6a7', 1780119794106),
+('5e031d37f05f63d326a607e206b68b3e48ba0a82bb2c8d4a1f51fa7e84e3dda6', 1780210872331),
+('6dc5e378d28e98987f5bc2a0a7f56461ed0a39a2825a5d4f77b6b81916916ae0', 1780211515060),
+('placeholder_hash_0008', 1780302060810),
+('placeholder_hash_0009', 1780303715364);
 EOF
 ```
 
@@ -791,12 +805,14 @@ When you start working on this project:
 
 ### Current Module Status (June 2026)
 - **SAT (Work Orders):** ✅ Complete — CRUD, 3 views (Grid/Table/Kanban), filters, pagination
-- **Pressupostos (Quotes):** ✅ Complete — CRUD, editor professional, preview A4, vinculació OT
+- **Pressupostos (Quotes):** ✅ Complete — CRUD, editor professional, preview A4, vinculació OT, PDF signat + email amb adjunt, accept/reject
 - **Clients:** ✅ Complete — List, detail, create (edit pending)
 - **Categories:** ✅ Complete — CRUD with icon/color picker
 - **Geolocalització:** ✅ Complete — Check-in GPS, mapa Leaflet, routing engine
 - **Facturació:** ✅ Complete — Travel billing service
-- **Notificacions:** ✅ Complete — Email service (nodemailer lazy import)
+- **Notificacions:** ✅ Complete — Email service (nodemailer lazy import) amb PDF adjunt
+- **Refactor Fases 1-2:** ✅ Fetes — Monolits dividits, schema per entitat, serveis amb subdominis
+- **Refactor Fases 2.3-2.4-3:** 🔲 Pendent — components/sat i actions/sat amb subcarpetes, pàgines grans
 - **Facturació de clients:** 🔲 Pending — proper mòdul a implementar
 
 > **Tip for agents:** If you see `[Storage] Environment variables missing for provider 
