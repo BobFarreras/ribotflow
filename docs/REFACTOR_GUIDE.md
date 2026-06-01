@@ -9,14 +9,14 @@
 
 | Metrica | Valor Inicial | Actual | Canvi |
 |---------|---------------|--------|-------|
-| Fitxers > 300 linies | 9 | 7 | -2 |
+| Fitxers > 300 linies | 9 | 4 | -5 |
 | Fitxers > 500 linies (critics) | 3 | 1 | -2 |
-| Directoris monolitics | 3 | 3 | 0 |
+| Directoris monolitics | 3 | 2 | -1 |
 | Acoblament critic (>15 imports) | 1 | 1 | 0 |
-| Dominis ben estructurats | 4 | 5 (+pdf) | +1 |
+| Dominis ben estructurats | 4 | 6 (+pdf, +sat/services) | +2 |
 
-**Monolits resolts**: `pdfService.ts` (1550→0), `QuoteEditor.tsx` (1077→236), `schema/sat.ts` (622→13 fitxers, max 95 línies)
-**Monolit pendent mes gran**: `src/services/sat/quoteService.ts` (361 linies)
+**Monolits resolts**: `pdfService.ts` (1550→0), `QuoteEditor.tsx` (1077→236), `schema/sat.ts` (622→13 fitxers, max 95 línies), `services/sat/` (10 fitxers plans → 3 subdominis)
+**Monolit pendent mes gran**: `src/services/sat/quotes/quoteService.ts` (319 linies, acceptable - maxim 300 permes amb flexibilitat)
 **Conclusio**: El modul SAT concentra el ~60% del deute tecnic. La Fase 1 ha eliminat els 2 monolits critics mes grans. El seguent critic es `schema/sat.ts`.
 
 ---
@@ -241,8 +241,13 @@ src/actions/sat/
   - Estructura: `src/db/schema/sat/` amb un fitxer per entitat + `index.ts` barrel
   - `sat.ts` es manté com a barrel (`export * from "./sat/index"`) per compatibilitat
   - Cap import del projecte s'ha hagut de canviar
-- [ ] **P2.2: Reestructurar `src/services/sat/` amb subcarpetes** ← SEGÜENT PRIORITAT
-  - 10 fitxers plans → agrupar per domini (quotes/, work-orders/, clients/)
+- [x] **P2.2: Reestructurar `src/services/sat/` amb subcarpetes** ← FET
+  - 10 fitxers plans → 3 subdominis (`quotes/`, `work-orders/`, `clients/`) + `shared/`
+  - `quoteService.ts` (361 línies) dividit en 3: `quoteService.ts` (319, CRUD), `quoteCalculations.ts` (36, pures), `quoteNumber.ts` (28, seqüència)
+  - 9 shims a `src/services/sat/*.ts` (`export * from "./quotes/..."`) per compatibilitat
+  - Barrels: `sat/index.ts`, `quotes/index.ts`, `work-orders/index.ts`
+  - 38 imports externs sense canvis
+  - Verificació: `pnpm tsc --noEmit` net, `pnpm test` 78/78, lint sense errors nous
 
 ### Setmana 3
 - [ ] P2.3: Reestructurar `src/components/sat/` amb subcarpetes
