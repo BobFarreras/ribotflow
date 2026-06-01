@@ -636,6 +636,7 @@ quotes/Empresa_Test/PRES-2026-0001-signature.png
 | 01/06/2026 | pdf-lib WinAnsi encoding bug fix | Helper `sanitizeForPdf` per netejar caràcters no suportats. Important per caràcters catalans/ciríl·lics. |
 | 01/06/2026 | Refactor Fases 1-2 completades | Fases 1 (monolits >500) i 2 (reestructuració directoris) del REFACTOR_GUIDE.md estan fetes. Veure `docs/REFACTOR_GUIDE.md` per detalls. Resta: Fase 2.3 components/sat, Fase 2.4 actions/sat, Fase 3 pàgines grans. |
 | 01/06/2026 | Refactor Fases 2.3-2.4 completades | `src/components/sat/` i `src/actions/sat/` ara tenen subcarpetes (quotes/, work-orders/, shared/ o clients/). S'han afegit shims `.tsx`/`.ts` de re-export per backward compat. Resta: Fase 3 (pàgines grans). |
+| 01/06/2026 | NO usar shims de re-export | Els shims de backward compat són deute tècnic. Cal actualitzar tots els `import` als paths nous i esborrar els shims immediatament. Refs: commit `25ca0aa` (esborrats 54 shims). Si un agent afegeix shims, és un anti-patró. |
 
 ---
 
