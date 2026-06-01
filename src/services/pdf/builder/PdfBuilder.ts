@@ -49,6 +49,10 @@ export class PdfBuilder {
     return f.widthOfTextAtSize(sanitizeForPdf(text), size);
   }
 
+  drawRect(x: number, y: number, w: number, h: number, color: ReturnType<typeof rgb>) {
+    this.page.drawRectangle({ x, y: y - h, width: w, height: h, color });
+  }
+
   drawLine(yPos: number, color = COLORS.border, thickness = 0.5) {
     this.page.drawLine({
       start: { x: MARGIN, y: yPos },

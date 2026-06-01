@@ -8,7 +8,7 @@
 "use server";
 
 import { auth } from "@/lib/auth";
-import { pdfService } from "@/services/sat/pdfService";
+import { pdfService } from "@/services/pdf";
 import { revalidatePath } from "next/cache";
 
 export async function deletePdfAction(workOrderId: string) {
@@ -18,7 +18,7 @@ export async function deletePdfAction(workOrderId: string) {
       return { success: false, error: "Unauthorized" };
     }
 
-    await pdfService.deletePdf(session.user.companyId, workOrderId);
+    await pdfService.deleteWorkOrderPdf(session.user.companyId, workOrderId);
 
     revalidatePath(`/sat/${workOrderId}`);
 

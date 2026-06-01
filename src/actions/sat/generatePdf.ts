@@ -7,7 +7,7 @@
 "use server";
 
 import { auth } from "@/lib/auth";
-import { pdfService } from "@/services/sat/pdfService";
+import { pdfService } from "@/services/pdf";
 import { revalidatePath } from "next/cache";
 
 export async function generatePdfAction(workOrderId: string, lang: "ca" | "es" | "en" = "ca") {

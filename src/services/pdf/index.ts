@@ -12,6 +12,7 @@ import { companies } from "@/db/schema/auth";
 import { eq } from "drizzle-orm";
 import { PdfBuilder } from "./builder/PdfBuilder";
 import { buildQuotePdf } from "./builder/QuotePdfBuilder";
+import { buildWorkOrderPdf } from "./builder/WorkOrderPdfBuilder";
 import type { FileStorage } from "@/services/storage/interface";
 import { createFileStorage } from "@/services/storage/factory";
 import {
@@ -20,7 +21,7 @@ import {
   buildWorkOrderReportKey,
   type StorageContext,
 } from "@/lib/utils/storageKeys";
-import type { Lang, QuoteItemRow } from "./types";
+import type { Lang } from "./types";
 
 export class PdfService {
   constructor(private readonly storage: FileStorage) {}
@@ -143,6 +144,77 @@ export class PdfService {
     return { buffer, url: upload.publicUrl };
   }
 
+  /* ---------- Work Order PDFs ---------- */
+  async generateWorkOrderPdf(
+    companyId: string,
+    workOrderId: string,
+    lang: Lang = "ca"
+  ): Promise<{ url: string }> {
+    const data = await this.fetchWorkOrderData(companyId, workOrderId);
+    const pdfDoc = await PDFDocument.create();
+    const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+    const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+    const builder = new PdfBuilder(pdfDoc, font, fontBold, lang);
+
+    await buildWorkOrderPdf(builder, {
+      workOrderNumber: data.workOrder.number,
+      clientName: data.client.name,
+      clientPhone: data.client.phone,
+      clientEmail: data.client.email,
+      clientAddress: data.client.address,
+      status: data.workOrder.status,
+      priority: data.workOrder.priority,
+      categoryName: data.category.name,
+      scheduledDate: data.workOrder.scheduledDate,
+      startedAt: data.workOrder.startedAt,
+      completedAt: data.workOrder.completedAt,
+      description: data.workOrder.description,
+      materials: data.materials.map((m) => ({
+        name: m.name,
+        quantity: String(m.quantity),
+        unitPrice: m.unitPrice,
+      })),
+      photos: data.attachments
+        .filter((a) => a.type === "photo" && a.url)
+        .map((a) => ({
+          url: a.url!,
+          fileName: a.fileName,
+          isBefore: a.isBefore,
+          caption: a.caption,
+        })),
+      signaturePngUrl: data.signature?.signaturePngUrl ?? null,
+      signedBy: data.signature?.signedBy ?? null,
+    });
+
+    const pdfBytes = await pdfDoc.save();
+    const buffer = Buffer.from(pdfBytes);
+
+    const ctx = this.buildContext(companyId, data.company, data.client);
+    const storageKey = buildWorkOrderReportKey(ctx, data.workOrder.number, lang);
+    const upload = await this.storage.upload({ buffer, storageKey, mimeType: "application/pdf" });
+
+    await db.update(workOrders).set({ pdfUrl: upload.publicUrl }).where(eq(workOrders.id, workOrderId));
+    return { url: upload.publicUrl };
+  }
+
+  async deleteWorkOrderPdf(companyId: string, workOrderId: string) {
+    const data = await this.fetchWorkOrderData(companyId, workOrderId);
+    const ctx = this.buildContext(companyId, data.company, data.client);
+
+    const langs: Lang[] = ["ca", "es", "en"];
+    for (const lang of langs) {
+      const storageKey = buildWorkOrderReportKey(ctx, data.workOrder.number, lang);
+      try {
+        await this.storage.delete(storageKey);
+      } catch {
+        // Ignore if file doesn't exist
+      }
+    }
+
+    await db.update(workOrders).set({ pdfUrl: null }).where(eq(workOrders.id, workOrderId));
+    return { success: true };
+  }
+
   /* ---------- Helpers ---------- */
   private async fetchQuoteData(companyId: string, quoteId: string) {
     const { quoteService } = await import("@/services/sat/quoteService");
@@ -156,6 +228,36 @@ export class PdfService {
     if (!client) throw new Error("Client not found for this quote");
 
     return { quote, company, client };
+  }
+
+  private async fetchWorkOrderData(companyId: string, workOrderId: string) {
+    const { workOrderService } = await import("@/services/sat/workOrderService");
+    const { materialService } = await import("@/services/sat/materialService");
+    const { attachmentService } = await import("@/services/sat/attachmentService");
+    const { signatureService } = await import("@/services/sat/signatureService");
+
+    const orderData = await workOrderService.getByIdWithRelations(companyId, workOrderId);
+    if (!orderData) throw new Error("Work order not found or access denied");
+
+    const [company] = await db
+      .select({ tenantSlug: companies.tenantSlug })
+      .from(companies)
+      .where(eq(companies.id, companyId))
+      .limit(1);
+
+    const materials = await materialService.getByWorkOrder(companyId, workOrderId);
+    const attachments = await attachmentService.getByWorkOrder(companyId, workOrderId);
+    const signature = await signatureService.getByEntity(companyId, "work_order", workOrderId);
+
+    return {
+      workOrder: orderData.workOrder,
+      client: orderData.client,
+      category: orderData.category,
+      company: company ?? { tenantSlug: "" },
+      materials,
+      attachments,
+      signature,
+    };
   }
 
   private buildContext(
