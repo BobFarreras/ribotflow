@@ -1,8 +1,10 @@
 /**
- * Data de creació/modificació: 24/05/2026
+ * Creation/modification date: 24/05/2026
  * Ruta: tests/db-seed.ts
  * Descripció: Script de seed per a la base de dades de test.
  *              Crea empresa, usuari OWNER, categories SAT i client de prova.
+ *              Accepta un slug per test file per evitar col·lisions entre
+ *              fitxers executats en paral·lel.
  */
 
 import { config } from "dotenv";
@@ -14,25 +16,31 @@ import { clients, workOrderCategories } from "@/db/schema/sat";
 import { hashPassword } from "@/lib/utils/crypto";
 import { eq } from "drizzle-orm";
 
-const TEST_COMPANY_SLUG = "test-empresa";
-const TEST_EMAIL = "test@ribotflow.local";
+const DEFAULT_COMPANY_SLUG = "test-empresa";
+const DEFAULT_EMAIL = "test@ribotflow.local";
 
-export async function seedTestDatabase() {
-  console.log("🌱 Seeding test database...");
+export interface SeedOptions {
+  companySlug?: string;
+  email?: string;
+}
 
-  // 1. Create or get test company
+export async function seedTestDatabase(options: SeedOptions = {}) {
+  const companySlug = options.companySlug ?? DEFAULT_COMPANY_SLUG;
+  const email = options.email ?? DEFAULT_EMAIL;
+  console.log(`🌱 Seeding test database (slug=${companySlug})...`);
+
   let [company] = await db
     .select()
     .from(companies)
-    .where(eq(companies.tenantSlug, TEST_COMPANY_SLUG))
+    .where(eq(companies.tenantSlug, companySlug))
     .limit(1);
 
   if (!company) {
     [company] = await db
       .insert(companies)
       .values({
-        name: "Empresa de Test",
-        tenantSlug: TEST_COMPANY_SLUG,
+        name: `Empresa de Test ${companySlug}`,
+        tenantSlug: companySlug,
         plan: "free",
       })
       .returning();
@@ -41,11 +49,10 @@ export async function seedTestDatabase() {
     console.log(`   Reusing company: ${company.name} (${company.id})`);
   }
 
-  // 2. Create or get test user (OWNER)
   let [user] = await db
     .select()
     .from(users)
-    .where(eq(users.email, TEST_EMAIL))
+    .where(eq(users.email, email))
     .limit(1);
 
   if (!user) {
@@ -54,7 +61,7 @@ export async function seedTestDatabase() {
       .insert(users)
       .values({
         companyId: company.id,
-        email: TEST_EMAIL,
+        email,
         passwordHash,
         name: "Usuari de Test",
         role: "OWNER",
@@ -65,7 +72,6 @@ export async function seedTestDatabase() {
     console.log(`   Reusing user: ${user.name} (${user.id})`);
   }
 
-  // 3. Create default SAT categories
   const existingCategories = await db
     .select()
     .from(workOrderCategories)
@@ -73,58 +79,17 @@ export async function seedTestDatabase() {
 
   if (existingCategories.length === 0) {
     await db.insert(workOrderCategories).values([
-      {
-        companyId: company.id,
-        name: "Reparació",
-        slug: "repair",
-        color: "#ef4444",
-        icon: "Wrench",
-        isDefault: true,
-        sortOrder: 0,
-      },
-      {
-        companyId: company.id,
-        name: "Manteniment",
-        slug: "maintenance",
-        color: "#3b82f6",
-        icon: "ClipboardCheck",
-        isDefault: false,
-        sortOrder: 1,
-      },
-      {
-        companyId: company.id,
-        name: "Instal·lació",
-        slug: "installation",
-        color: "#22c55e",
-        icon: "Package",
-        isDefault: false,
-        sortOrder: 2,
-      },
-      {
-        companyId: company.id,
-        name: "Muntatge",
-        slug: "assembly",
-        color: "#f59e0b",
-        icon: "Hammer",
-        isDefault: false,
-        sortOrder: 3,
-      },
-      {
-        companyId: company.id,
-        name: "Revisió",
-        slug: "inspection",
-        color: "#8b5cf6",
-        icon: "Search",
-        isDefault: false,
-        sortOrder: 4,
-      },
+      { companyId: company.id, name: "Reparació", slug: "repair", color: "#ef4444", icon: "Wrench", isDefault: true, sortOrder: 0 },
+      { companyId: company.id, name: "Manteniment", slug: "maintenance", color: "#3b82f6", icon: "ClipboardCheck", isDefault: false, sortOrder: 1 },
+      { companyId: company.id, name: "Instal·lació", slug: "installation", color: "#22c55e", icon: "Package", isDefault: false, sortOrder: 2 },
+      { companyId: company.id, name: "Muntatge", slug: "assembly", color: "#f59e0b", icon: "Hammer", isDefault: false, sortOrder: 3 },
+      { companyId: company.id, name: "Revisió", slug: "inspection", color: "#8b5cf6", icon: "Search", isDefault: false, sortOrder: 4 },
     ]);
     console.log(`   Created 5 work order categories`);
   } else {
     console.log(`   Reusing ${existingCategories.length} categories`);
   }
 
-  // 4. Create test client
   let [client] = await db
     .select()
     .from(clients)
@@ -137,7 +102,7 @@ export async function seedTestDatabase() {
       .values({
         companyId: company.id,
         name: "Client de Prova",
-        email: "client@prova.local",
+        email: `client-${companySlug}@prova.local`,
         phone: "+34 600 000 000",
         address: "Carrer de Prova, 123, Barcelona",
         location: { lat: 41.3851, lng: 2.1734 },
@@ -157,7 +122,6 @@ export async function seedTestDatabase() {
   return { company, user, client };
 }
 
-// Run if executed directly
 if (import.meta.url === `file://${process.argv[1]}`) {
   seedTestDatabase()
     .then(() => process.exit(0))

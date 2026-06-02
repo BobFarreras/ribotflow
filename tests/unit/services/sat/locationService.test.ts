@@ -5,11 +5,12 @@
  *              Tests CRUD, security (company_id filtering), and distance calculation.
  */
 
-import { describe, it, expect, beforeAll } from "vitest";
+import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { locationService, calculateDistance } from "@/services/sat/work-orders/locationService";
 import { workOrderService } from "@/services/sat/work-orders/workOrderService";
 import type { WorkOrderStatus } from "@/types/sat";
 import { seedTestDatabase } from "../../../db-seed";
+import { cleanupTestDatabase } from "../../../db-cleanup";
 
 let testData: Awaited<ReturnType<typeof seedTestDatabase>>;
 let hasDbConnection = false;
@@ -39,7 +40,7 @@ async function createWorkOrder(status: string) {
 describe("Location Service (Integration)", () => {
   beforeAll(async () => {
     try {
-      testData = await seedTestDatabase();
+      testData = await seedTestDatabase({ companySlug: "test-empresa-location", email: "test-loc@ribotflow.local" });
       hasDbConnection = true;
 
       const order = await createWorkOrder("in_progress");
@@ -180,5 +181,9 @@ describe("Location Service (Integration)", () => {
         locationService.getLastLocation("00000000-0000-0000-0000-000000000000", workOrderId)
       ).rejects.toThrow("Work order not found or access denied");
     });
+  });
+
+  afterAll(async () => {
+    if (hasDbConnection) await cleanupTestDatabase({ companySlug: "test-empresa-location", email: "test-loc@ribotflow.local" });
   });
 });

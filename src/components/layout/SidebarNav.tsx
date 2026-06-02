@@ -32,6 +32,7 @@ import {
   Shield,
   Map,
   Route,
+  Mail,
 } from "lucide-react";
 import { useSidebar } from "./SidebarContext";
 
@@ -110,6 +111,7 @@ const navItems: NavItem[] = [
     icon: Settings,
     subItems: [
       { key: "company", href: "/settings/company", icon: Building2 },
+      { key: "email", href: "/settings/email", icon: Mail },
       { key: "users", href: "/settings/users", icon: Shield },
       { key: "profile", href: "/settings/profile", icon: UserCircle },
     ],

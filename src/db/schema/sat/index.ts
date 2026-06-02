@@ -19,3 +19,4 @@ export { quotes, quotesRelations } from "./quotes";
 export { quoteItems, quoteItemsRelations } from "./quoteItems";
 export { quoteTemplates, quoteTemplatesRelations } from "./quoteTemplates";
 export { quoteStatusHistory, quoteStatusHistoryRelations } from "./quoteStatusHistory";
+export { smtpConfigs, type SmtpConfigRow, type NewSmtpConfigRow } from "./smtpConfigs";

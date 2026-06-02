@@ -5,11 +5,12 @@
  *              and storage. Entity-type agnostic.
  */
 
-import { describe, it, expect, beforeAll } from "vitest";
+import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { signatureService } from "@/services/sat/work-orders/signatureService";
 import { workOrderService } from "@/services/sat/work-orders/workOrderService";
 import type { WorkOrderStatus } from "@/types/sat";
 import { seedTestDatabase } from "../../../db-seed";
+import { cleanupTestDatabase } from "../../../db-cleanup";
 
 let testData: Awaited<ReturnType<typeof seedTestDatabase>>;
 let hasDbConnection = false;
@@ -47,7 +48,7 @@ async function createWorkOrder(status: string) {
 describe("Signature Service (Integration)", () => {
   beforeAll(async () => {
     try {
-      testData = await seedTestDatabase();
+      testData = await seedTestDatabase({ companySlug: "test-empresa-signature", email: "test-sig@ribotflow.local" });
       hasDbConnection = true;
 
       const order = await createWorkOrder("completed");
@@ -142,5 +143,9 @@ describe("Signature Service (Integration)", () => {
       const signature = await signatureService.getByEntity(testData.company.id, "work_order", removeOrder.id);
       expect(signature).toBeNull();
     });
+  });
+
+  afterAll(async () => {
+    if (hasDbConnection) await cleanupTestDatabase({ companySlug: "test-empresa-signature", email: "test-sig@ribotflow.local" });
   });
 });

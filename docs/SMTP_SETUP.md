@@ -44,13 +44,17 @@ Error: self-signed certificate in certificate chain
 Some ISPs and security software replace the SMTP server's TLS certificate with their own self-signed one. Node.js (and nodemailer by default) reject self-signed certificates in the trust chain.
 
 ### Fix
-Add this to `.env.local`:
+Add ONE of these to `.env.local` (DEV ONLY), then **restart the dev server** (Next.js loads envs at startup):
 
 ```env
-# DEV ONLY: accept self-signed certificates in the SMTP TLS chain
-# Set to "true" (default) in production to enforce real cert validation
+# Option A (recommended): nodemailer-level, scoped to SMTP
 SMTP_TLS_REJECT_UNAUTHORIZED=false
+
+# Option B: Node-level, affects ALL TLS in the process
+NODE_TLS_REJECT_UNAUTHORIZED=0
 ```
+
+Production must keep validation enabled.
 
 Restart the dev server. The service will pass `tls.rejectUnauthorized: false` to nodemailer.
 

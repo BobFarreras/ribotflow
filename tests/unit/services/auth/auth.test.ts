@@ -5,12 +5,16 @@
  *              Run `pnpm test:db:setup` before executing these tests locally.
  */
 
-import { describe, it, expect, beforeAll } from "vitest";
+import { describe, it, expect, beforeAll, afterAll } from "vitest";
+import { inArray } from "drizzle-orm";
 import { authService } from "@/services/auth/auth";
+import { db } from "@/db";
+import { companies } from "@/db/schema/auth";
 import { createCompanyFactory } from "../../../factories/company.factory";
 import { createUserFactory } from "../../../factories/user.factory";
 
 let hasDbConnection = false;
+const createdCompanyIds: string[] = [];
 
 describe("Auth Service (Integration)", () => {
   beforeAll(async () => {
@@ -44,6 +48,7 @@ describe("Auth Service (Integration)", () => {
       };
 
       const { company, user } = await authService.createCompanyAndOwner(input);
+      createdCompanyIds.push(company.id);
 
       expect(company).toBeDefined();
       expect(company.name).toBe(input.companyName);
@@ -65,12 +70,20 @@ describe("Auth Service (Integration)", () => {
         password: "SecureP@ss123",
       };
 
-      await authService.createCompanyAndOwner(input);
+      const { company: firstCompany } = await authService.createCompanyAndOwner(input);
+      createdCompanyIds.push(firstCompany.id);
 
       await expect(authService.createCompanyAndOwner(input)).rejects.toThrow(
         "An account with this email already exists"
       );
     });
+  });
+
+  afterAll(async () => {
+    if (hasDbConnection && createdCompanyIds.length > 0) {
+      // Cascade FKs handle users, work orders, quotes, etc.
+      await db.delete(companies).where(inArray(companies.id, createdCompanyIds));
+    }
   });
 
   describe("registerUser", () => {
@@ -83,6 +96,7 @@ describe("Auth Service (Integration)", () => {
         email: `reg-owner-${Date.now()}@test.com`,
         password: "SecureP@ss123",
       });
+      createdCompanyIds.push(companyResult.company.id);
 
       const input = {
         name: "Jane Doe",

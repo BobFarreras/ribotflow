@@ -201,13 +201,7 @@ This document contains all critical context from previous development sessions i
 | `SidebarContext.test.tsx` | 9 | Sidebar state management |
 | `SidebarNav.test.tsx` | 11 | Navigation rendering + active states |
 
-**WARNING:** Running tests creates temporary users in the database. To clean up:
-```bash
-# Option A: Full reset (use with caution!)
-# Delete all users except DigitAIStudios, then re-seed
-
-# Option B: Accept extra test users (they don't affect functionality)
-```
+**Test cleanup (2026-06-02):** Each integration test file uses a **unique company slug + email** (`test-empresa-{workorder,material,signature,location,attachment}`) and calls `cleanupTestDatabase()` in `afterAll` to drop the company + cascading FKs. The dev DB stays clean — only `DigitAIStudios` should remain after `pnpm test`. If you see extra `Empresa de Test *` rows, run `pnpm test` again to trigger the `afterAll` hook (or remove them manually with `DELETE FROM companies WHERE tenant_slug LIKE 'test-empresa%';`).
 
 ---
 
@@ -638,7 +632,9 @@ quotes/Empresa_Test/PRES-2026-0001-signature.png
 | 01/06/2026 | Refactor Fases 2.3-2.4 completades | `src/components/sat/` i `src/actions/sat/` ara tenen subcarpetes (quotes/, work-orders/, shared/ o clients/). S'han afegit shims `.tsx`/`.ts` de re-export per backward compat. Resta: Fase 3 (pàgines grans). |
 | 01/06/2026 | NO usar shims de re-export | Els shims de backward compat són deute tècnic. Cal actualitzar tots els `import` als paths nous i esborrar els shims immediatament. Refs: commit `25ca0aa` (esborrats 54 shims) i `7c895a3` (esborrats 9 shims de serveis restants). Si un agent afegeix shims, és un anti-patró. |
 | 01/06/2026 | Veredict pre-CI (`pnpm veredict`) | Nou script `scripts/veredict.ts` corre 6 health checks (arquitectura, obsolets, tests, secrets, config, imports). Integrat a `ci:check`. Qualsevol agent ha de córrer `pnpm veredict` abans de commit per veure què trenca. Refs: `a86ecf3`. |
-| 01/06/2026 | Self-signed SMTP cert a casa | A xarxes domèstiques amb proxy/AV interceptant TLS, l'SMTP falla amb `self-signed certificate in certificate chain`. Solució: afegir `SMTP_TLS_REJECT_UNAUTHORIZED=false` a `.env.local` (DEV ONLY). El codi ja ho suporta via env var. Refs: `3396448`. |
+| 01/06/2026 | Self-signed SMTP cert a casa | A xarxes domèstiques amb proxy/AV interceptant TLS, l'SMTP falla amb `self-signed certificate in certificate chain`. Solucions DEV ONLY: (A) `SMTP_TLS_REJECT_UNAUTHORIZED=false` a `.env.local` (recomanada, scoped); (B) `NODE_TLS_REJECT_UNAUTHORIZED=0` (Node-level, global). Cal REINICIAR el dev server. El codi (`notificationService`) té log diagnòstic de la config SMTP per identificar si la var s'està llegint. Refs: `3396448`, sessió debug SMTP. |
+| 01/06/2026 | **Principi Zero-Fricció per a l'empresa final** | L'usuari prioritza que les empreses configurin el **menys possible**. Cada variable/env var extra és una porta a errors. Direcció: modelar l'empresa com a entitat de primer nivell amb configuració via UI, no pas env vars globals. **Self-hosted**: admin configura 1 cop a la UI. **Cloud**: cada tenant la seva config. Això ja era la direcció correcta pel multi-tenancy, però ara és també un principi d'UX. |
+| 01/06/2026 | **Direcció Empresa-com-a-Entitat (SMTP config per company)** | Cada empresa tindrà la seva config de correu (no env vars globals). **MVP aquesta sessió**: schema ampliat (`companies.email`, `address_*`, `default_tax_rate`, `quote_prefix`) + taula `smtp_configs` (1:1) amb `password_encrypted` (AES-256-GCM) + encryption utility + `smtpConfigService` + `notificationService` llegeix per `companyId` amb fallback a env + UI `/settings/email` amb botó "Test connection" i checkbox "Accept self-signed". **Fase 2**: `/settings/general`, `/settings/branding`, `/settings/numbering`, IMAP, plantilles PDF per empresa. |
 
 ---
 

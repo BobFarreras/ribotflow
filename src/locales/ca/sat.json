@@ -238,5 +238,84 @@
       "emptyState": "No hi ha plantilles creades",
       "usageCount": "Ús: {{count}} cops"
     }
+  },
+  "settings": {
+    "email": {
+      "title": "Correu professional",
+      "subtitle": "Envia els teus pressupostos i notificacions des del correu de la teva empresa. Si no configures res, s'utilitzen les dades per defecte del servidor.",
+      "providers": {
+        "title": "Comencem ràpid",
+        "subtitle": "Toca el teu proveïdor de correu per omplir les dades automàticament.",
+        "gmail": "Gmail",
+        "outlook": "Outlook",
+        "yahoo": "Yahoo",
+        "hostinger": "Hostinger",
+        "ionos": "Ionos / 1&1",
+        "custom": "Un altre correu",
+        "presetNote": "Has de seleccionar el proveïdor per omplir automàticament. Després podràs ajustar la configuració."
+      },
+      "sections": {
+        "server": "Dades del servidor",
+        "credentials": "Credencials del teu correu",
+        "sender": "Com apareix el remitent (opcional)",
+        "advanced": "Opcions avançades"
+      },
+      "fields": {
+        "host": "Servidor de correu sortint",
+        "hostHint": "L'adreça del servidor que envia els correus (te la dona el teu proveïdor).",
+        "hostPlaceholder": "smtp.elproveidor.com",
+        "port": "Port",
+        "portHint": "Normalment és 465 (segur) o 587 (recomanat). Si no ho saps, deixa 587.",
+        "user": "El teu correu",
+        "userHint": "L'adreça des de la qual vols enviar, p. ex. info@la-teva-empresa.com",
+        "password": "Contrasenya del correu",
+        "passwordHint": "Per a Gmail i Outlook necessitaràs una \"contrasenya d'aplicació\", no la teva contrasenya habitual.",
+        "secure": "Connexió segura (recomanat)",
+        "secureHint": "Activa-ho sempre que el teu proveïdor ho permeti. No l'apagis si no saps què és.",
+        "acceptSelfSigned": "El servidor té un certificat propi",
+        "acceptSelfSignedHint": "Marca-ho només si el teu servidor és un correu intern o de proves. No ho facis servir amb Gmail, Outlook o similars.",
+        "fromName": "Nom del remitent",
+        "fromNameHint": "El nom que veurà el client quan rebi el correu, p. ex. \"Reparacions Ribot\".",
+        "fromNamePlaceholder": "Reparacions Ribot",
+        "fromEmail": "Un altre correu de remitent (opcional)",
+        "fromEmailHint": "Per defecte s'utilitza el correu d'inici de sessió. Canvia-ho només si vols que surti un altre."
+      },
+      "actions": {
+        "save": "Desar",
+        "saving": "Desant...",
+        "test": "Prova la connexió",
+        "testing": "Provant...",
+        "delete": "Eliminar",
+        "deleteTitle": "Eliminar la configuració",
+        "confirmDelete": "Si elimines la configuració, els correus s'enviaran amb les dades per defecte del servidor. Continuar?"
+      },
+      "status": {
+        "configured": "Actiu",
+        "configuredDetail": "El correu s'envia amb la teva configuració.",
+        "notConfigured": "Sense configurar",
+        "notConfiguredDetail": "Els correus surten amb la configuració per defecte del servidor. Configura-ho per personalitzar.",
+        "lastUpdated": "Actualitzat el {{date}}",
+        "fromFallback": "Si no hi ha res configurat aquí, fem servir el servidor per defecte del sistema."
+      },
+      "feedback": {
+        "saved": "Configuració desada correctament",
+        "savedHint": "Ja pots provar la connexió.",
+        "deleted": "Configuració eliminada",
+        "testSuccess": "Connexió correcta",
+        "testSuccessHint": "Tot funciona. Els teus correus sortiran correctament.",
+        "testFailed": "No s'ha pogut connectar",
+        "testFailedHint": "Revisa les dades i torna-ho a provar.",
+        "testCertHelp": "El servidor té un certificat no reconegut. Activa l'opció \"El servidor té un certificat propi\" i torna-ho a provar."
+      },
+      "permissions": {
+        "ownerOnly": "Només l'OWNER pot modificar la configuració del correu.",
+        "adminReadOnly": "Pots provar la connexió i veure la configuració, però no modificar-la."
+      },
+      "errors": {
+        "load": "No s'ha pogut carregar la configuració",
+        "save": "No s'ha pogut desar la configuració",
+        "test": "No s'ha pogut provar la connexió"
+      }
+    }
   }
 }

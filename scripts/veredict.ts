@@ -153,7 +153,7 @@ record(
 
 // ── Veredict 4: No hard-coded secrets ────────────────────────────────
 const secretPatterns: { pattern: RegExp; label: string }[] = [
-  { pattern: /(smtp|password|api[_-]?key|secret)\s*[:=]\s*["'][^"']{8,}["']/i, label: "potential secret in assignment" },
+  { pattern: /(smtp|password|api[_-]?key|secret)\s*[:=]\s*["'](?!\*+["'])[^"']{8,}["']/i, label: "potential secret in assignment" },
   { pattern: /-----BEGIN (RSA |EC |OPENSSH |)PRIVATE KEY-----/, label: "private key embedded" },
 ];
 const secretFindings: string[] = [];
@@ -197,6 +197,7 @@ const documentedKnown = new Set([
   "MINIO_ENDPOINT", "MINIO_PORT", "MINIO_ROOT_USER", "MINIO_ROOT_PASSWORD", "MINIO_PUBLIC_URL_BASE",
   "SENTRY_DSN", "NEXT_PUBLIC_APP_URL", "NEXT_PUBLIC_APP_MODE", "NEXT_PUBLIC_SENTRY_ENVIRONMENT", "NEXT_PUBLIC_SENTRY_DSN",
   "SMTP_HOST", "SMTP_PORT", "SMTP_USER", "SMTP_PASSWORD", "SMTP_TLS_REJECT_UNAUTHORIZED", "SMTP_REQUIRE_TLS",
+  "NODE_TLS_REJECT_UNAUTHORIZED",
   "NEXT_RUNTIME",
 ]);
 const undocumented = [...usedVars].filter((v) => !declaredVars.has(v) && !documentedKnown.has(v));

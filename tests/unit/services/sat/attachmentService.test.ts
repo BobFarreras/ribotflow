@@ -4,10 +4,11 @@
  * Description: Integration tests for attachmentService with real database.
  */
 
-import { describe, it, expect, beforeAll } from "vitest";
+import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { attachmentService } from "@/services/sat/work-orders/attachmentService";
 import { workOrderService } from "@/services/sat/work-orders/workOrderService";
 import { seedTestDatabase } from "../../../db-seed";
+import { cleanupTestDatabase } from "../../../db-cleanup";
 
 let testData: Awaited<ReturnType<typeof seedTestDatabase>>;
 let hasDbConnection = false;
@@ -16,7 +17,7 @@ let workOrderId: string;
 describe("Attachment Service (Integration)", () => {
   beforeAll(async () => {
     try {
-      testData = await seedTestDatabase();
+      testData = await seedTestDatabase({ companySlug: "test-empresa-attachment", email: "test-att@ribotflow.local" });
       hasDbConnection = true;
 
       const categoryId = await workOrderService.getDefaultCategoryId(
@@ -145,5 +146,9 @@ describe("Attachment Service (Integration)", () => {
         attachmentService.remove("00000000-0000-0000-0000-000000000000", workOrderId)
       ).rejects.toThrow("Attachment not found or access denied");
     });
+  });
+
+  afterAll(async () => {
+    if (hasDbConnection) await cleanupTestDatabase({ companySlug: "test-empresa-attachment", email: "test-att@ribotflow.local" });
   });
 });

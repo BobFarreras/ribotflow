@@ -128,6 +128,53 @@ describe("notificationService.sendEmailWithAttachment — SMTP config", () => {
     );
   });
 
+  it("disables TLS cert validation when NODE_TLS_REJECT_UNAUTHORIZED=0 (Node-level fallback)", async () => {
+    baseValidConfig();
+    process.env.SMTP_PORT = "587";
+    delete process.env.SMTP_TLS_REJECT_UNAUTHORIZED;
+    process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+    await notificationService.sendQuoteEmail({
+      to: "client@x.com",
+      subject: "s",
+      html: "<p>h</p>",
+      quoteNumber: "PRE-1",
+      companyId: "c1",
+    });
+    expect(createTransportMock).toHaveBeenCalledWith(
+      expect.objectContaining({ tls: { rejectUnauthorized: false } })
+    );
+  });
+
+  it("returns clear actionable error when sendMail rejects with cert error (with fix instructions)", async () => {
+    baseValidConfig();
+    sendMailMock.mockRejectedValueOnce(new Error("self-signed certificate in certificate chain"));
+    const result = await notificationService.sendQuoteEmail({
+      to: "client@x.com",
+      subject: "s",
+      html: "<p>h</p>",
+      quoteNumber: "PRE-1",
+      companyId: "c1",
+    });
+    expect(result.success).toBe(false);
+    expect(result.error).toContain("self-signed certificate");
+    expect(result.error).toMatch(/SMTP_TLS_REJECT_UNAUTHORIZED|NODE_TLS_REJECT_UNAUTHORIZED/);
+  });
+
+  it("returns plain error message for non-cert SMTP errors (no fix instructions)", async () => {
+    baseValidConfig();
+    sendMailMock.mockRejectedValueOnce(new Error("Invalid login: 535 Authentication failed"));
+    const result = await notificationService.sendQuoteEmail({
+      to: "client@x.com",
+      subject: "s",
+      html: "<p>h</p>",
+      quoteNumber: "PRE-1",
+      companyId: "c1",
+    });
+    expect(result.success).toBe(false);
+    expect(result.error).toContain("Authentication failed");
+    expect(result.error).not.toMatch(/SMTP_TLS_REJECT_UNAUTHORIZED/);
+  });
+
   it("returns success when sendMail resolves", async () => {
     baseValidConfig();
     const result = await notificationService.sendQuoteEmail({
@@ -178,5 +225,147 @@ describe("notificationService.sendEmailWithAttachment — SMTP config", () => {
     });
     expect(result.success).toBe(false);
     expect(result.error).toContain("self-signed certificate");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Per-company DB config (preferred over env)
+// ---------------------------------------------------------------------------
+
+vi.mock("@/services/sat/company/smtpConfigService", () => ({
+  smtpConfigService: {
+    getByCompany: vi.fn(),
+  },
+}));
+
+import { smtpConfigService } from "@/services/sat/company/smtpConfigService";
+
+describe("notificationService — per-company DB config", () => {
+  const originalEnv = { ...process.env };
+  const DB_CONFIG = {
+    id: "cfg-1",
+    companyId: "company-with-db-config",
+    host: "smtp.db-host.com",
+    port: 587,
+    user: "db-user@x.com",
+    password: "db-pass",
+    secure: false,
+    acceptSelfSigned: true,
+    fromName: "DB Company",
+    fromEmail: "noreply@db-company.com",
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  };
+
+  beforeEach(() => {
+    sendMailMock.mockReset();
+    sendMailMock.mockResolvedValue({ messageId: "test-id" });
+    createTransportMock.mockClear();
+    (smtpConfigService.getByCompany as ReturnType<typeof vi.fn>).mockReset();
+  });
+
+  afterEach(() => {
+    process.env = { ...originalEnv };
+  });
+
+  it("prefers DB config over env vars when present", async () => {
+    process.env.SMTP_HOST = "smtp.env-host.com";
+    process.env.SMTP_PORT = "465";
+    process.env.SMTP_USER = "env-user@x.com";
+    process.env.SMTP_PASSWORD = "env-pass";
+    (smtpConfigService.getByCompany as ReturnType<typeof vi.fn>).mockResolvedValueOnce(DB_CONFIG);
+    await notificationService.sendQuoteEmail({
+      to: "client@x.com",
+      subject: "s",
+      html: "<p>h</p>",
+      quoteNumber: "PRE-1",
+      companyId: DB_CONFIG.companyId,
+    });
+    expect(createTransportMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        host: "smtp.db-host.com",
+        port: 587,
+        auth: { user: "db-user@x.com", pass: "db-pass" },
+        tls: { rejectUnauthorized: false },
+      })
+    );
+  });
+
+  it("uses 'from' from DB config (overrides payload default)", async () => {
+    process.env.SMTP_HOST = "smtp.env-host.com";
+    process.env.SMTP_PORT = "587";
+    process.env.SMTP_USER = "env-user@x.com";
+    process.env.SMTP_PASSWORD = "env-pass";
+    (smtpConfigService.getByCompany as ReturnType<typeof vi.fn>).mockResolvedValueOnce(DB_CONFIG);
+    await notificationService.sendQuoteEmail({
+      to: "client@x.com",
+      subject: "s",
+      html: "<p>h</p>",
+      quoteNumber: "PRE-1",
+      companyId: DB_CONFIG.companyId,
+    });
+    expect(sendMailMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        from: `"DB Company" <noreply@db-company.com>`,
+      })
+    );
+  });
+
+  it("falls back to env vars when company has no DB config (self-hosted compat)", async () => {
+    process.env.SMTP_HOST = "smtp.env-host.com";
+    process.env.SMTP_PORT = "587";
+    process.env.SMTP_USER = "env-user@x.com";
+    process.env.SMTP_PASSWORD = "env-pass";
+    (smtpConfigService.getByCompany as ReturnType<typeof vi.fn>).mockResolvedValueOnce(null);
+    await notificationService.sendQuoteEmail({
+      to: "client@x.com",
+      subject: "s",
+      html: "<p>h</p>",
+      quoteNumber: "PRE-1",
+      companyId: "company-without-db-config",
+    });
+    expect(createTransportMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        host: "smtp.env-host.com",
+        auth: { user: "env-user@x.com", pass: "env-pass" },
+      })
+    );
+  });
+
+  it("returns helpful error mentioning /settings/email when neither DB nor env is set", async () => {
+    (smtpConfigService.getByCompany as ReturnType<typeof vi.fn>).mockResolvedValueOnce(null);
+    delete process.env.SMTP_HOST;
+    delete process.env.SMTP_USER;
+    delete process.env.SMTP_PASSWORD;
+    const result = await notificationService.sendQuoteEmail({
+      to: "client@x.com",
+      subject: "s",
+      html: "<p>h</p>",
+      quoteNumber: "PRE-1",
+      companyId: "company-no-config",
+    });
+    expect(result.success).toBe(false);
+    expect(result.error).toMatch(/settings\/email|Configura-ho/);
+  });
+
+  it("falls back to env even if DB throws (graceful degradation)", async () => {
+    process.env.SMTP_HOST = "smtp.env-host.com";
+    process.env.SMTP_PORT = "587";
+    process.env.SMTP_USER = "env-user@x.com";
+    process.env.SMTP_PASSWORD = "env-pass";
+    (smtpConfigService.getByCompany as ReturnType<typeof vi.fn>).mockRejectedValueOnce(
+      new Error("DB connection lost")
+    );
+    const result = await notificationService.sendQuoteEmail({
+      to: "client@x.com",
+      subject: "s",
+      html: "<p>h</p>",
+      quoteNumber: "PRE-1",
+      companyId: "any",
+    });
+    expect(result.success).toBe(true);
+    expect(createTransportMock).toHaveBeenCalledWith(
+      expect.objectContaining({ host: "smtp.env-host.com" })
+    );
   });
 });

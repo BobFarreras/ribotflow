@@ -4,9 +4,10 @@
  * Descripció: Tests d'integració per al workOrderService amb base de dades real.
  */
 
-import { describe, it, expect, beforeAll } from "vitest";
+import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { workOrderService } from "@/services/sat/work-orders/workOrderService";
 import { seedTestDatabase } from "../../../db-seed";
+import { cleanupTestDatabase } from "../../../db-cleanup";
 
 let testData: Awaited<ReturnType<typeof seedTestDatabase>>;
 let hasDbConnection = false;
@@ -14,11 +15,15 @@ let hasDbConnection = false;
 describe("WorkOrder Service (Integration)", () => {
   beforeAll(async () => {
     try {
-      testData = await seedTestDatabase();
+      testData = await seedTestDatabase({ companySlug: "test-empresa-workorder", email: "test-wo@ribotflow.local" });
       hasDbConnection = true;
     } catch (err) {
       console.warn("⚠️ Skipping integration tests:", err);
     }
+  });
+
+  afterAll(async () => {
+    if (hasDbConnection) await cleanupTestDatabase({ companySlug: "test-empresa-workorder", email: "test-wo@ribotflow.local" });
   });
 
   describe("getNextOrderNumber", () => {

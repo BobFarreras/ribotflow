@@ -238,5 +238,84 @@
       "emptyState": "No hay plantillas creadas",
       "usageCount": "Uso: {{count}} veces"
     }
+  },
+  "settings": {
+    "email": {
+      "title": "Correo profesional",
+      "subtitle": "Envía tus presupuestos y notificaciones desde el correo de tu empresa. Si no configuras nada, se usan los datos por defecto del servidor.",
+      "providers": {
+        "title": "Empezamos rápido",
+        "subtitle": "Toca tu proveedor de correo para rellenar los datos automáticamente.",
+        "gmail": "Gmail",
+        "outlook": "Outlook",
+        "yahoo": "Yahoo",
+        "hostinger": "Hostinger",
+        "ionos": "Ionos / 1&1",
+        "custom": "Otro correo",
+        "presetNote": "Selecciona tu proveedor para autocompletar. Después podrás ajustar la configuración."
+      },
+      "sections": {
+        "server": "Datos del servidor",
+        "credentials": "Credenciales de tu correo",
+        "sender": "Cómo aparece el remitente (opcional)",
+        "advanced": "Opciones avanzadas"
+      },
+      "fields": {
+        "host": "Servidor de correo saliente",
+        "hostHint": "La dirección del servidor que envía los correos (te la da tu proveedor).",
+        "hostPlaceholder": "smtp.tuproveedor.com",
+        "port": "Puerto",
+        "portHint": "Normalmente es 465 (seguro) o 587 (recomendado). Si no lo sabes, deja 587.",
+        "user": "Tu correo",
+        "userHint": "La dirección desde la que quieres enviar, p. ej. info@tu-empresa.com",
+        "password": "Contraseña del correo",
+        "passwordHint": "Para Gmail y Outlook necesitarás una \"contraseña de aplicación\", no tu contraseña habitual.",
+        "secure": "Conexión segura (recomendado)",
+        "secureHint": "Actívalo siempre que tu proveedor lo permita. No lo apagues si no sabes qué es.",
+        "acceptSelfSigned": "El servidor tiene un certificado propio",
+        "acceptSelfSignedHint": "Marca solo si tu servidor es un correo interno o de pruebas. No lo uses con Gmail, Outlook o similares.",
+        "fromName": "Nombre del remitente",
+        "fromNameHint": "El nombre que verá el cliente cuando reciba el correo, p. ej. \"Reparaciones Ribot\".",
+        "fromNamePlaceholder": "Reparaciones Ribot",
+        "fromEmail": "Otro correo de remitente (opcional)",
+        "fromEmailHint": "Por defecto se usa el correo de inicio de sesión. Cámbialo solo si quieres que aparezca otro."
+      },
+      "actions": {
+        "save": "Guardar",
+        "saving": "Guardando...",
+        "test": "Probar conexión",
+        "testing": "Probando...",
+        "delete": "Eliminar",
+        "deleteTitle": "Eliminar la configuración",
+        "confirmDelete": "Si eliminas la configuración, los correos se enviarán con los datos por defecto del servidor. ¿Continuar?"
+      },
+      "status": {
+        "configured": "Activo",
+        "configuredDetail": "El correo se envía con tu configuración.",
+        "notConfigured": "Sin configurar",
+        "notConfiguredDetail": "Los correos salen con la configuración por defecto del servidor. Configúralo para personalizar.",
+        "lastUpdated": "Actualizado el {{date}}",
+        "fromFallback": "Si no hay nada configurado aquí, usamos el servidor por defecto del sistema."
+      },
+      "feedback": {
+        "saved": "Configuración guardada correctamente",
+        "savedHint": "Ya puedes probar la conexión.",
+        "deleted": "Configuración eliminada",
+        "testSuccess": "Conexión correcta",
+        "testSuccessHint": "Todo funciona. Tus correos saldrán correctamente.",
+        "testFailed": "No se ha podido conectar",
+        "testFailedHint": "Revisa los datos y vuelve a probar.",
+        "testCertHelp": "El servidor tiene un certificado no reconocido. Activa la opción \"El servidor tiene un certificado propio\" y vuelve a probar."
+      },
+      "permissions": {
+        "ownerOnly": "Solo el OWNER puede modificar la configuración del correo.",
+        "adminReadOnly": "Puedes probar la conexión y ver la configuración, pero no modificarla."
+      },
+      "errors": {
+        "load": "No se ha podido cargar la configuración",
+        "save": "No se ha podido guardar la configuración",
+        "test": "No se ha podido probar la conexión"
+      }
+    }
   }
 }
