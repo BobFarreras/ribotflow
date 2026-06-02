@@ -52,6 +52,7 @@
         "label": "Configuración",
         "subItems": {
           "company": "Empresa",
+          "email": "Correo",
           "users": "Usuarios",
           "profile": "Perfil"
         }

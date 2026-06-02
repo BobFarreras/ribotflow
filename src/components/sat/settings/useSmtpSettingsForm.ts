@@ -1,22 +1,31 @@
 /**
- * Creation/modification date: 01/06/2026
+ * Creation/modification date: 02/06/2026
  * Path: src/components/sat/settings/useSmtpSettingsForm.ts
  * Description: Form state + handlers for the per-company SMTP config form.
- *              Kept separate from the JSX so the form component stays small.
- *              Exposes granular setters (single fields), patch helpers for
- *              grouped sub-forms (connection/sender), and preset application.
+ *              Handles save (with success/error feedback), test connection,
+ *              delete, and preset application. Uses server actions directly.
+ *              After save/delete, calls router.refresh() so the Server Component
+ *              re-fetches and the form props update (enables test button, etc.).
  */
 
 "use client";
 
 import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { updateSmtpConfigAction } from "@/actions/sat/company/updateSmtpConfig";
 import { deleteSmtpConfigAction } from "@/actions/sat/company/deleteSmtpConfig";
 import { testSmtpConnectionAction } from "@/actions/sat/company/testSmtpConnection";
 import type { SmtpConfigDTO } from "./SmtpSettingsForm";
 import type { SmtpPreset } from "./ProviderPresets";
+import type { TestResult } from "./SmtpTestBanner";
+
+export type SaveStatus = "idle" | "saving" | "success" | "error";
 
 export function useSmtpSettingsForm(initialConfig: SmtpConfigDTO | null) {
+  const t = useTranslations("sat.settings.email");
+  const router = useRouter();
+
   const [host, setHost] = useState(initialConfig?.host ?? "");
   const [port, setPort] = useState(initialConfig?.port ?? 587);
   const [user, setUser] = useState(initialConfig?.user ?? "");
@@ -31,7 +40,10 @@ export function useSmtpSettingsForm(initialConfig: SmtpConfigDTO | null) {
   const [isSaving, startSave] = useTransition();
   const [isTesting, startTest] = useTransition();
   const [isDeleting, startDelete] = useTransition();
-  const [testResult, setTestResult] = useState<{ ok: boolean; msg: string } | null>(null);
+  const [testResult, setTestResult] = useState<TestResult | null>(null);
+  const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [hasConfig, setHasConfig] = useState(!!initialConfig);
 
   function applyConnectionPatch(patch: Partial<{
     host: string;
@@ -70,45 +82,70 @@ export function useSmtpSettingsForm(initialConfig: SmtpConfigDTO | null) {
     setTestResult(null);
   }
 
-  function save(t: (k: string) => string, onSuccess: () => void) {
+  async function save() {
+    setSaveStatus("saving");
+    setSaveError(null);
     startSave(async () => {
-      const r = await updateSmtpConfigAction({
-        host,
-        port,
-        user,
-        password,
-        secure,
-        acceptSelfSigned,
-        fromName: fromName || null,
-        fromEmail: fromEmail || null,
-      });
-      if (r.success) {
-        onSuccess();
-        setPassword("********");
+      try {
+        const r = await updateSmtpConfigAction({
+          host,
+          port,
+          user,
+          password,
+          secure,
+          acceptSelfSigned,
+          fromName: fromName || null,
+          fromEmail: fromEmail || null,
+        });
+        if (r.success) {
+          setSaveStatus("success");
+          setHasConfig(true);
+          setPassword("********");
+          setTimeout(() => setSaveStatus("idle"), 3000);
+          router.refresh();
+        } else {
+          setSaveStatus("error");
+          setSaveError(r.error ?? t("errors.save"));
+        }
+      } catch {
+        setSaveStatus("error");
+        setSaveError(t("errors.save"));
       }
     });
   }
 
-  function test() {
+  async function test() {
     setTestResult(null);
     startTest(async () => {
-      const r = await testSmtpConnectionAction();
-      setTestResult({ ok: r.success, msg: r.error ?? "" });
+      try {
+        const r = await testSmtpConnectionAction();
+        setTestResult({ success: r.success, error: r.error ?? null });
+      } catch {
+        setTestResult({ success: false, error: t("errors.test") });
+      }
     });
   }
 
-  function remove(t: (k: string) => string) {
+  async function remove() {
     if (!window.confirm(t("actions.confirmDelete"))) return;
     startDelete(async () => {
-      const r = await deleteSmtpConfigAction();
-      if (r.success) reset();
+      try {
+        const r = await deleteSmtpConfigAction();
+        if (r.success) {
+          setHasConfig(false);
+          reset();
+          router.refresh();
+        }
+      } catch {
+        // silently fail — user can try again
+      }
     });
   }
 
   return {
     state: {
       host, port, user, password, secure, acceptSelfSigned, fromName, fromEmail,
-      isSaving, isTesting, isDeleting, testResult,
+      isSaving, isTesting, isDeleting, testResult, saveStatus, saveError, hasConfig,
     },
     setters: { setHost, setPort, setUser, setPassword, setSecure, setAcceptSelfSigned, setFromName, setFromEmail },
     actions: { save, test, remove },

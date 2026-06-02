@@ -236,7 +236,7 @@
       "title": "Plantilles de Pressupost",
       "newButton": "Nova Plantilla",
       "emptyState": "No hi ha plantilles creades",
-      "usageCount": "Ús: {{count}} cops"
+      "usageCount": "Ús: {count} cops"
     }
   },
   "settings": {
@@ -258,6 +258,7 @@
         "server": "Dades del servidor",
         "credentials": "Credencials del teu correu",
         "sender": "Com apareix el remitent (opcional)",
+        "senderHint": "El nom i correu que veurà el client quan rebi un pressupost.",
         "advanced": "Opcions avançades"
       },
       "fields": {
@@ -278,7 +279,12 @@
         "fromNameHint": "El nom que veurà el client quan rebi el correu, p. ex. \"Reparacions Ribot\".",
         "fromNamePlaceholder": "Reparacions Ribot",
         "fromEmail": "Un altre correu de remitent (opcional)",
-        "fromEmailHint": "Per defecte s'utilitza el correu d'inici de sessió. Canvia-ho només si vols que surti un altre."
+        "fromEmailHint": "Per defecte s'utilitza el correu d'inici de sessió. Canvia-ho només si vols que surti un altre.",
+        "fromEmailPlaceholder": "no-responder@la-teva-empresa.com",
+        "userPlaceholder": "correu@exemple.com",
+        "passwordPlaceholder": "Contrasenya d'aplicació",
+        "showPassword": "Mostra la contrasenya",
+        "hidePassword": "Amaga la contrasenya"
       },
       "actions": {
         "save": "Desar",
@@ -294,12 +300,13 @@
         "configuredDetail": "El correu s'envia amb la teva configuració.",
         "notConfigured": "Sense configurar",
         "notConfiguredDetail": "Els correus surten amb la configuració per defecte del servidor. Configura-ho per personalitzar.",
-        "lastUpdated": "Actualitzat el {{date}}",
+        "lastUpdated": "Actualitzat el {date}",
         "fromFallback": "Si no hi ha res configurat aquí, fem servir el servidor per defecte del sistema."
       },
-      "feedback": {
+"feedback": {
         "saved": "Configuració desada correctament",
-        "savedHint": "Ja pots provar la connexió.",
+        "saving": "Desant...",
+        "saveError": "No s'ha pogut desar la configuració",
         "deleted": "Configuració eliminada",
         "testSuccess": "Connexió correcta",
         "testSuccessHint": "Tot funciona. Els teus correus sortiran correctament.",
@@ -309,7 +316,7 @@
       },
       "permissions": {
         "ownerOnly": "Només l'OWNER pot modificar la configuració del correu.",
-        "adminReadOnly": "Pots provar la connexió i veure la configuració, però no modificar-la."
+        "adminCanTest": "Pots provar la connexió i veure la configuració, però no modificar-la."
       },
       "errors": {
         "load": "No s'ha pogut carregar la configuració",

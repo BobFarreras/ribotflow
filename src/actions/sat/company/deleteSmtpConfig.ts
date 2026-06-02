@@ -11,6 +11,7 @@
 
 import { auth } from "@/lib/auth";
 import { smtpConfigService } from "@/services/sat/company/smtpConfigService";
+import { clearSmtpCache } from "@/services/notifications/notificationService";
 import { revalidatePath } from "next/cache";
 
 export async function deleteSmtpConfigAction() {
@@ -23,6 +24,7 @@ export async function deleteSmtpConfigAction() {
       return { success: false, error: "Only OWNER can delete SMTP config" };
     }
     await smtpConfigService.delete(session.user.companyId);
+    clearSmtpCache(session.user.companyId);
     revalidatePath("/settings/email");
     return { success: true };
   } catch (err) {

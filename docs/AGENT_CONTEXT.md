@@ -23,7 +23,7 @@ This document contains all critical context from previous development sessions i
 **Type:** Enterprise Operating System (ERP, SAT, CRM, Billing, Access Control)
 **Stack:** Next.js 16 + React 19 + TypeScript + PostgreSQL + Drizzle ORM + Auth.js v5
 **Language:** English code, Catalan/Spanish UI via i18n
-**Branch:** `features/sat-work-orders` (active development)
+**Branch:** `refactor/pdf-solid-architecture` (active development, 18+ commits ahead of `features/sat-work-orders`)
 
 ---
 
@@ -64,6 +64,7 @@ This document contains all critical context from previous development sessions i
 - Always check `session.user.companyId`
 - Always call `revalidatePath()` after mutations
 - Client-side `signIn` from `next-auth/react` for login/registration (NOT server-side)
+- After save/delete actions that modify DB config, call `clearSmtpCache(companyId)` to invalidate in-memory cache
 
 ---
 
@@ -134,7 +135,7 @@ This document contains all critical context from previous development sessions i
 - [x] Pagination (25/50/100 per page)
 - [x] Routing engine agnostic (Haversine free / OpenRouteService free / Google Maps premium)
 - [x] Travel billing service (distance × rate per km)
-- [x] Notification service (email SMTP with lazy nodemailer import)
+- [x] Notification service (email SMTP with lazy nodemailer import, per-company DB config with env fallback, 5-min cache)
 - [x] Category CRUD with visual icon picker (~12 SVG icons) and color picker
 - [x] Client CRUD (list, detail, create)
 - [x] Category icon propagation — `icon` field flows from DB → Service → all 6 UI components
@@ -143,6 +144,8 @@ This document contains all critical context from previous development sessions i
 - [x] **Quote default values** (30 days validity, conditions, work description)
 - [x] **Quote collapsible sections** in editor for better UX
 - [x] **Quote integration with OT detail** — shows quotes list in OT detail page
+- [x] **SMTP settings page** (`/settings/email`) — Per-company SMTP config with provider presets, encrypted passwords, test connection, self-signed cert option
+- [x] **Company settings schema** — Migration 0010 adds `smtp_configs` table + company fields (email, website, address_*, default_tax_rate, quote_prefix)
 
 ### Work Order Statuses (All Implemented)
 | Status | Catalan | Spanish |
@@ -168,7 +171,7 @@ This document contains all critical context from previous development sessions i
 5. **Email notifications on status changes** for work orders
 6. **Calendar integration** for scheduled dates
 
-> ⚠️ **SMTP Setup** — See `docs/SMTP_SETUP.md`. The system reads `SMTP_PASSWORD` (NOT `SMTP_PASS`). If env vars are missing, errors now show in the UI toast, not just server logs.
+> **SMTP Configuration** — See `docs/SMTP_SETUP.md`. The system uses DB-first config (`smtp_configs` table per company, encrypted passwords via `ENCRYPTION_KEY`). Env vars (`SMTP_HOST`, `SMTP_USER`, `SMTP_PASSWORD`) serve as fallback only. Once a company has DB config, env vars are ignored for that company.
 
 ---
 
@@ -181,7 +184,7 @@ This document contains all critical context from previous development sessions i
 - **Run tests:** `pnpm test`
 - **Full CI check:** `pnpm ci:check` (typecheck + lint + format + test + build)
 
-**Current Test Count:** 78 tests passing across 13 test files
+**Current Test Count:** 116 tests passing across 16 test files
 
 > **IMPORTANT:** Si els tests fallen amb `column "tax_id" of relation "companies" does not exist`, vol dir que la BD no té les migracions 0008-0009. Executa: `pnpm db:migrate`.
 
@@ -197,11 +200,15 @@ This document contains all critical context from previous development sessions i
 | `locationService.test.ts` | 11 | GPS check-in + distance calculation + security |
 | `routeOptimizer.test.ts` | 3 | TSP greedy nearest-neighbor algorithm |
 | `haversineEngine.test.ts` | 4 | Haversine distance + time estimation |
+| `encryption.test.ts` | 11 | AES-256-GCM encrypt/decrypt, key derivation |
+| `notificationService.test.ts` | 16 | SMTP config (env vars, DB priority, fallback, TLS settings, cert errors, attachments) |
 | `DashboardShell.test.tsx` | 3 | Layout rendering |
 | `SidebarContext.test.tsx` | 9 | Sidebar state management |
 | `SidebarNav.test.tsx` | 11 | Navigation rendering + active states |
 
-**Test cleanup (2026-06-02):** Each integration test file uses a **unique company slug + email** (`test-empresa-{workorder,material,signature,location,attachment}`) and calls `cleanupTestDatabase()` in `afterAll` to drop the company + cascading FKs. The dev DB stays clean — only `DigitAIStudios` should remain after `pnpm test`. If you see extra `Empresa de Test *` rows, run `pnpm test` again to trigger the `afterAll` hook (or remove them manually with `DELETE FROM companies WHERE tenant_slug LIKE 'test-empresa%';`).
+**Test cleanup (2026-06-02):** Each integration test file uses a **unique company slug + email** (`test-empresa-{workorder,material,signature,location,attachment}`) and calls `cleanupTestDatabase()` in `afterAll` to drop the company + cascading FKs. The dev DB stays clean — only `DigitAIStudios` should remain after `pnpm test`.
+
+**Notification service cache:** `resolveSmtpConfig()` uses an in-memory Map cache with 5-minute TTL per company. Tests must call `clearSmtpCache()` in `beforeEach`/`afterEach` to avoid stale data between tests.
 
 ---
 
@@ -303,6 +310,7 @@ src/
     sat/quotes/new/page.tsx # Create quote → URL: /sat/quotes/new
     sat/quotes/[id]/page.tsx # Quote detail → URL: /sat/quotes/:id
     sat/quotes/templates/page.tsx # Quote templates → URL: /sat/quotes/templates
+    settings/email/page.tsx   # SMTP config → URL: /settings/email
     api/uploads/[...path]/route.ts  # Local file serving API
   components/layout/        # Layout Components
     SidebarContext.tsx      # React context for sidebar state
@@ -371,13 +379,23 @@ src/
       QuoteList.tsx         # Quote list with filters
       QuoteStatusBadge.tsx  # Quote status badge
       SendQuoteEmailModal.tsx # Email send modal
-    # Shared (used by both subdomains)
-    shared/
-      AddressAutocomplete.tsx # Nominatim geocoding autocomplete
-      GoogleMapsLink.tsx    # External Google Maps link
-      CategoryIcon.tsx      # SVG icon picker (~12 icons, reusable)
-      WorkOrderStatusBadge.tsx # Dot indicator badge
-      WorkOrderPriorityBadge.tsx # Dot + text (no background)
+# Shared (used by both subdomains)
+     shared/
+       AddressAutocomplete.tsx # Nominatim geocoding autocomplete
+       GoogleMapsLink.tsx    # External Google Maps link
+       CategoryIcon.tsx      # SVG icon picker (~12 icons, reusable)
+       WorkOrderStatusBadge.tsx # Dot indicator badge
+       WorkOrderPriorityBadge.tsx # Dot + text (no background)
+   components/sat/settings/   # Settings components
+     SmtpSettingsForm.tsx    # Orchestrator with RBAC + inline feedback
+     SmtpConnectionFields.tsx # Step 1-2: server + credentials
+     SmtpSenderFields.tsx     # Step 3: sender identity
+     SmtpAdvancedSection.tsx  # Step 4: self-signed certs (open by default)
+     SmtpStatusBadge.tsx     # Configured/not-configured banner
+     SmtpTestBanner.tsx      # Success/failure feedback + cert help
+     SmtpPermissionNotice.tsx # Read-only notice for non-OWNER roles
+     ProviderPresets.tsx     # Quick-select Gmail/Outlook/Yahoo/Hostinger/IONOS/Custom
+     useSmtpSettingsForm.ts  # Form state + action handlers + cache invalidation
   services/sat/             # Business Logic
     workOrderService.ts
     materialService.ts
@@ -399,8 +417,10 @@ src/
     routeOptimizer.ts       # Greedy TSP nearest-neighbor
   services/billing/         # Billing
     travelBillingService.ts # Calculate travel cost (km × rate)
-  services/notifications/   # Notifications
-    notificationService.ts  # Email SMTP with lazy nodemailer import
+services/notifications/   # Notifications
+     notificationService.ts  # Email SMTP with lazy nodemailer import + per-company DB config + 5min cache
+   services/sat/company/     # Per-company settings
+     smtpConfigService.ts    # SMTP config CRUD + AES-256-GCM encryption + testConnection
   services/storage/         # File Storage Abstraction
     interface.ts            # FileStorage contract
     factory.ts              # Provider selector (local/minio/supabase)
@@ -508,6 +528,16 @@ pnpm typecheck              # TypeScript check
 DATABASE_URL=postgresql://postgres:postgres@localhost:5433/ribotflow
 AUTH_SECRET=your-secret-key-here (minimum 32 characters)
 NEXT_PUBLIC_APP_MODE=cloud
+
+# Encryption (AES-256-GCM for SMTP passwords, etc.)
+ENCRYPTION_KEY=base64-encoded-32-byte-key
+
+# SMTP (optional — DB config takes priority via /settings/email)
+SMTP_HOST=smtp.example.com
+SMTP_PORT=587
+SMTP_USER=user@example.com
+SMTP_PASSWORD=your-password
+SMTP_TLS_REJECT_UNAUTHORIZED=false  # Dev only: accept self-signed certs
 
 # MinIO (Development via docker-compose.dev.yml)
 STORAGE_PROVIDER=minio
@@ -669,27 +699,29 @@ Multiple agents (including this one) investigated the wrong causes:
 
 ---
 
-## Session Handoff — Last Update: 01/06/2026
+## Session Handoff — Last Update: 02/06/2026
 
-### What Was Done Today
-1. **Mòdul Pressupostos complet** — 4 taules + migracions 0005-0007
-2. **3 Serveis CRUD** — quoteService, quoteItemService, quoteTemplateService
-3. **11 Server Actions** — CRUD de pressupostos, items, plantilles
-4. **Editor professional** — Split view (editor + preview A4), seccions col·lapsables
-5. **Pàgina edit** — `/sat/quotes/[id]` reutilitza el mateix editor
-6. **Vinculació OT** — Selector + botó "Nova OT"
-7. **Enviament per email (HTML)** — Server Action `sendQuoteEmailAction` + modal `SendQuoteEmailModal` + mètode `notificationService.sendQuoteEmail`. Pre-replega email del client.
-8. **Fix SMTP env var** — `.env.local` tenia `SMTP_PASS` (typo), ara `SMTP_PASSWORD`. La funció `sendEmailWithAttachment` retorna `{success, error?}` i els errors es mostren al toast (no només al log).
-9. **Doc nova** — `docs/SMTP_SETUP.md` amb la configuració completa
-10. **[Oficina] Quote PDF generation amb email adjunt** — Commit b10c3a0. Migracions 0008-0009 afegeixen `pdf_url`, `accepted_by`, `signature` a quotes; `tax_id` i `phone` a companies. Mètode `generateSignedQuotePdf` per a la signatura del client. Accions `acceptQuote` i `rejectQuote`. Storage keys human-readable.
-11. **[Oficina] Refactor Fases 1-2 completades** — Monolits >500 línies dividits, `schema/sat.ts` separat en 13 fitxers, serveis SAT amb subcarpetes, 4 components >300 línies dividits. Veure `docs/REFACTOR_GUIDE.md`.
-12. **[Ara] Migracions 0008-0009 aplicades** — `pnpm db:migrate` les ha aplicades correctament. Tests 78/78 passen.
-13. **[Ara] Refactor Fases 2.3-2.4 completades** — `src/components/sat/` i `src/actions/sat/` ara tenen subcarpetes (`quotes/`, `work-orders/`, `shared/` o `clients/`). Shims de re-export per backward compat. 78/78 tests passen.
+### What Was Done (This Session)
+1. **Redisseny SMTP settings page** — 8 subcomponents amb CSS vars del projecte (no Tailwind semàntic)
+2. **ProviderPresets** — Botons ràpids Gmail/Outlook/Yahoo/Hostinger/IONOS/Custom amb icones SVG
+3. **i18n complet** — Tots els strings en ca i es. Corregit `{{var}}` → `{var}` (format ICU de next-intl)
+4. **SMTP config cache** — `resolveSmtpConfig()` cacheja per company (5min TTL), `clearSmtpCache()` als server actions
+5. **ENCRYPTION_KEY** afegida al `.env.local` per AES-256-GCM
+6. **Inputs visibles** — `.input` ara té `bg: var(--bg)` i `border: 1.5px solid var(--border-strong)`
+7. **Avançat desplegat** — `SmtpAdvancedSection` obert per defecte
+8. **Botons funcionen** — Desar mostra feedback inline (spinner/success/error), Test funciona després de desar
+9. **116 tests passant** (78 original + 38 nous)
 
-### Next Task for Next Agent
-1. **Refactor Fase 3** — Dividir pàgines grans (`/sat/[id]/page.tsx` 299 línies, `register/page.tsx` 250 línies)
-2. **Vista pública del client** — Enllaç sense login perquè el client pugui acceptar/rebutjar
-3. **Configuració d'empresa** — Logo, colors, text legal, tarifa desplaçament
+### Architecture Notes
+- **SMTP config**: BD primer → fallback a env vars → error clar. Cache 5min, invalidat a save/delete.
+- **acceptSelfSigned** = `rejectUnauthorized: false` (exactament `SMTP_TLS_REJECT_UNAUTHORIZED=false`)
+- **next-intl format ICU**: Usa `{var}` no `{{var}}`. Doble clau = MALFORMED_ARGUMENT error.
+- **Form feedback**: `saveStatus` (idle/saving/success/error) + `saveError` per feedback inline sense toast.
+
+### Next Steps
+1. **Vista pública del client** — Enllaç sense login per acceptar/rebutjar pressupostos
+2. **Configuració d'empresa** — Logo, colors, text legal, tarifa desplaçament (`/settings/company`)
+3. **Refactor Fase 3 verification** — Verificar línia counts de pàgines dividides des de casa
 
 ### Quick Commands for Next Session
 ```bash
@@ -790,7 +822,7 @@ pnpm db:seed:demo
 pnpm test
 ```
 
-Haurien de passar **78 tests**.
+Haurien de passar **116 tests**.
 
 ---
 
@@ -811,7 +843,7 @@ When you start working on this project:
    docker exec ribotflow-dev-minio mc mb local/ribotflow
    docker exec ribotflow-dev-minio mc anonymous set public local/ribotflow
    ```
-9. **Run tests:** `pnpm test` (ensure 78 tests pass)
+9. **Run tests:** `pnpm test` (ensure 116 tests pass)
 10. **Start dev server:** `pnpm dev`
 11. **Login with:** dais@test.com / 12345678
 
@@ -822,10 +854,9 @@ When you start working on this project:
 - **Categories:** ✅ Complete — CRUD with icon/color picker
 - **Geolocalització:** ✅ Complete — Check-in GPS, mapa Leaflet, routing engine
 - **Facturació:** ✅ Complete — Travel billing service
-- **Notificacions:** ✅ Complete — Email service (nodemailer lazy import) amb PDF adjunt
-- **Refactor Fases 1-2:** ✅ Fetes — Monolits dividits, schema per entitat, serveis amb subdominis
-- **Refactor Fases 2.3-2.4:** ✅ Fetes — components/sat i actions/sat amb subcarpetes (quotes/, work-orders/, shared/, clients/)
-- **Refactor Fase 3:** 🔲 Pendent — pàgines grans
-- **Facturació de clients:** 🔲 Pending — proper mòdul a implementar
+- **Notificacions:** ✅ Complete — Email amb per-company DB config + 5min cache + fallback a env vars
+- **SMTP Settings:** ✅ Complete — `/settings/email` amb presets, test connection, AES-256-GCM, i18n ca/es
+- **Refactor Fases 1-3:** ✅ Completades — Monolits dividits, schema per entitat, serveis amb subdominis, components/pàgines dividits, SMTP settings redissenyat
+- **Company Settings:** 🔲 Pendent — Logo, colors, text legal, tarifa desplaçament
 
 > **Tip for agents:** If you see `[Storage] Environment variables missing for provider 

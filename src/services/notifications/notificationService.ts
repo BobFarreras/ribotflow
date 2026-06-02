@@ -48,6 +48,25 @@ interface SmtpConfig {
   requireTLS: boolean;
 }
 
+interface ResolvedConfig {
+  config: SmtpConfig | null;
+  source: "db" | "env" | "missing";
+  fromName?: string;
+  fromEmail?: string;
+  missing: string[];
+}
+
+const SMTP_CACHE_TTL_MS = 5 * 60 * 1000;
+const smtpCache = new Map<string, { data: ResolvedConfig; expiresAt: number }>();
+
+export function clearSmtpCache(companyId?: string) {
+  if (companyId) {
+    smtpCache.delete(companyId);
+  } else {
+    smtpCache.clear();
+  }
+}
+
 function readSmtpConfig(): { config: SmtpConfig | null; missing: string[] } {
   const host = process.env.SMTP_HOST;
   const port = process.env.SMTP_PORT ? parseInt(process.env.SMTP_PORT, 10) : 587;
@@ -72,18 +91,18 @@ function readSmtpConfig(): { config: SmtpConfig | null; missing: string[] } {
   return { config: { host, port, user, pass, rejectUnauthorized, requireTLS }, missing: [] };
 }
 
-async function resolveSmtpConfig(companyId: string): Promise<{
-  config: SmtpConfig | null;
-  source: "db" | "env" | "missing";
-  fromName?: string;
-  fromEmail?: string;
-  missing: string[];
-}> {
+async function resolveSmtpConfig(companyId: string): Promise<ResolvedConfig> {
+  const now = Date.now();
+  const cached = smtpCache.get(companyId);
+  if (cached && cached.expiresAt > now) {
+    return cached.data;
+  }
+
   try {
     const { smtpConfigService } = await import("@/services/sat/company/smtpConfigService");
     const dbConfig = await smtpConfigService.getByCompany(companyId);
     if (dbConfig) {
-      return {
+      const resolved: ResolvedConfig = {
         config: {
           host: dbConfig.host,
           port: dbConfig.port,
@@ -97,13 +116,17 @@ async function resolveSmtpConfig(companyId: string): Promise<{
         fromEmail: dbConfig.fromEmail ?? undefined,
         missing: [],
       };
+      smtpCache.set(companyId, { data: resolved, expiresAt: now + SMTP_CACHE_TTL_MS });
+      return resolved;
     }
   } catch (err) {
     console.warn("[Notification] Could not load SMTP config from DB, falling back to env:", err);
   }
 
   const env = readSmtpConfig();
-  return { ...env, source: env.config ? "env" : "missing" };
+  const resolved: ResolvedConfig = { ...env, source: env.config ? "env" : "missing" };
+  smtpCache.set(companyId, { data: resolved, expiresAt: now + SMTP_CACHE_TTL_MS });
+  return resolved;
 }
 
 function buildTransporter(config: SmtpConfig, nodemailer: typeof import("nodemailer")) {

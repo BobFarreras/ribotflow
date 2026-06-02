@@ -1,5 +1,5 @@
 /**
- * Creation/modification date: 01/06/2026
+ * Creation/modification date: 02/06/2026
  * Path: src/app/(dashboard)/settings/email/page.tsx
  * Description: Settings page for the company's per-tenant SMTP configuration.
  *              Server Component: auth check + initial load + render client form.
@@ -25,10 +25,12 @@ export default async function EmailSettingsPage() {
   return (
     <div className="container mx-auto max-w-3xl px-4 py-8">
       <div className="mb-6 flex items-center gap-3">
-        <Mail className="h-7 w-7 text-primary" />
+        <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[color:var(--primary)] text-white">
+          <Mail className="h-5 w-5" />
+        </span>
         <div>
-          <h1 className="text-2xl font-bold text-foreground">{t("title")}</h1>
-          <p className="text-sm text-muted-foreground">{t("subtitle")}</p>
+          <h1 className="text-2xl font-bold text-[color:var(--text)]">{t("title")}</h1>
+          <p className="text-sm text-[color:var(--text-muted)]">{t("subtitle")}</p>
         </div>
       </div>
 

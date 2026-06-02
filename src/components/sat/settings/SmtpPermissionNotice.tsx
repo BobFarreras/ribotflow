@@ -1,28 +1,32 @@
 /**
  * Creation/modification date: 02/06/2026
  * Path: src/components/sat/settings/SmtpPermissionNotice.tsx
- * Description: Read-only banner shown to non-OWNER users explaining what
- *              they can/cannot do in the SMTP settings.
+ * Description: Read-only notice shown to non-OWNER roles when viewing SMTP settings.
  */
 
+"use client";
+
 import { useTranslations } from "next-intl";
-import { Info } from "lucide-react";
+import { Shield } from "lucide-react";
 
 interface Props {
-  role: "OWNER" | "ADMIN" | "TECHNICIAN" | "OFFICE";
+  role: string;
 }
 
 export function SmtpPermissionNotice({ role }: Props) {
   const t = useTranslations("sat.settings.email.permissions");
-  const message = role === "ADMIN" ? t("adminReadOnly") : t("ownerOnly");
 
   return (
-    <div
-      role="note"
-      className="flex items-start gap-2 rounded-md border border-[color:var(--info)]/30 bg-[color:var(--info)]/8 p-3"
-    >
-      <Info className="mt-0.5 h-4 w-4 flex-shrink-0 text-[color:var(--info)]" aria-hidden />
-      <p className="text-sm text-[color:var(--text)]">{message}</p>
+    <div className="flex items-start gap-3 rounded-lg border border-[color:var(--info)]/30 bg-[color:var(--info)]/5 p-4">
+      <Shield className="mt-0.5 h-5 w-5 flex-shrink-0 text-[color:var(--info)]" aria-hidden />
+      <div>
+        <p className="text-sm font-medium text-[color:var(--info)]">
+          {role === "ADMIN" ? t("adminReadOnly") : t("ownerOnly")}
+        </p>
+        <p className="mt-0.5 text-xs text-[color:var(--text-muted)]">
+          {t("adminCanTest")}
+        </p>
+      </div>
     </div>
   );
 }

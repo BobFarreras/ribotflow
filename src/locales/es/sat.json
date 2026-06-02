@@ -236,7 +236,7 @@
       "title": "Plantillas de Presupuesto",
       "newButton": "Nueva Plantilla",
       "emptyState": "No hay plantillas creadas",
-      "usageCount": "Uso: {{count}} veces"
+      "usageCount": "Uso: {count} veces"
     }
   },
   "settings": {
@@ -258,6 +258,7 @@
         "server": "Datos del servidor",
         "credentials": "Credenciales de tu correo",
         "sender": "Cómo aparece el remitente (opcional)",
+        "senderHint": "El nombre y correo que verá el cliente cuando reciba un presupuesto.",
         "advanced": "Opciones avanzadas"
       },
       "fields": {
@@ -278,7 +279,12 @@
         "fromNameHint": "El nombre que verá el cliente cuando reciba el correo, p. ej. \"Reparaciones Ribot\".",
         "fromNamePlaceholder": "Reparaciones Ribot",
         "fromEmail": "Otro correo de remitente (opcional)",
-        "fromEmailHint": "Por defecto se usa el correo de inicio de sesión. Cámbialo solo si quieres que aparezca otro."
+        "fromEmailHint": "Por defecto se usa el correo de inicio de sesión. Cámbialo solo si quieres que aparezca otro.",
+        "fromEmailPlaceholder": "no-responder@tu-empresa.com",
+        "userPlaceholder": "correo@ejemplo.com",
+        "passwordPlaceholder": "Contraseña de aplicación",
+        "showPassword": "Mostrar la contraseña",
+        "hidePassword": "Ocultar la contraseña"
       },
       "actions": {
         "save": "Guardar",
@@ -294,12 +300,13 @@
         "configuredDetail": "El correo se envía con tu configuración.",
         "notConfigured": "Sin configurar",
         "notConfiguredDetail": "Los correos salen con la configuración por defecto del servidor. Configúralo para personalizar.",
-        "lastUpdated": "Actualizado el {{date}}",
+        "lastUpdated": "Actualizado el {date}",
         "fromFallback": "Si no hay nada configurado aquí, usamos el servidor por defecto del sistema."
       },
-      "feedback": {
+"feedback": {
         "saved": "Configuración guardada correctamente",
-        "savedHint": "Ya puedes probar la conexión.",
+        "saving": "Guardando...",
+        "saveError": "No se ha podido guardar la configuración",
         "deleted": "Configuración eliminada",
         "testSuccess": "Conexión correcta",
         "testSuccessHint": "Todo funciona. Tus correos saldrán correctamente.",
@@ -309,7 +316,7 @@
       },
       "permissions": {
         "ownerOnly": "Solo el OWNER puede modificar la configuración del correo.",
-        "adminReadOnly": "Puedes probar la conexión y ver la configuración, pero no modificarla."
+        "adminCanTest": "Puedes probar la conexión y ver la configuración, pero no modificarla."
       },
       "errors": {
         "load": "No se ha podido cargar la configuración",

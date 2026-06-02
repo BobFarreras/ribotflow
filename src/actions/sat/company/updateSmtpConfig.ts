@@ -12,6 +12,7 @@
 
 import { auth } from "@/lib/auth";
 import { smtpConfigService } from "@/services/sat/company/smtpConfigService";
+import { clearSmtpCache } from "@/services/notifications/notificationService";
 import { revalidatePath } from "next/cache";
 
 interface UpdateSmtpInput {
@@ -64,6 +65,7 @@ export async function updateSmtpConfigAction(input: UpdateSmtpInput) {
     });
 
     revalidatePath("/settings/email");
+    clearSmtpCache(session.user.companyId);
     return { success: true, data: { id: result.id } };
   } catch (err) {
     return { success: false, error: err instanceof Error ? err.message : "Unknown error" };

@@ -7,7 +7,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { notificationService } from "@/services/notifications/notificationService";
+import { notificationService, clearSmtpCache } from "@/services/notifications/notificationService";
 
 const sendMailMock = vi.fn();
 const createTransportMock = vi.fn(() => ({ sendMail: sendMailMock }));
@@ -24,10 +24,12 @@ describe("notificationService.sendEmailWithAttachment — SMTP config", () => {
     sendMailMock.mockReset();
     sendMailMock.mockResolvedValue({ messageId: "test-id" });
     createTransportMock.mockClear();
+    clearSmtpCache();
   });
 
   afterEach(() => {
     process.env = { ...originalEnv };
+    clearSmtpCache();
   });
 
   function baseValidConfig() {
@@ -262,10 +264,12 @@ describe("notificationService — per-company DB config", () => {
     sendMailMock.mockResolvedValue({ messageId: "test-id" });
     createTransportMock.mockClear();
     (smtpConfigService.getByCompany as ReturnType<typeof vi.fn>).mockReset();
+    clearSmtpCache();
   });
 
   afterEach(() => {
     process.env = { ...originalEnv };
+    clearSmtpCache();
   });
 
   it("prefers DB config over env vars when present", async () => {

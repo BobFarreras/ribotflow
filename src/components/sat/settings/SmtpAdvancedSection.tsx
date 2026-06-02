@@ -1,55 +1,61 @@
 /**
  * Creation/modification date: 02/06/2026
  * Path: src/components/sat/settings/SmtpAdvancedSection.tsx
- * Description: Collapsible advanced options (currently: acceptSelfSigned).
- *              Kept collapsed by default so non-technical users see a
- *              clean form. A warning badge surfaces when an advanced
- *              option is active.
+ * Description: Step 4 of the SMTP form — advanced settings (self-signed certs).
+ *              Collapsible section with clear explanation.
  */
 
 "use client";
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { ChevronDown } from "lucide-react";
-import { FormCheckbox } from "./FormField";
+import { ChevronDown, ShieldAlert } from "lucide-react";
 
 interface Props {
   acceptSelfSigned: boolean;
   disabled: boolean;
-  onChange: (v: boolean) => void;
+  onChange: (value: boolean) => void;
 }
 
 export function SmtpAdvancedSection({ acceptSelfSigned, disabled, onChange }: Props) {
   const t = useTranslations("sat.settings.email");
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(true);
 
   return (
     <section>
       <button
         type="button"
-        onClick={() => setOpen((o) => !o)}
-        aria-expanded={open}
-        className="flex w-full items-center justify-between rounded-md border border-border bg-[color:var(--surface-hover)]/40 px-3 py-2 text-sm font-medium text-[color:var(--text)] transition-colors hover:bg-[color:var(--surface-hover)]"
+        onClick={() => setOpen(!open)}
+        className="flex w-full items-center gap-2.5 text-left"
       >
-        <span className="flex items-center gap-2">
-          <ChevronDown
-            className={"h-4 w-4 transition-transform duration-150 " + (open ? "rotate-180" : "")}
-            aria-hidden
-          />
+        <ShieldAlert className="h-4 w-4 text-[color:var(--warning)]" aria-hidden />
+        <span className="text-sm font-medium text-[color:var(--text)]">
           {t("sections.advanced")}
         </span>
-        {acceptSelfSigned && <span className="badge badge-warning">Cert. propi</span>}
+        <ChevronDown
+          className={`ml-auto h-4 w-4 text-[color:var(--text-muted)] transition-transform ${open ? "rotate-180" : ""}`}
+          aria-hidden
+        />
       </button>
       {open && (
-        <div className="mt-3 space-y-2 rounded-md border border-border bg-[color:var(--surface-hover)]/30 p-3">
-          <FormCheckbox
-            label={t("fields.acceptSelfSigned")}
-            hint={t("fields.acceptSelfSignedHint")}
-            checked={acceptSelfSigned}
-            onChange={onChange}
-            disabled={disabled}
-          />
+        <div className="mt-3 rounded-lg border border-[color:var(--border)] bg-[color:var(--surface-hover)] p-4">
+          <label className="flex items-start gap-3">
+            <input
+              type="checkbox"
+              checked={acceptSelfSigned}
+              onChange={(e) => onChange(e.target.checked)}
+              disabled={disabled}
+              className="mt-0.5 h-4 w-4 rounded border-[color:var(--border)]"
+            />
+            <div>
+              <span className="text-sm font-medium text-[color:var(--text)]">
+                {t("fields.acceptSelfSigned")}
+              </span>
+              <p className="mt-1 text-xs text-[color:var(--text-muted)]">
+                {t("fields.acceptSelfSignedHint")}
+              </p>
+            </div>
+          </label>
         </div>
       )}
     </section>

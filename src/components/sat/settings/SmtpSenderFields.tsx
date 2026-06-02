@@ -2,15 +2,14 @@
  * Creation/modification date: 02/06/2026
  * Path: src/components/sat/settings/SmtpSenderFields.tsx
  * Description: Step 3 of the SMTP form — sender identity (fromName, fromEmail).
- *              Optional. Defaults to the SMTP user when left blank.
  */
 
 "use client";
 
 import { useTranslations } from "next-intl";
-import { FormField } from "./FormField";
+import { UserCircle } from "lucide-react";
 
-export interface SmtpSenderState {
+interface SmtpSenderState {
   fromName: string;
   fromEmail: string;
 }
@@ -26,31 +25,48 @@ export function SmtpSenderFields({ state, disabled, onChange }: Props) {
 
   return (
     <section>
-      <h3 className="section-heading">
-        <span className="section-heading-step">3</span>
-        {t("sections.sender")}
-      </h3>
+      <div className="mb-4 flex items-center gap-2.5">
+        <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[color:var(--primary)] text-sm font-bold text-white">
+          3
+        </span>
+        <div>
+          <h3 className="text-sm font-semibold text-[color:var(--text)]">
+            {t("sections.sender")}
+          </h3>
+          <p className="text-xs text-[color:var(--text-muted)]">
+            {t("sections.senderHint")}
+          </p>
+        </div>
+      </div>
       <div className="grid gap-4 sm:grid-cols-2">
-        <FormField label={t("fields.fromName")} hint={t("fields.fromNameHint")}>
+        <div>
+          <label className="mb-1.5 block text-sm font-medium text-[color:var(--text)]">
+            {t("fields.fromName")}
+          </label>
           <input
             type="text"
+            autoComplete="name"
             value={state.fromName}
             onChange={(e) => onChange({ fromName: e.target.value })}
             placeholder={t("fields.fromNamePlaceholder")}
             disabled={disabled}
             className="input"
           />
-        </FormField>
-        <FormField label={t("fields.fromEmail")} hint={t("fields.fromEmailHint")}>
+        </div>
+        <div>
+          <label className="mb-1.5 block text-sm font-medium text-[color:var(--text)]">
+            {t("fields.fromEmail")}
+          </label>
           <input
             type="email"
+            autoComplete="email"
             value={state.fromEmail}
             onChange={(e) => onChange({ fromEmail: e.target.value })}
-            placeholder="info@empresa.com"
+            placeholder={t("fields.fromEmailPlaceholder")}
             disabled={disabled}
             className="input"
           />
-        </FormField>
+        </div>
       </div>
     </section>
   );
