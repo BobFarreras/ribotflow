@@ -145,7 +145,8 @@ export function useSmtpSettingsForm(initialConfig: SmtpConfigDTO | null) {
   return {
     state: {
       host, port, user, password, secure, acceptSelfSigned, fromName, fromEmail,
-      isSaving, isTesting, isDeleting, testResult, saveStatus, saveError, hasConfig,
+      isSaving, isTesting, isDeleting, testResult,
+      saveStatus, saveError, hasConfig,
     },
     setters: { setHost, setPort, setUser, setPassword, setSecure, setAcceptSelfSigned, setFromName, setFromEmail },
     actions: { save, test, remove },
