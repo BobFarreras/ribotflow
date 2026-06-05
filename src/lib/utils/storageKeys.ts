@@ -219,6 +219,36 @@ export function buildWorkOrderReportKey(
 }
 
 /* ============================================================
+   COMPANY KEYS (logos, branding assets)
+   ============================================================ */
+
+/**
+ * Build storage key for the company logo. Versioned by timestamp so
+ * re-uploads don't collide and CDN caches can be busted.
+ * Example: branding/digitalagency/logo-1717351234.png
+ */
+export function buildCompanyLogoKey(
+  ctx: StorageContext,
+  fileExtension: string
+): string {
+  const company = getCompanyFolder(ctx);
+  const cleanExt = fileExtension.replace(/^\./, "").toLowerCase() || "png";
+  const parts = ["branding"];
+  if (company) parts.push(company);
+  parts.push(`logo-${Date.now()}.${cleanExt}`);
+  return parts.join("/");
+}
+
+/**
+ * Storage key prefix used to find previous logos for a company
+ * (so they can be deleted when a new one is uploaded).
+ */
+export function getCompanyLogoPrefix(ctx: StorageContext): string {
+  const company = getCompanyFolder(ctx);
+  return company ? `branding/${company}/logo-` : "branding/logo-";
+}
+
+/* ============================================================
    LEGACY API (kept for backward compat — re-exports with deprecation)
    These functions accept flat parameters and build a key WITHOUT
    client organization. Only used in legacy code paths.

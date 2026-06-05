@@ -323,6 +323,84 @@
         "save": "No s'ha pogut desar la configuració",
         "test": "No s'ha pogut provar la connexió"
       }
+    },
+    "company": {
+      "title": "Dades de l'empresa",
+      "subtitle": "Configura la informació que apareixerà als pressupostos, factures i correus. Si us plau, no comparteixis informació sensible en aquesta secció.",
+      "sections": {
+        "identity": "Dades bàsiques",
+        "address": "Adreça fiscal",
+        "addressHint": "Aquesta adreça apareixerà als documents generats (pressupostos, factures).",
+        "preferences": "Preferències",
+        "preferencesHint": "Idioma, zona horària i moneda per defecte dels nous documents.",
+        "documents": "Documents",
+        "documentsHint": "Prefixos i valors per defecte per a la generació de pressupostos i factures.",
+        "branding": "Marca i text legal",
+        "brandingHint": "Text al peu dels documents i logo de l'empresa."
+      },
+      "fields": {
+        "name": "Nom de l'empresa",
+        "nameHint": "El nom oficial amb què et coneixen els clients.",
+        "taxId": "NIF / CIF",
+        "taxIdHint": "El teu identificador fiscal. Apareixerà a totes les factures.",
+        "phone": "Telèfon",
+        "phoneHint": "Telèfon de contacte per als clients.",
+        "email": "Correu",
+        "emailHint": "Correu de contacte general (pot ser diferent del que envia els correus).",
+        "website": "Lloc web",
+        "websiteHint": "Opcional. Ha de començar amb http:// o https://.",
+        "addressStreet": "Carrer i número",
+        "addressCity": "Ciutat",
+        "addressPostalCode": "Codi postal",
+        "addressCountry": "País",
+        "defaultLocale": "Idioma per defecte",
+        "defaultLocaleHint": "Idioma en què es generaran els nous documents.",
+        "timezone": "Zona horària",
+        "timezoneHint": "Hora local de la teva empresa.",
+        "defaultCurrency": "Moneda per defecte",
+        "defaultCurrencyHint": "Moneda utilitzada en pressupostos i factures.",
+        "quotePrefix": "Prefix dels pressupostos",
+        "quotePrefixHint": "Codi al davant del número. Exemple: PRE → PRE-2026-0001.",
+        "invoicePrefix": "Prefix de les factures",
+        "invoicePrefixHint": "Codi al davant del número. Exemple: FAC → FAC-2026-0001.",
+        "defaultTaxRate": "IVA per defecte (%)",
+        "defaultTaxRateHint": "Percentatge d'IVA aplicat per defecte als nous documents.",
+        "travelRatePerKm": "Preu per quilòmetre",
+        "travelRatePerKmHint": "Opcional. Tarifa per defecte en desplaçaments (€/km).",
+        "legalText": "Text legal al peu",
+        "legalTextHint": "Text que apareixerà al peu de tots els documents generats (condicions, registre mercantil, etc.).",
+        "legalTextPlaceholder": "Exemple: \"Reparacions Ribot, SL — CIF B12345678 — Inscrita al Registre Mercantil de Barcelona\""
+      },
+      "actions": {
+        "save": "Desar canvis",
+        "saving": "Desant...",
+        "unsaved": "Tens canvis sense desar"
+      },
+      "feedback": {
+        "saved": "Dades de l'empresa desades correctament",
+        "saveFailed": "No s'han pogut desar les dades"
+      },
+      "logoUpload": {
+        "title": "Logo de l'empresa",
+        "subtitle": "Apareixerà a la capçalera dels pressupostos, factures i correus.",
+        "choose": "Tria una imatge",
+        "replace": "Canvia la imatge",
+        "remove": "Elimina",
+        "dragHint": "Arrossega i deixa anar un fitxer aquí, o prem el botó per triar-ne un.",
+        "formats": "Formats: PNG, JPG, WebP, SVG. Màxim 2 MB.",
+        "success": "Logo pujat correctament",
+        "removed": "Logo eliminat",
+        "failed": "No s'ha pogut pujar el logo",
+        "removeFailed": "No s'ha pogut eliminar el logo",
+        "errors": {
+          "unsupported": "Format no suportat. Prova amb PNG, JPG, WebP o SVG.",
+          "tooLarge": "El fitxer és massa gran. Màxim 2 MB.",
+          "empty": "El fitxer és buit."
+        }
+      },
+      "errors": {
+        "load": "No s'han pogut carregar les dades de l'empresa"
+      }
     }
   }
 }

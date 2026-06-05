@@ -323,6 +323,84 @@
         "save": "No se ha podido guardar la configuración",
         "test": "No se ha podido probar la conexión"
       }
+    },
+    "company": {
+      "title": "Datos de la empresa",
+      "subtitle": "Configura la información que aparecerá en los presupuestos, facturas y correos. Por favor, no compartas información sensible en esta sección.",
+      "sections": {
+        "identity": "Datos básicos",
+        "address": "Dirección fiscal",
+        "addressHint": "Esta dirección aparecerá en los documentos generados (presupuestos, facturas).",
+        "preferences": "Preferencias",
+        "preferencesHint": "Idioma, zona horaria y moneda por defecto para los nuevos documentos.",
+        "documents": "Documentos",
+        "documentsHint": "Prefijos y valores por defecto para la generación de presupuestos y facturas.",
+        "branding": "Marca y texto legal",
+        "brandingHint": "Texto al pie de los documentos y logo de la empresa."
+      },
+      "fields": {
+        "name": "Nombre de la empresa",
+        "nameHint": "El nombre oficial con el que te conocen los clientes.",
+        "taxId": "NIF / CIF",
+        "taxIdHint": "Tu identificador fiscal. Aparecerá en todas las facturas.",
+        "phone": "Teléfono",
+        "phoneHint": "Teléfono de contacto para los clientes.",
+        "email": "Correo",
+        "emailHint": "Correo de contacto general (puede ser distinto del que envía los correos).",
+        "website": "Sitio web",
+        "websiteHint": "Opcional. Debe empezar con http:// o https://.",
+        "addressStreet": "Calle y número",
+        "addressCity": "Ciudad",
+        "addressPostalCode": "Código postal",
+        "addressCountry": "País",
+        "defaultLocale": "Idioma por defecto",
+        "defaultLocaleHint": "Idioma en el que se generarán los nuevos documentos.",
+        "timezone": "Zona horaria",
+        "timezoneHint": "Hora local de tu empresa.",
+        "defaultCurrency": "Moneda por defecto",
+        "defaultCurrencyHint": "Moneda utilizada en presupuestos y facturas.",
+        "quotePrefix": "Prefijo de los presupuestos",
+        "quotePrefixHint": "Código delante del número. Ejemplo: PRE → PRE-2026-0001.",
+        "invoicePrefix": "Prefijo de las facturas",
+        "invoicePrefixHint": "Código delante del número. Ejemplo: FAC → FAC-2026-0001.",
+        "defaultTaxRate": "IVA por defecto (%)",
+        "defaultTaxRateHint": "Porcentaje de IVA aplicado por defecto a los nuevos documentos.",
+        "travelRatePerKm": "Precio por kilómetro",
+        "travelRatePerKmHint": "Opcional. Tarifa por defecto en desplazamientos (€/km).",
+        "legalText": "Texto legal al pie",
+        "legalTextHint": "Texto que aparecerá al pie de todos los documentos generados (condiciones, registro mercantil, etc.).",
+        "legalTextPlaceholder": "Ejemplo: \"Reparaciones Ribot, SL — CIF B12345678 — Inscrita en el Registro Mercantil de Barcelona\""
+      },
+      "actions": {
+        "save": "Guardar cambios",
+        "saving": "Guardando...",
+        "unsaved": "Tienes cambios sin guardar"
+      },
+      "feedback": {
+        "saved": "Datos de la empresa guardados correctamente",
+        "saveFailed": "No se han podido guardar los datos"
+      },
+      "logoUpload": {
+        "title": "Logo de la empresa",
+        "subtitle": "Aparecerá en la cabecera de los presupuestos, facturas y correos.",
+        "choose": "Elige una imagen",
+        "replace": "Cambia la imagen",
+        "remove": "Eliminar",
+        "dragHint": "Arrastra y suelta un archivo aquí, o pulsa el botón para elegir uno.",
+        "formats": "Formatos: PNG, JPG, WebP, SVG. Máximo 2 MB.",
+        "success": "Logo subido correctamente",
+        "removed": "Logo eliminado",
+        "failed": "No se ha podido subir el logo",
+        "removeFailed": "No se ha podido eliminar el logo",
+        "errors": {
+          "unsupported": "Formato no soportado. Prueba con PNG, JPG, WebP o SVG.",
+          "tooLarge": "El archivo es demasiado grande. Máximo 2 MB.",
+          "empty": "El archivo está vacío."
+        }
+      },
+      "errors": {
+        "load": "No se han podido cargar los datos de la empresa"
+      }
     }
   }
 }

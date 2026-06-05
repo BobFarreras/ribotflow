@@ -6,6 +6,7 @@
 
 import { pgTable, uuid, text, timestamp, index, jsonb, numeric } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
+import type { InferSelectModel } from "drizzle-orm";
 
 export const companies = pgTable(
   "companies",
@@ -90,6 +91,8 @@ export const sessions = pgTable("sessions", {
 export const companiesRelations = relations(companies, ({ many }) => ({
   users: many(users),
 }));
+
+export type CompanyRow = InferSelectModel<typeof companies>;
 
 export const usersRelations = relations(users, ({ one }) => ({
   company: one(companies, {
