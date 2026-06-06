@@ -5,6 +5,25 @@
  */
 
 import { z } from "zod";
+import type { WorkOrderStatus } from "@/types/sat";
+
+const WORK_ORDER_STATUS_VALUES = [
+  "pending",
+  "assigned",
+  "scheduled",
+  "in_progress",
+  "paused",
+  "completed",
+  "closed",
+  "cancelled",
+  "waiting_parts",
+  "waiting_client",
+] as const satisfies readonly WorkOrderStatus[];
+
+const locationSchema = z.object({
+  lat: z.number(),
+  lng: z.number(),
+});
 
 export const createWorkOrderSchema = z.object({
   clientId: z.string().uuid("Invalid client ID"),
@@ -15,9 +34,21 @@ export const createWorkOrderSchema = z.object({
     .max(200, "Title must be at most 200 characters"),
   description: z.string().max(2000, "Description too long").optional(),
   priority: z.enum(["low", "medium", "high", "urgent"]).default("medium").optional(),
-  scheduledDate: z.string().datetime().optional(),
+  scheduledDate: z
+    .string()
+    .transform((val) => {
+      if (!val) return undefined;
+      // datetime-local HTML5 format: "YYYY-MM-DDTHH:mm" → append seconds + Z
+      if (val.length === 16) {
+        return `${val}:00Z`;
+      }
+      return val;
+    })
+    .optional(),
   estimatedDurationMinutes: z.number().int().min(1).max(480).optional(),
   notes: z.string().max(2000).optional(),
+  address: z.string().max(500).optional(),
+  location: locationSchema.optional(),
 });
 
 export type CreateWorkOrderInput = z.infer<typeof createWorkOrderSchema>;
@@ -30,15 +61,7 @@ export type UpdateWorkOrderInput = z.infer<typeof updateWorkOrderSchema>;
 
 export const updateStatusSchema = z.object({
   workOrderId: z.string().uuid(),
-  status: z.enum([
-    "pending",
-    "assigned",
-    "in_progress",
-    "paused",
-    "completed",
-    "closed",
-    "cancelled",
-  ]),
+  status: z.enum(WORK_ORDER_STATUS_VALUES),
   reason: z.string().max(500).optional(),
 });
 

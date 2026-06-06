@@ -4,9 +4,10 @@
  * Descripció: Tests d'integració per al workOrderService amb base de dades real.
  */
 
-import { describe, it, expect, beforeAll } from "vitest";
-import { workOrderService } from "@/services/sat/workOrderService";
+import { describe, it, expect, beforeAll, afterAll } from "vitest";
+import { workOrderService } from "@/services/sat/work-orders/workOrderService";
 import { seedTestDatabase } from "../../../db-seed";
+import { cleanupTestDatabase } from "../../../db-cleanup";
 
 let testData: Awaited<ReturnType<typeof seedTestDatabase>>;
 let hasDbConnection = false;
@@ -14,11 +15,15 @@ let hasDbConnection = false;
 describe("WorkOrder Service (Integration)", () => {
   beforeAll(async () => {
     try {
-      testData = await seedTestDatabase();
+      testData = await seedTestDatabase({ companySlug: "test-empresa-workorder", email: "test-wo@ribotflow.local" });
       hasDbConnection = true;
     } catch (err) {
       console.warn("⚠️ Skipping integration tests:", err);
     }
+  });
+
+  afterAll(async () => {
+    if (hasDbConnection) await cleanupTestDatabase({ companySlug: "test-empresa-workorder", email: "test-wo@ribotflow.local" });
   });
 
   describe("getNextOrderNumber", () => {
@@ -114,7 +119,7 @@ describe("WorkOrder Service (Integration)", () => {
       expect(history.some((h) => h.statusTo === "assigned")).toBe(true);
     });
 
-    it("should reject invalid status transitions", async () => {
+    it("should allow any status transition", async () => {
       if (!hasDbConnection) return;
 
       const categories = await workOrderService.getDefaultCategoryId(
@@ -127,18 +132,19 @@ describe("WorkOrder Service (Integration)", () => {
         {
           clientId: testData.client.id,
           categoryId: categories,
-          title: "Invalid Transition Test",
+          title: "Free Transition Test",
         }
       );
 
-      await expect(
-        workOrderService.updateStatus(
-          testData.company.id,
-          workOrder.id,
-          testData.user.id,
-          "closed" // Invalid: pending -> closed
-        )
-      ).rejects.toThrow("Invalid status transition");
+      // Any transition is allowed — e.g. pending -> closed directly
+      const updated = await workOrderService.updateStatus(
+        testData.company.id,
+        workOrder.id,
+        testData.user.id,
+        "closed"
+      );
+
+      expect(updated.status).toBe("closed");
     });
 
     it("should set started_at on first in_progress", async () => {

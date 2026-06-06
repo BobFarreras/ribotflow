@@ -24,7 +24,7 @@ El **Mòdul SAT (Servei d'Assistència Tècnica)** és el nucli operatiu de RIBO
 ### 2.1 Diagrama Entitat-Relació (Textual)
 
 ```
-┌─────────────────┐     ┌──────────────────────┐     ┌──────────────────┐
+ ┌─────────────────┐     ┌──────────────────────┐     ┌──────────────────┐
 │   companies     │1    │      clients         │1    │  work_orders   │
 │  (ja existeix)  │◄────┤  (SAT + CRM shared)  │◄────┤   (nucli SAT)  │
 └─────────────────┘     └──────────────────────┘     └────────┬─────────┘
@@ -47,12 +47,13 @@ El **Mòdul SAT (Servei d'Assistència Tècnica)** és el nucli operatiu de RIBO
          │                                   N│              │              │
          │                                    │              │              │
          │                                    │              │              │
+         │                                    │              │              │
 ┌────────┴─────────┐     ┌────────────────────┴──┐  ┌───────┴────────┐  ┌────┴─────────────────┐
-│  work_order_     │N   M│   work_order_        │  │ work_order_    │  │ work_order_          │
-│  materials       │◄────┤   attachments        │  │ _signatures    │  │ _locations           │
-│  (rel·lació amb  │     │   (fotos/vídeos/docs) │  │ (firma client) │  │ (geolocalització)    │
-│   products ERP)  │     └───────────────────────┘  └────────────────┘  └─────────────────────┘
-└──────────────────┘
+│  work_order_     │N   M│   work_order_        │  │   signatures   │  │ work_order_          │
+│  materials       │◄────┤   attachments        │  │ (firma genèrica)│  │ _locations           │
+│  (rel·lació amb  │     │   (fotos/vídeos/docs) │  │ work_order/     │  │ (geolocalització)    │
+│   products ERP)  │     └───────────────────────┘  │ quote/invoice   │  └─────────────────────┘
+└──────────────────┘                                └────────────────┘
 ```
 
 ### 2.2 Taules i Responsabilitats
@@ -204,11 +205,15 @@ Cada empresa pot definir els seus propis tipus d'ordre: manteniment, reparació,
 
 ---
 
-#### `work_order_signatures` (Firma Biomètrica)
+#### `signatures` (Firma Biomètrica Genèrica)
+**Nota:** Refactoritzada de `work_order_signatures` a taula genèrica per reutilitzar per a qualsevol entitat (work_order, quote, invoice).
+
 | Camp | Tipus | Notes |
 |------|-------|-------|
 | `id` | uuid (PK) | |
-| `work_order_id` | uuid (FK → work_orders, cascade delete) | |
+| `company_id` | uuid (FK → companies, cascade delete) | **Multi-tenancy** |
+| `entity_type` | text | Tipus d'entitat: `work_order`, `quote`, `invoice` |
+| `entity_id` | uuid | ID de l'entitat (work_order_id, quote_id, etc.) |
 | `signed_by` | text | Nom de qui signa (client) |
 | `signature_svg` | text | SVG vectorial de la firma |
 | `signature_png_url` | text (nullable) | URL de la versió PNG renderitzada |
@@ -217,7 +222,8 @@ Cada empresa pot definir els seus propis tipus d'ordre: manteniment, reparació,
 | `location` | jsonb (nullable) | `{ lat, lng }` on es va signar |
 | `created_at` | timestamp | |
 
-> **Index:** `work_order_id` (unique, 1 firma per ordre).
+> **Index:** `company_id` + `entity_type` + `entity_id` (unique, 1 firma per entitat).
+> **Decision:** Validació específica d'entitat (ex: work_order ha d'estar `completed`) viu al **Server Action**, no al Service, per mantenir el Service genèric.
 
 ---
 
@@ -504,24 +510,48 @@ Cada empresa (OWNER/ADMIN) pot:
 
 ## 8. Consideracions Tècniques
 
-### 7.1 Gestió d'Arxius (Fotos/Vídeos)
+### 7.1 Gestió d'Arxius (Fotos/Vídeos/PDFs/Firmes)
 
 **Problema:** PostgreSQL no és eficient per emmagatzemar fitxers binaris grans.
-**Solució:** Guardar metadades a PostgreSQL + fitxers a un object storage.
+**Solució:** Guardar metadades a PostgreSQL + fitxers a un object storage via **FileStorage Abstraction**.
 
-| Mode | Storage |
-|------|---------|
-| **Cloud (SaaS)** | S3-compatible (AWS S3, Cloudflare R2, MinIO). URLs firmades temporals. |
-| **Self-Hosted** | Volum Docker muntat a `/app/uploads`. Nginx serve static. |
-| **Dev Local** | Carpeta local `/uploads` al projecte (gitignored). |
+#### Arquitectura FileStorage
+Interfície unificada amb implementacions intercanviables:
+- `LocalFileStorage` — dev local, carpetes al filesystem
+- `MinioStorage` — self-hosted via MinIO (Docker)
+- `SupabaseStorage` — cloud via Supabase Storage
+
+Factory: `createFileStorage()` selecciona provider via `STORAGE_PROVIDER` env var.
+
+| Mode | Provider | Bucket/Public Access |
+|------|----------|---------------------|
+| **Cloud (SaaS)** | `supabase` | Buckets privats, Signed URLs temporals |
+| **Self-Hosted** | `minio` | Bucket públic (dev) o Signed URLs (prod) |
+| **Dev Local** | `local` | Carpeta `uploads/` local, console.warn si no s'especifica provider |
+
+#### Storage Keys Human-Readable
+**Abans:** `sat/{uuid}/{uuid}.jpg` (il·legible)
+**Ara:** `{module}/{companyFolder}/{entityNumber}/{fileName}-{suffix}.{ext}`
+
+- `module`: `sat`, `quotes`, `invoices` (prefix per organitzar bucket)
+- `companyFolder`: Nom sanititzat de l'empresa (self-hosted) o UUID (cloud)
+- `entityNumber`: `OT-2026-0001`, `PRES-2026-0001` (human-readable)
+
+**Exemples:**
+```
+sat/Empresa_Test/OT-2026-0001/foto_pantalla-a1b2c3d4.jpg
+sat/Empresa_Test/OT-2026-0001-report-ca.pdf
+sat/Empresa_Test/OT-2026-0001-signature.png
+quotes/Empresa_Test/PRES-2026-0001-signature.png
+```
 
 **Fluxe d'upload:**
 ```
 Client → Server Action → Validació Zod (tipus, mida)
-       → Generar UUID + path (ex: sat/company-id/wo-id/photo-uuid.jpg)
-       → Guardar fitxer al storage
-       → Guardar registre a work_order_attachments
-       → Retornar URL (o signed URL)
+       → Construir storageKey via buildAttachmentStorageKey(module, companyId, entityNumber, fileName)
+       → FileStorage.upload({ buffer, storageKey, mimeType })
+       → Guardar registre a DB (storage_key + publicUrl)
+       → Retornar URL
 ```
 
 ### 7.2 Compressió de Fotos
@@ -539,7 +569,9 @@ Client → Server Action → Validació Zod (tipus, mida)
 - **Tecnologia:** Canvas HTML5 amb touch events.
 - **Format:** Guardar com a SVG (vectorial, escalable) + PNG renderitzat (per a PDF).
 - **Metadades:** Timestamp, geolocalització, IP, user-agent (prova legal).
-- **PDF:** Generar amb `pdf-lib` o `jsPDF` (client-side per a preview, server-side per a versió final).
+- **PDF:** Generar amb `pdf-lib` (puro JS, sin binarios nativos). Diseño profesional con header branded, tablas coloreadas, grid de fotos 2x2, firma embebida.
+- **Generación de PDF:** Selector de idioma (ca/es/en) en el componente. Botones de regenerar/eliminar.
+- **Storage de Firmas:** `buildSignatureStorageKey(module, companyId, entityNumber)` → `{module}/{companyFolder}/{entityNumber}-signature.png`
 
 ### 7.5 Número d'Ordre Human-Readable
 - Format: `OT-{YYYY}-{SECUENCIA}`
@@ -550,45 +582,56 @@ Client → Server Action → Validació Zod (tipus, mida)
 
 ## 8. Plan d'Implementació (Fases Tècniques)
 
-### Fase 2A — Esquelet de Dades i Accions (Setmana 1)
-- [ ] Crear esquema `work_order_categories` amb categories per defecte (seed)
-- [ ] Crear esquemes Drizzle restants (`clients`, `work_orders`, `attachments`...)
-- [ ] Generar migracions (`pnpm db:generate`)
-- [ ] Aplicar migracions (`pnpm db:migrate`)
-- [ ] Seed de categories per defecte (reparació, manteniment, instal·lació, muntatge, revisió)
-- [ ] Crear Server Actions base (CRUD + validació Zod)
-- [ ] Tests TDD per a Server Actions (Vitest + DB de test)
+### Fase 2A — Esquelet de Dades i Accions (Setmana 1) ✅ COMPLETADA
+- [x] Crear esquema `work_order_categories` amb categories per defecte (seed)
+- [x] Crear esquemes Drizzle restants (`clients`, `work_orders`, `attachments`, `signatures`...)
+- [x] Generar migracions (`pnpm db:generate`)
+- [x] Aplicar migracions (`pnpm db:migrate`)
+- [x] Seed de categories per defecte (reparació, manteniment, instal·lació, muntatge, revisió)
+- [x] Crear Server Actions base (CRUD + validació Zod)
+- [x] Tests TDD per a Server Actions (Vitest + DB de test)
 
-### Fase 2B — UI Llistat i Detall (Setmana 1-2)
-- [ ] Pàgina `/dashboard/sat` — llistat amb filtres
-- [ ] Component `WorkOrderCard` (Mobile-First)
-- [ ] Pàgina `/dashboard/sat/[id]` — detall de l'ordre
-- [ ] Timeline d'estats
-- [ ] Accions de canvi d'estat (botons condicionals)
+### Fase 2B — UI Llistat i Detall (Setmana 1-2) ✅ COMPLETADA
+- [x] Pàgina `/dashboard/sat` — llistat amb filtres
+- [x] Component `WorkOrderCard` (Mobile-First)
+- [x] Pàgina `/dashboard/sat/[id]` — detall de l'ordre
+- [x] Timeline d'estats
+- [x] Accions de canvi d'estat (botons condicionals)
 
-### Fase 2C — Nova Ordre i Formularis (Setmana 2)
-- [ ] Pàgina `/dashboard/sat/new`
-- [ ] Formulari amb React Hook Form + Zod
-- [ ] Autocomplete de clients (amb creació inline)
-- [ ] Assignació de tècnic
+### Fase 2C — Nova Ordre i Formularis (Setmana 2) ✅ COMPLETADA
+- [x] Pàgina `/dashboard/sat/new`
+- [x] Formulari amb React Hook Form + Zod
+- [x] Autocomplete de clients (amb creació inline)
+- [x] Assignació de tècnic
 
-### Fase 2D — Materials i Adjunts (Setmana 3)
-- [ ] Gestió de materials (afegir/eliminar)
-- [ ] Upload de fotos (drag & drop + càmera)
-- [ ] Grid de fotos amb lightbox
-- [ ] Compressió client-side
+### Fase 2D — Materials i Adjunts (Setmana 3) ✅ COMPLETADA
+- [x] Gestió de materials (afegir/eliminar)
+- [x] Upload de fotos (drag & drop + càmera)
+- [x] Grid de fotos amb lightbox
+- [x] Compressió client-side
 
-### Fase 2E — Firma i PDF (Setmana 3-4)
-- [ ] Component `SignatureCanvas`
-- [ ] Pàgina de firma full-screen
-- [ ] Generació de PDF (logo empresa + dades + firma)
-- [ ] Descàrrega i enviament per email (futur)
+### Fase 2E — Firma i PDF (Setmana 3-4) ✅ COMPLETADA
+- [x] Component `SignatureCanvas`
+- [x] Firma refactoritzada a taula genèrica `signatures` (work_order/quote/invoice)
+- [x] Generació de PDF amb `pdf-lib` (puro JS, diseño profesional, selector idioma ca/es/en)
+- [x] FileStorage abstraction (Local, MinIO, Supabase) amb factory pattern
+- [x] Storage keys human-readable per mòdul (`sat/`, `quotes/`, `invoices/`)
+- [x] Botones de regenerar/eliminar PDF
 
-### Fase 2F — Geolocalització i Kanban (Plus — Setmana 4-5)
+### Fase 2F — Geolocalització i Kanban (Plus — Setmana 4-5) 🔲 PENDENT
 - [ ] Check-in GPS amb validació
 - [ ] Mapa incrustat (Leaflet / MapLibre)
 - [ ] Vista Kanban per a oficina
 - [ ] Integració Google Calendar (futur)
+
+### Fase 2G — Mòdul Pressupostos i Albaranes (FREE) 🔲 PENDENT
+- [ ] Crear esquema `quotes`, `quote_items`, `quote_signatures` (reutilitzar `signatures` genèrica)
+- [ ] Conversió quote → work_order → invoice
+- [ ] PDF de pressupost amb `pdf-lib` (reutilitzar PdfBuilder)
+
+### Fase 2H — Personalització de PDF i Company Settings 🔲 PENDENT
+- [ ] Mòdul de configuració d'empresa (logo, colors, text legal)
+- [ ] PdfBuilder dinàmic amb branding per empresa
 
 ---
 
@@ -617,3 +660,28 @@ Client → Server Action → Validació Zod (tipus, mida)
 ---
 
 > **Nota:** Aquest document és l'especificació viva del Mòdul SAT. Qualsevol canvi d'arquitectura o funcionalitat ha de ser reflectit aquí abans d'implementar-se al codi.
+
+---
+
+## 10. Decisiones Arquitectónicas Recientes (Mayo 2026)
+
+### 10.1 Tabla `signatures` genérica (reemplaza `work_order_signatures`)
+**Motivación:** Prevenir deuda técnica. La lógica de firma (SVG + PNG + metadata) es idéntica para SAT, Presupuestos y Facturas.
+**Impacto:** 
+- Service layer purificado: `signatureService.getByEntity()`, `save()`, `remove()` son genéricos.
+- Validación específica (ej: work_order debe estar `completed`) se movió al **Server Action** (`saveSignature.ts`).
+- Storage keys usan `module` prefix: `sat/`, `quotes/`, `invoices/`.
+
+### 10.2 FileStorage Abstraction
+**Motivación:** Un mismo codebase para Cloud (Supabase) y Self-Hosted (MinIO).
+**Implementación:** Interface `FileStorage` con métodos `upload()`, `download()`, `delete()`, `getPublicUrl()`. Factory `createFileStorage()` lee `STORAGE_PROVIDER` env var.
+
+### 10.3 Storage Keys Human-Readable
+**Motivación:** MinIO/S3 console debe ser legible para debugging y soporte.
+**Patrón:** `{module}/{companyFolder}/{entityNumber}/{fileName}-{suffix}.{ext}`
+- `companyFolder` = nombre sanitizado de la empresa (self-hosted) o UUID (cloud)
+- `entityNumber` = `OT-2026-0001`, `PRES-2026-0001`
+
+### 10.4 `pdf-lib` sobre Puppeteer/Playwright
+**Motivación:** Puppeteer requiere Chromium (~100MB+) y es problemático en Docker. `pdf-lib` es puro JS (~1MB) y genera PDFs en <1s.
+**Trade-off:** Menos control de CSS que Puppeteer, pero suficiente para reportes técnicos. Diseño profesional implementado vía `PdfBuilder` class (header branded, tablas coloreadas, grid de fotos 2x2).

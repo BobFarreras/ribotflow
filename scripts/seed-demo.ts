@@ -11,6 +11,7 @@ import {
   workOrderCategories,
   workOrders,
   workOrderStatusHistory,
+  products,
 } from "../src/db/schema/sat";
 import { eq } from "drizzle-orm";
 import { hashPassword } from "../src/lib/utils/crypto";
@@ -33,6 +34,9 @@ async function seedDemo() {
         name: "DigitAIStudios",
         tenantSlug: "ditaistudios",
         plan: "plus",
+        companyAddress: "Carrer Nou 15, La Bisbal d'Empordà",
+        companyLocation: { lat: 41.96011156891511, lng: 3.0391116346094664 },
+        travelRatePerKm: "0.40",
       })
       .returning();
     console.log(`✅ Created company: ${company.name} (${company.id})`);
@@ -71,11 +75,11 @@ async function seedDemo() {
 
   // 3. Seed categories
   const defaultCategories = [
-    { name: "Reparació", slug: "repair", color: "#ef4444", isDefault: true },
-    { name: "Manteniment", slug: "maintenance", color: "#3b82f6", isDefault: false },
-    { name: "Instal·lació", slug: "installation", color: "#10b981", isDefault: false },
-    { name: "Muntatge", slug: "assembly", color: "#f59e0b", isDefault: false },
-    { name: "Revisió", slug: "inspection", color: "#8b5cf6", isDefault: false },
+    { name: "Reparació", slug: "repair", icon: "repair", color: "#ef4444", isDefault: true },
+    { name: "Manteniment", slug: "maintenance", icon: "maintenance", color: "#3b82f6", isDefault: false },
+    { name: "Instal·lació", slug: "installation", icon: "installation", color: "#10b981", isDefault: false },
+    { name: "Muntatge", slug: "assembly", icon: "assembly", color: "#f59e0b", isDefault: false },
+    { name: "Revisió", slug: "inspection", icon: "inspection", color: "#8b5cf6", isDefault: false },
   ];
 
   const existingCategories = await db
@@ -89,6 +93,7 @@ async function seedDemo() {
         companyId,
         name: c.name,
         slug: c.slug,
+        icon: c.icon,
         color: c.color,
         isDefault: c.isDefault,
         sortOrder: i,
@@ -104,16 +109,51 @@ async function seedDemo() {
     .from(workOrderCategories)
     .where(eq(workOrderCategories.companyId, companyId));
 
-  // 4. Seed clients
+  // 4. Seed products (demo catalog)
+  const demoProducts = [
+    { name: "Cable elèctric H07RN-F 3x2.5mm", sku: "CAB-001", unitPrice: 3.5, unitCost: 1.8, stock: 150 },
+    { name: "Disjuntor magnetotèrmic 16A", sku: "DIS-016", unitPrice: 12.9, unitCost: 6.5, stock: 45 },
+    { name: "Tomada industrial 32A 3P+N+T", sku: "TOM-32A", unitPrice: 28.5, unitCost: 14.2, stock: 20 },
+    { name: "Tub PVC rigit Ø32mm (3m)", sku: "TUB-032", unitPrice: 4.2, unitCost: 2.1, stock: 200 },
+    { name: "Caixa de derivació estanca IP65", sku: "CAJ-IP65", unitPrice: 8.75, unitCost: 4.3, stock: 60 },
+    { name: "Font d'alimentació LED 24V 100W", sku: "FON-24V", unitPrice: 35.0, unitCost: 18.5, stock: 12 },
+    { name: "Règim luminós LED panel 60x60", sku: "PAN-6060", unitPrice: 45.9, unitCost: 22.0, stock: 8 },
+    { name: "Interruptor horari digital", sku: "INT-HOR", unitPrice: 22.0, unitCost: 11.5, stock: 25 },
+    { name: "Sonda de temperatura PT100", sku: "SON-PT100", unitPrice: 18.5, unitCost: 9.2, stock: 15 },
+    { name: "Relé de nivell per cisterna", sku: "REL-NIV", unitPrice: 32.0, unitCost: 16.0, stock: 10 },
+  ];
+
+  const existingProducts = await db
+    .select()
+    .from(products)
+    .where(eq(products.companyId, companyId));
+
+  if (existingProducts.length === 0) {
+    await db.insert(products).values(
+      demoProducts.map((p) => ({
+        companyId,
+        name: p.name,
+        sku: p.sku,
+        unitPrice: String(p.unitPrice),
+        unitCost: String(p.unitCost),
+        stock: p.stock,
+      }))
+    );
+    console.log(`✅ Created ${demoProducts.length} demo products`);
+  } else {
+    console.log(`♻️  Reusing ${existingProducts.length} products`);
+  }
+
+  // 5. Seed clients
   const demoClients = [
-    { name: "Restaurant La Taula", email: "contact@lataula.cat", phone: "933112233", address: "Carrer Major 45, Barcelona" },
-    { name: "Gimnàs FitPro", email: "info@fitpro.es", phone: "934445566", address: "Avinguda Diagonal 220, Barcelona" },
-    { name: "Clínica Dental Smile", email: "hola@smiledental.cat", phone: "935556677", address: "Carrer Aragó 88, Barcelona" },
-    { name: "Hotel Marina", email: "recepcio@hotelmarina.com", phone: "936667788", address: "Passeig Marítim 12, Castelldefels" },
-    { name: "Escola Creativa", email: "direccio@escolacreativa.cat", phone: "937778899", address: "Carrer València 156, Barcelona" },
-    { name: "Supermercat Fresc", email: "admin@superfresc.es", phone: "938889900", address: "Carrer Sants 77, Barcelona" },
-    { name: "Oficines Nexus", email: "contacte@oficinesnexus.com", phone: "931234567", address: "Gran Via 340, Barcelona" },
-    { name: "Taller Mecànic Ràpid", email: "taller@mecanicrapid.cat", phone: "932345678", address: "Carrer Industria 12, Hospitalet" },
+    { name: "Restaurant El Terrall", email: "info@elterrall.cat", phone: "972642100", address: "Carrer Major 28, La Bisbal d'Empordà", location: { lat: 41.9598, lng: 3.0378 } },
+    { name: "Hotel Museum", email: "recepcio@hotelmuseum.cat", phone: "972642312", address: "Plaça Major 1, La Bisbal d'Empordà", location: { lat: 41.9591, lng: 3.0402 } },
+    { name: "Escola Pia", email: "secretaria@escolapia.cat", phone: "972642455", address: "Carrer de l'Església 12, La Bisbal d'Empordà", location: { lat: 41.9605, lng: 3.0385 } },
+    { name: "Can Roura - Ferreteria", email: "info@canroura.cat", phone: "972642678", address: "Avinguda de Francesc Macià 45, La Bisbal d'Empordà", location: { lat: 41.9572, lng: 3.0421 } },
+    { name: "Supermercat Esclat", email: "bisbal@esclat.cat", phone: "972642789", address: "Carrer de la Mercè 8, La Bisbal d'Empordà", location: { lat: 41.9612, lng: 3.0365 } },
+    { name: "Gimnàs Olymp", email: "contacte@gimnasolymp.cat", phone: "972642901", address: "Polígon Industrial, Parcel·la 12, La Bisbal d'Empordà", location: { lat: 41.9555, lng: 3.0445 } },
+    { name: "Clínica Dental Bisbal", email: "hola@dentalbisbal.cat", phone: "972643012", address: "Carrer de Santa Margarida 6, La Bisbal d'Empordà", location: { lat: 41.9585, lng: 3.0398 } },
+    { name: "Taller Mecànic Romagosa", email: "taller@romagosa.cat", phone: "972643123", address: "Carretera de Girona 15, La Bisbal d'Empordà", location: { lat: 41.9568, lng: 3.0412 } },
   ];
 
   const existingClients = await db
@@ -144,6 +184,7 @@ async function seedDemo() {
       description: "L'aire condicionat de la sala principal no refreda prou. Possible falta de gas o compressor defectuós.",
       priority: "urgent" as const,
       status: "in_progress" as const,
+      assignedTo: true,
       scheduledDate: new Date(Date.now() + 86400000),
       estimatedDurationMinutes: 120,
     },
@@ -153,7 +194,8 @@ async function seedDemo() {
       title: "Manteniment mensual màquines de cardio",
       description: "Revisió i lubricació de cintes de córrer i bicicletes estàtiques. Canviar filtres d'aire.",
       priority: "medium" as const,
-      status: "scheduled" as const,
+      status: "assigned" as const,
+      assignedTo: true,
       scheduledDate: new Date(Date.now() + 172800000),
       estimatedDurationMinutes: 180,
     },
@@ -163,7 +205,8 @@ async function seedDemo() {
       title: "Reparació porta d'accés clínica",
       description: "La porta automàtica d'accés no s'obre correctament. Sensor de moviment possiblement descalibrat.",
       priority: "high" as const,
-      status: "pending" as const,
+      status: "assigned" as const,
+      assignedTo: true,
       scheduledDate: new Date(Date.now() + 43200000),
       estimatedDurationMinutes: 90,
     },
@@ -173,7 +216,8 @@ async function seedDemo() {
       title: "Instal·lació sistema de clau electrònica habitacions 201-210",
       description: "Substituir panys tradicionals per panys electrònics amb targeta NFC. Programar accessos per recepció.",
       priority: "medium" as const,
-      status: "in_progress" as const,
+      status: "assigned" as const,
+      assignedTo: true,
       scheduledDate: new Date(Date.now() + 259200000),
       estimatedDurationMinutes: 360,
     },
@@ -193,7 +237,8 @@ async function seedDemo() {
       title: "Revisió cameras de seguretat i alarmes",
       description: "Revisar funcionament de les 12 càmeres de seguretat. Comprovar connexió amb central d'alarmes.",
       priority: "high" as const,
-      status: "waiting_parts" as const,
+      status: "assigned" as const,
+      assignedTo: true,
       scheduledDate: new Date(Date.now() + 64800000),
       estimatedDurationMinutes: 150,
     },
@@ -203,7 +248,8 @@ async function seedDemo() {
       title: "Revisió trimestral instal·lació elèctrica",
       description: "Inspecció de quadres elèctrics, diferencials i preses. Verificar terra i proteccions.",
       priority: "medium" as const,
-      status: "scheduled" as const,
+      status: "assigned" as const,
+      assignedTo: true,
       scheduledDate: new Date(Date.now() + 345600000),
       estimatedDurationMinutes: 120,
     },
@@ -214,6 +260,7 @@ async function seedDemo() {
       description: "L'elevador de 3 tones fa soroll estrany en pujar. Revisar bomba hidràulica i seguretat.",
       priority: "urgent" as const,
       status: "in_progress" as const,
+      assignedTo: true,
       scheduledDate: new Date(Date.now() + 21600000),
       estimatedDurationMinutes: 180,
     },
@@ -224,6 +271,7 @@ async function seedDemo() {
       description: "Instal·lar extractor nou amb filtres de carbó per a cuina industrial. Dimensionar canalització.",
       priority: "high" as const,
       status: "paused" as const,
+      assignedTo: true,
       scheduledDate: new Date(Date.now() + 518400000),
       estimatedDurationMinutes: 480,
     },
@@ -280,6 +328,7 @@ async function seedDemo() {
           clientId: client.id,
           categoryId: category.id,
           createdBy: userId,
+          assignedTo: orderData.assignedTo ? userId : null,
           number,
           title: orderData.title,
           description: orderData.description,
@@ -303,7 +352,7 @@ async function seedDemo() {
         reason: "Work order created",
       });
 
-      if (orderData.status !== "pending") {
+      if ((orderData.status as string) !== "pending") {
         await db.insert(workOrderStatusHistory).values({
           workOrderId: workOrder.id,
           statusFrom: "pending",

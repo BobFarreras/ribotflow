@@ -4,7 +4,7 @@
 
 - **Node.js 22+** (recomanat: instal·lar via nvm-windows o descarregar de nodejs.org)
 - **pnpm** (gestor de paquets obligatori)
-- **Docker Desktop** (per PostgreSQL en contenidor)
+- **Docker Desktop** (per PostgreSQL i MinIO en contenidors)
 - **Git** (per clonar el repositori)
 - **.env.local** (fitxer de variables d'entorn, proporcionat per l'equip)
 
@@ -37,9 +37,21 @@ Copiar el fitxer `.env.local` proporcionat per l'equip a l'arrel del projecte.
 DATABASE_URL=postgresql://postgres:postgres@localhost:5433/ribotflow
 AUTH_SECRET=un_secret_llarg_per_a_jwt_firma
 NEXT_PUBLIC_APP_MODE=cloud
+
+# === File Storage (MinIO per a dev) ===
+STORAGE_PROVIDER=minio
+MINIO_ENDPOINT=http://localhost:9002
+MINIO_ACCESS_KEY=minioadmin
+MINIO_SECRET_KEY=minioadmin
+MINIO_BUCKET=ribotflow-uploads
 ```
 
 **IMPORTANT:** No compartir mai `AUTH_SECRET` en repositoris públics.
+
+> **Nota sobre `STORAGE_PROVIDER`:**
+> - `minio` → Usa el contenidor MinIO local (recomanat per dev)
+> - `local` → Guarda fitxers a `./uploads/` (fallback, mostra warning)
+> - `supabase` → Usa Supabase Storage (només per a cloud/producció)
 
 ## 4. Iniciar PostgreSQL (Docker)
 
@@ -57,7 +69,53 @@ Això:
 pnpm db:down
 ```
 
-## 5. Crear Dades de Demostració (DigitAIStudios)
+---
+
+## 5. Iniciar MinIO (Object Storage)
+
+RIBOTFLOW utilitza **MinIO** per a desar fitxers (fotos, PDFs, firmes) en desenvolupament. El `docker-compose.dev.yml` ja inclou el servei.
+
+### 5.1 Engegar MinIO
+
+```bash
+# Si uses docker-compose.dev.yml (inclòs al repo)
+docker compose -f docker-compose.dev.yml up -d minio
+```
+
+Això aixeca:
+- **API MinIO** al port **9002** (on l'app puja fitxers)
+- **Consola Web** al port **9003** (per veure fitxers com a S3)
+
+### 5.2 Configurar el Bucket (Primera vegada)
+
+Accedeix a la consola: **http://localhost:9003**
+- **Usuari:** `minioadmin`
+- **Contrasenya:** `minioadmin`
+
+Crea el bucket `ribotflow-uploads` i fes-lo públic:
+```bash
+# Amb el client mc de MinIO (opcional)
+mc alias set local http://localhost:9002 minioadmin minioadmin
+mc mb local/ribotflow-uploads
+mc anonymous set public local/ribotflow-uploads
+```
+
+> **Per què públic?** En dev és pràctic per veure fotos/PDFs directament. En producció es fan servir Signed URLs.
+
+### 5.3 Verificar que funciona
+
+Puja un fitxer de prova:
+```bash
+curl -X POST http://localhost:9002/ribotflow-uploads/test.txt \
+  -H "Content-Type: text/plain" \
+  -d "Hello MinIO"
+```
+
+I visualitza'l: **http://localhost:9002/ribotflow-uploads/test.txt**
+
+---
+
+## 6. Crear Dades de Demostració (DigitAIStudios)
 
 ```bash
 pnpm db:seed:demo
@@ -72,7 +130,7 @@ Això crea l'empresa de test amb totes les dades:
 - **Categories SAT:** 5 (reparació, manteniment, instal·lació, muntatge, revisió)
 - **Ordres de Treball:** 12 amb diferents estats i prioritats
 
-## 6. Engegar el Servidor de Desenvolupament
+## 7. Engegar el Servidor de Desenvolupament
 
 ```bash
 pnpm dev
@@ -80,20 +138,37 @@ pnpm dev
 
 Accedir a: **http://localhost:3000**
 
-## 7. Accedir amb l'Usuari de Test
+> **Nota:** Cal reiniciar `pnpm dev` després de canviar `.env.local`. Next.js només llegeix variables d'entorn a l'inici.
+
+## 8. Accedir amb l'Usuari de Test
 
 - Vés a `/login`
 - Entra amb: `dais@test.com` / `12345678`
 - Clica el mòdul **SAT** al Dashboard
 - Hauries de veure **12 ordres de treball** reals
 
-## 8. Veure la Base de Dades (UI Web)
+## 9. Veure la Base de Dades (UI Web)
 
 ```bash
 pnpm db:studio
 ```
 
 Obrir **http://localhost:4983** al navegador (recomanat Firefox, Chrome pot bloquejar localhost).
+
+## 10. Veure Fitxers al MinIO (Consola Web)
+
+- Obrir **http://localhost:9003**
+- Usuari: `minioadmin` / Contrasenya: `minioadmin`
+- Navegar pel bucket `ribotflow-uploads`
+- Estructura de carpetes esperada:
+  ```
+  sat/
+    {companyId o companyName}/
+      OT-2026-0001/
+        foto_pantalla-a1b2c3d4.jpg
+      OT-2026-0001-report-ca.pdf
+      OT-2026-0001-signature.png
+  ```
 
 ---
 
@@ -130,6 +205,24 @@ git checkout -b features/nom-de-la-feature
 ---
 
 ## Solució de Problemes Comuns
+
+### Error: "MinIO bucket not found" o "Connection refused"
+
+**Causa:** El contenidor MinIO no està engegat o el bucket no existeix.
+
+**Solució:**
+```bash
+# 1. Verificar que el contenidor corre
+docker ps | grep minio
+
+# 2. Si no corre, engegar-lo
+docker compose -f docker-compose.dev.yml up -d minio
+
+# 3. Crear el bucket si no existeix
+mc alias set local http://localhost:9002 minioadmin minioadmin
+mc mb local/ribotflow-uploads
+mc anonymous set public local/ribotflow-uploads
+```
 
 ### Error: "Could not resolve translation key"
 

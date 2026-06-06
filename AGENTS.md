@@ -116,6 +116,54 @@ Todos los archivos `.ts` y `.tsx` deben comenzar con:
   4. Compañeros: `git pull && pnpm db:migrate`
 - **Setup diario:** `pnpm db:setup` (hace `db:up` + `db:migrate`)
 - **Reset completo (pierde datos):** `pnpm db:reset` + `pnpm db:setup:fresh`
+- **Sincronización entre máquinas (CRÍTICO):**
+  - Si un agente ha trabajado en otra máquina y modificado el schema, al volver a esta máquina y hacer `git pull`, las migraciones nuevas deben aplicarse con `pnpm db:migrate`.
+  - Si la BD local fue creada con `db:push` o seed scripts (sin pasar por `db:migrate`), la tabla `drizzle.__drizzle_migrations` puede estar vacía o incompleta.
+  - **Síntoma:** `pnpm db:migrate` falla con `relation already exists` porque intenta reaplicar migraciones antiguas.
+  - **Solución:** Seguir el **Protocol de Sincronització de Màquina** documentado en `docs/AGENT_CONTEXT.md` (reconstruir `__drizzle_migrations` y luego `db:migrate`).
+  - **Prevención:** Documentar en memoria (Engram) si una máquina específica tiene la BD desfasada para que el siguiente agente lo sepa inmediatamente.
+
+## 🏗️ Regla de Arquitectura: Separación de Responsabilidades (SoC)
+
+### Límite de líneas por archivo
+**Ningún archivo de servicio (.ts) debe exceder las 300 líneas de código.**
+Si un servicio supera este límite, DEBE dividirse siguiendo esta estructura obligatoria.
+
+### Estructura obligatoria para servicios complejos (ej: generación de PDFs)
+```
+src/services/<dominio>/
+  ├── index.ts                 # Service orchestrator (inyección de deps, orquestación)
+  ├── builder/
+  │   ├── BaseBuilder.ts       # Primitivas de dibujo (drawText, drawRect, measureWidth)
+  │   └── <Entity>Builder.ts   # Layout específico por entidad (QuoteBuilder, WorkOrderBuilder)
+  ├── layout/
+  │   └── components/          # Un componente visual = un archivo (máx 150 líneas)
+  │       ├── Header.ts
+  │       ├── InfoSection.ts
+  │       ├── ItemsTable.ts
+  │       └── ...
+  ├── constants.ts             # Colores, tamaños, márgenes (puro data)
+  ├── labels.ts                # Traducciones i18n (puro data)
+  ├── types.ts                 # Interfaces y types
+  └── utils/
+      ├── sanitize.ts          # Helpers puros (sin side effects)
+      ├── format.ts            # Formateo de fechas, monedas
+      └── helpers.ts           # Funciones utilitarias genéricas
+```
+
+### Principios SOLID aplicados
+1. **Single Responsibility**: Cada archivo hace UNA sola cosa. `ItemsTable.ts` solo dibuja la tabla. `sanitize.ts` solo sanitiza texto.
+2. **Open/Closed**: Los componentes de layout se pueden extender (herencia/composición) sin modificar el código existente.
+3. **Liskov Substitution**: Los builders específicos heredan del base y respetan su interfaz.
+4. **Interface Segregation**: Un componente NO debe depender de datos que no necesita (ej: `ItemsTable` solo recibe `items[]`, no el `quote` completo).
+5. **Dependency Inversion**: El `PdfService` depende de abstracciones (`BaseBuilder`), no de implementaciones concretas.
+
+### Reglas de oro
+- **Cada componente de layout = máximo 150 líneas.** Si es más largo, subdividirlo.
+- **NUNCA** duplicar lógica de dibujo entre builders. Si dos builders usan el mismo componente, extraerlo a `layout/components/`.
+- Los componentes reciben **datos primitivos** (strings, numbers) y NO dependen de schemas de Drizzle.
+- Tests unitarios obligatorios para cada componente de layout (cobertura mínima 80%).
+- Los `constants.ts` y `labels.ts` son puro data, sin lógica. Si crecen >200 líneas, dividir por idioma o dominio.
 
 ## 🔒 Seguridad
 - **Cookies:** `httpOnly`, `secure`, `sameSite: "lax"`

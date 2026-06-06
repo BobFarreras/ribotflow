@@ -19,6 +19,13 @@ const envSchema = z.object({
   SMTP_PORT: z.string().optional(),
   SMTP_USER: z.string().optional(),
   SMTP_PASSWORD: z.string().optional(),
+  ENCRYPTION_KEY: z
+    .string()
+    .min(
+      1,
+      "ENCRYPTION_KEY is required for at-rest encryption. Generate with: openssl rand -base64 32"
+    )
+    .optional(),
   GOOGLE_CLIENT_ID: z.string().optional(),
   GOOGLE_CLIENT_SECRET: z.string().optional(),
   GOOGLE_REDIRECT_URI: z.string().url().optional(),

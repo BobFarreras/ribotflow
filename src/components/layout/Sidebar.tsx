@@ -8,6 +8,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import Link from "next/link";
 import { PanelLeft } from "lucide-react";
 import { useSidebar } from "./SidebarContext";
 import SidebarNav from "./SidebarNav";
@@ -16,12 +17,7 @@ import SidebarFooter from "./SidebarFooter";
 function MobileOverlay() {
   const { isMobileOpen, closeMobile } = useSidebar();
   if (!isMobileOpen) return null;
-  return (
-      <div
-      onClick={closeMobile}
-      className="fixed inset-0 z-40 bg-black/40 lg:hidden"
-    />
-  );
+  return <div onClick={closeMobile} className="fixed inset-0 z-40 bg-black/40 lg:hidden" />;
 }
 
 function MobileToggleButton() {
@@ -42,7 +38,7 @@ function SidebarHeader() {
 
   return (
     <div className="flex h-14 shrink-0 items-center border-b border-[var(--border)] px-3">
-      <a
+      <Link
         href="/dashboard"
         className={`flex items-center gap-2 overflow-hidden whitespace-nowrap ${
           isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100"
@@ -52,22 +48,24 @@ function SidebarHeader() {
           RF
         </div>
         <span className="text-sm font-semibold text-[var(--text)]">{t("brand")}</span>
-      </a>
+      </Link>
 
       {isCollapsed && (
-        <a
+        <Link
           href="/dashboard"
           className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--primary)] text-white font-bold text-sm"
           title={t("brand")}
         >
           RF
-        </a>
+        </Link>
       )}
     </div>
   );
 }
 
-export default function Sidebar() {
+export default function Sidebar({
+  userRole,
+}: { userRole?: import("@/lib/auth/roles").Role | null } = {}) {
   const { isCollapsed, isMobileOpen } = useSidebar();
 
   return (
@@ -75,15 +73,13 @@ export default function Sidebar() {
       <MobileOverlay />
       <MobileToggleButton />
 
-        <aside
+      <aside
         className={`fixed left-0 top-0 z-50 flex h-[100dvh] flex-col border-r border-[var(--border)] bg-[var(--surface)] shadow-lg ${
           isCollapsed ? "w-[72px]" : "w-[260px]"
-        } ${
-          isMobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
-        }`}
+        } ${isMobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}
       >
         <SidebarHeader />
-        <SidebarNav />
+        <SidebarNav userRole={userRole} />
         <SidebarFooter />
       </aside>
     </>

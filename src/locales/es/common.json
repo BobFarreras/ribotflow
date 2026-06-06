@@ -11,7 +11,12 @@
       "sat": {
         "label": "SAT",
         "subItems": {
-          "workOrders": "Órdenes de Trabajo",
+          "workOrders": "Ordres de Trabajo",
+          "field": "Campo",
+          "quotes": "Presupuestos",
+          "quoteTemplates": "Plantillas",
+          "map": "Mapa",
+          "routes": "Rutas",
           "clients": "Clientes",
           "categories": "Categorías"
         }
@@ -48,6 +53,7 @@
         "label": "Configuración",
         "subItems": {
           "company": "Empresa",
+          "email": "Correo",
           "users": "Usuarios",
           "profile": "Perfil"
         }

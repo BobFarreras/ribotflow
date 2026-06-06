@@ -1,50 +1,117 @@
 /**
- * Creation/modification date: 25/05/2026
+ * Creation/modification date: 27/05/2026
  * Path: src/app/(dashboard)/sat/clients/page.tsx
- * Description: Clients list page placeholder. Will be implemented in future SAT iterations.
+ * Description: Client management page for SAT module.
  */
 
-"use client";
+import { auth } from "@/lib/auth";
+import { db } from "@/db";
+import { clients } from "@/db/schema/sat";
+import { eq, asc } from "drizzle-orm";
+import { getTranslations } from "next-intl/server";
+import Link from "next/link";
+import { Users, Plus, Phone, MapPin, Mail } from "lucide-react";
 
-import { motion } from "motion/react";
-import { UserCircle, ArrowLeft } from "lucide-react";
-import { useTranslations } from "next-intl";
+export default async function ClientsPage() {
+  const session = await auth();
+  if (!session?.user?.companyId) return null;
 
-export default function ClientsPage() {
-  const t = useTranslations("sat.clients");
+  const companyId = session.user.companyId;
+  const t = await getTranslations("sat.clients");
+
+  const clientList = await db
+    .select()
+    .from(clients)
+    .where(eq(clients.companyId, companyId))
+    .orderBy(asc(clients.name));
 
   return (
-    <div className="flex-1 bg-[var(--bg)] p-4 sm:p-6 lg:p-8">
-      <motion.div
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3, ease: "easeOut" }}
-      >
-        <a
-          href="/sat"
-          className="inline-flex items-center gap-1.5 text-sm text-[var(--text-muted)] hover:text-[var(--text)] transition-colors mb-4"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Tornar a SAT
-        </a>
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--module-sat)]/10 text-[var(--module-sat)]">
-            <UserCircle className="h-5 w-5" />
+    <div className="flex-1 bg-[var(--bg)]">
+      <header className="border-b border-[var(--border)] bg-[var(--surface)] px-4 py-4 sm:px-6">
+        <div className="mx-auto flex max-w-7xl items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-md bg-[var(--module-sat)]/10 text-[var(--module-sat)]">
+              <Users className="h-5 w-5" />
+            </div>
+            <div>
+              <h1 className="text-lg font-semibold text-[var(--text)]">{t("title")}</h1>
+              <p className="text-xs text-[var(--text-muted)]">{clientList.length} clients</p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-xl font-semibold text-[var(--text)]">Clients</h1>
-            <p className="text-sm text-[var(--text-muted)]">Llista i gestió de clients</p>
-          </div>
+          <Link
+            href="/sat/clients/new"
+            className="flex items-center gap-1.5 rounded-md bg-[var(--module-sat)] px-3 py-2 text-sm font-medium text-white shadow-sm transition-opacity hover:opacity-90"
+          >
+            <Plus className="h-4 w-4" />
+            <span className="hidden sm:inline">{t("newButton")}</span>
+          </Link>
         </div>
-      </motion.div>
+      </header>
 
-      <div className="mt-8 flex flex-col items-center justify-center rounded-xl border border-dashed border-[var(--border)] bg-[var(--surface)] py-20 text-center">
-        <UserCircle className="mb-4 h-12 w-12 text-[var(--text-muted)]" />
-        <h2 className="text-lg font-medium text-[var(--text)]">En desenvolupament</h2>
-        <p className="mt-1 text-sm text-[var(--text-muted)] max-w-md">
-          Aquesta pàgina es troba en construcció. Formarà part del mòdul SAT complet.
-        </p>
-      </div>
+      <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6">
+        {clientList.length === 0 ? (
+          <div className="rounded-lg border border-dashed border-[var(--border)] bg-[var(--surface)] py-16 text-center">
+            <Users className="mx-auto mb-3 h-10 w-10 text-[var(--text-muted)]" />
+            <p className="text-sm text-[var(--text-muted)]">{t("emptyState")}</p>
+          </div>
+        ) : (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {clientList.map((client) => (
+              <div
+                key={client.id}
+                className="group relative rounded-xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-sm transition-all hover:border-[var(--module-sat)]/30 hover:shadow-md"
+              >
+                {/* Invisible overlay makes entire card clickable */}
+                <Link
+                  href={`/sat/clients/${client.id}`}
+                  className="absolute inset-0 z-0"
+                  aria-hidden="true"
+                />
+                <h3 className="relative z-10 text-sm font-semibold text-[var(--text)] group-hover:text-[var(--module-sat)]">
+                  {client.name}
+                </h3>
+                <div className="relative z-10 mt-3 space-y-1.5 text-xs text-[var(--text-muted)]">
+                  {client.phone && (
+                    <div className="flex items-center gap-1.5">
+                      <Phone className="h-3.5 w-3.5" />
+                      <a href={`tel:${client.phone}`} className="hover:text-[var(--module-sat)]">
+                        {client.phone}
+                      </a>
+                    </div>
+                  )}
+                  {client.email && (
+                    <div className="flex items-center gap-1.5">
+                      <Mail className="h-3.5 w-3.5" />
+                      <a href={`mailto:${client.email}`} className="hover:text-[var(--module-sat)]">
+                        {client.email}
+                      </a>
+                    </div>
+                  )}
+                  {client.address && (
+                    <div className="flex items-center gap-1.5">
+                      <MapPin className="h-3.5 w-3.5" />
+                      <span>{client.address}</span>
+                    </div>
+                  )}
+                </div>
+                {client.location && (
+                  <div className="relative z-10 mt-3">
+                    <a
+                      href={`https://www.google.com/maps/search/?api=1&query=${client.location.lat},${client.location.lng}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-600 transition-colors hover:bg-blue-100"
+                    >
+                      <MapPin className="h-3 w-3" />
+                      Google Maps
+                    </a>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </main>
     </div>
   );
 }

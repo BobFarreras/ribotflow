@@ -24,6 +24,7 @@
         "client": "Client",
         "status": "Estat",
         "priority": "Prioritat",
+        "category": "Categoria",
         "scheduledDate": "Data prevista",
         "actions": "Accions"
       },
@@ -34,6 +35,7 @@
         "urgent": "Urgent"
       },
       "emptyState": "No hi ha ordres de treball. Crea la primera!",
+      "noResults": "No hi ha ordres que coincideixin amb els filtres seleccionats.",
       "viewDetails": "Veure detall"
     },
     "detail": {
@@ -44,6 +46,7 @@
       "attachments": "Adjunts",
       "signature": "Signatura",
       "location": "Ubicació",
+      "locationHistory": "Historial d'ubicacions",
       "actionsTitle": "Accions",
       "assignTitle": "Assignar tècnic",
       "unassigned": "Sense assignar",
@@ -53,6 +56,9 @@
         "pause": "Pausar",
         "resume": "Reprendre",
         "complete": "Completar",
+        "close": "Tancar",
+        "reopen": "Reobrir",
+        "restore": "Restaurar",
         "invoice": "Facturar",
         "cancel": "Cancel·lar",
         "delete": "Eliminar"
@@ -73,6 +79,548 @@
       "cancel": "Cancel·lar",
       "success": "Ordre de treball creada correctament",
       "error": "Error en crear l'ordre de treball"
+    },
+    "pdf": {
+      "title": "Informe PDF",
+      "generate": "Generar PDF",
+      "generating": "Generant...",
+      "regenerate": "Regenerar PDF",
+      "download": "Descarregar PDF",
+      "delete": "Eliminar PDF",
+      "deleteConfirm": "Estàs segur que vols eliminar aquest PDF?",
+      "error": "Error en generar el PDF"
+    }
+  },
+  "materials": {
+    "title": "Materials",
+    "addButton": "Afegir",
+    "selectProduct": "Selecciona un producte del catàleg...",
+    "freeMaterial": "+ Material lliure (no al catàleg)",
+    "namePlaceholder": "Nom del material",
+    "quantityPlaceholder": "Quantitat",
+    "unitPricePlaceholder": "Preu (€)",
+    "unitCostPlaceholder": "Cost (€)",
+    "submit": "Afegir",
+    "cancel": "Cancel·lar",
+    "empty": "No hi ha materials",
+    "total": "Total"
+  },
+  "attachments": {
+    "title": "Adjunts",
+    "uploadButton": "Pujar foto",
+    "beforeLabel": "Abans",
+    "afterLabel": "Després",
+    "captionPlaceholder": "Descripció (opcional)",
+    "empty": "No hi ha adjunts",
+    "previewAlt": "Vista prèvia",
+    "deleteConfirm": "Eliminar aquest adjunt?",
+    "fileTooLarge": "Fitxer massa gran (màx 10MB)",
+    "invalidType": "Tipus de fitxer no permès"
+  },
+  "signature": {
+    "title": "Signatura del client",
+    "signerNameLabel": "Nom de qui signa",
+    "signerNamePlaceholder": "Nom del client...",
+    "clearButton": "Esborrar",
+    "confirmButton": "Confirmar signatura",
+    "saving": "Guardant...",
+    "drawHint": "Dibuixa la teva signatura al canvas",
+    "saved": "Signatura guardada correctament",
+    "statusRequired": "Només es pot signar quan l'ordre està completada o tancada",
+    "alreadySigned": "Aquesta ordre ja té signatura"
+  },
+  "map": {
+    "title": "Mapa d'Ordres",
+    "subtitle": "{count} ordres amb ubicació",
+    "noLocations": "Cap client té ubicació registrada. Afegeix coordenades als clients per veure'ls al mapa.",
+    "legend": {
+      "pending": "Pendent",
+      "in_progress": "En curs",
+      "completed": "Completada"
+    }
+  },
+  "location": {
+    "checkInButton": "Fer check-in",
+    "gettingLocation": "Obtenint ubicació...",
+    "checkInError": "Error en fer check-in",
+    "geoPermissionDenied": "Permís de geolocalització denegat. Activa la ubicació al navegador.",
+    "geoPositionUnavailable": "No s'ha pogut obtenir la ubicació.",
+    "geoTimeout": "Temps d'espera esgotat per obtenir la ubicació.",
+    "geoUnknownError": "Error desconegut en obtenir la ubicació.",
+    "lastCheckIn": "Últim check-in",
+    "clientHasLocation": "El client té ubicació registrada",
+    "withinRange": "Dins del rang ({distance}m del client)",
+    "outOfRange": "Fora de rang ({distance}m del client — màxim 100m)"
+  },
+  "routes": {
+    "title": "Planificació de Rutes",
+    "subtitle": "Optimitza l'ordre de visites del dia",
+    "selectOrders": "Selecciona ordres per a la ruta",
+    "noOrders": "No hi ha ordres assignades per a aquest dia.",
+    "noLocation": "Sense ubicació",
+    "optimizeRoute": "Optimitzar Ruta",
+    "optimizedRoute": "Ruta Optimitzada",
+    "selectAndOptimize": "Selecciona ordres i prem 'Optimitzar Ruta' per veure la ruta recomanada.",
+    "stops": "Parades",
+    "totalDistance": "Distància Total",
+    "totalTime": "Temps Total"
+  },
+  "clients": {
+    "title": "Clients SAT",
+    "newButton": "Nou Client",
+    "emptyState": "No hi ha clients registrats. Crea el primer client per començar."
+  },
+  "categories": {
+    "title": "Categories d'Ordres",
+    "newButton": "Nova Categoria",
+    "emptyState": "No hi ha categories definides. Crea la primera categoria."
+  },
+  "quotes": {
+    "title": "Pressupostos",
+    "newButton": "Nou Pressupost",
+    "list": {
+      "title": "Llistat de Pressupostos",
+      "noResults": "No hi ha pressupostos",
+      "searchPlaceholder": "Cercar per número o títol..."
+    },
+    "status": {
+      "draft": "Esborrany",
+      "sent": "Enviat",
+      "accepted": "Acceptat",
+      "rejected": "Rebutjat",
+      "expired": "Caducat",
+      "cancelled": "Cancel·lat"
+    },
+    "detail": {
+      "title": "Detall del Pressupost",
+      "client": "Client",
+      "workOrder": "Ordre de Treball",
+      "validUntil": "Vàlid fins a",
+      "subtotal": "Base imposable",
+      "tax": "IVA",
+      "total": "Total",
+      "sendByEmail": "Enviar per email",
+      "downloadPdf": "Descarregar PDF",
+      "accept": "Acceptar",
+      "reject": "Rebutjar"
+    },
+    "create": {
+      "title": "Nou Pressupost",
+      "fromTemplate": "Des de plantilla",
+      "blank": "En blanc",
+      "selectTemplate": "Seleccionar plantilla"
+    },
+    "items": {
+      "title": "Línies del Pressupost",
+      "addItem": "Afegir línia",
+      "description": "Descripció",
+      "quantity": "Quantitat",
+      "unitPrice": "Preu unitari",
+      "discount": "Descompte",
+      "subtotal": "Subtotal",
+      "category": "Categoria",
+      "material": "Material",
+      "labor": "Mà d'obra",
+      "travel": "Desplaçament",
+      "other": "Altres"
+    },
+    "email": {
+      "title": "Enviar Pressupost",
+      "to": "Destinatari",
+      "subject": "Assumpte",
+      "message": "Missatge",
+      "send": "Enviar",
+      "sending": "Enviant..."
+    },
+    "templates": {
+      "title": "Plantilles de Pressupost",
+      "newButton": "Nova Plantilla",
+      "emptyState": "No hi ha plantilles creades",
+      "usageCount": "Ús: {count} cops"
+    }
+  },
+  "settings": {
+    "email": {
+      "title": "Correu professional",
+      "subtitle": "Envia els teus pressupostos i notificacions des del correu de la teva empresa. Si no configures res, s'utilitzen les dades per defecte del servidor.",
+      "providers": {
+        "title": "Comencem ràpid",
+        "subtitle": "Toca el teu proveïdor de correu per omplir les dades automàticament.",
+        "gmail": "Gmail",
+        "outlook": "Outlook",
+        "yahoo": "Yahoo",
+        "hostinger": "Hostinger",
+        "ionos": "Ionos / 1&1",
+        "custom": "Un altre correu",
+        "presetNote": "Has de seleccionar el proveïdor per omplir automàticament. Després podràs ajustar la configuració."
+      },
+      "sections": {
+        "server": "Dades del servidor",
+        "credentials": "Credencials del teu correu",
+        "sender": "Com apareix el remitent (opcional)",
+        "senderHint": "El nom i correu que veurà el client quan rebi un pressupost.",
+        "advanced": "Opcions avançades"
+      },
+      "fields": {
+        "host": "Servidor de correu sortint",
+        "hostHint": "L'adreça del servidor que envia els correus (te la dona el teu proveïdor).",
+        "hostPlaceholder": "smtp.elproveidor.com",
+        "port": "Port",
+        "portHint": "Normalment és 465 (segur) o 587 (recomanat). Si no ho saps, deixa 587.",
+        "user": "El teu correu",
+        "userHint": "L'adreça des de la qual vols enviar, p. ex. info@la-teva-empresa.com",
+        "password": "Contrasenya del correu",
+        "passwordHint": "Per a Gmail i Outlook necessitaràs una \"contrasenya d'aplicació\", no la teva contrasenya habitual.",
+        "secure": "Connexió segura (recomanat)",
+        "secureHint": "Activa-ho sempre que el teu proveïdor ho permeti. No l'apagis si no saps què és.",
+        "acceptSelfSigned": "El servidor té un certificat propi",
+        "acceptSelfSignedHint": "Marca-ho només si el teu servidor és un correu intern o de proves. No ho facis servir amb Gmail, Outlook o similars.",
+        "fromName": "Nom del remitent",
+        "fromNameHint": "El nom que veurà el client quan rebi el correu, p. ex. \"Reparacions Ribot\".",
+        "fromNamePlaceholder": "Reparacions Ribot",
+        "fromEmail": "Un altre correu de remitent (opcional)",
+        "fromEmailHint": "Per defecte s'utilitza el correu d'inici de sessió. Canvia-ho només si vols que surti un altre.",
+        "fromEmailPlaceholder": "no-responder@la-teva-empresa.com",
+        "userPlaceholder": "correu@exemple.com",
+        "passwordPlaceholder": "Contrasenya d'aplicació",
+        "showPassword": "Mostra la contrasenya",
+        "hidePassword": "Amaga la contrasenya"
+      },
+      "actions": {
+        "save": "Desar",
+        "saving": "Desant...",
+        "test": "Prova la connexió",
+        "testing": "Provant...",
+        "delete": "Eliminar",
+        "deleteTitle": "Eliminar la configuració",
+        "confirmDelete": "Si elimines la configuració, els correus s'enviaran amb les dades per defecte del servidor. Continuar?"
+      },
+      "status": {
+        "configured": "Actiu",
+        "configuredDetail": "El correu s'envia amb la teva configuració.",
+        "notConfigured": "Sense configurar",
+        "notConfiguredDetail": "Els correus surten amb la configuració per defecte del servidor. Configura-ho per personalitzar.",
+        "lastUpdated": "Actualitzat el {date}",
+        "fromFallback": "Si no hi ha res configurat aquí, fem servir el servidor per defecte del sistema."
+      },
+      "feedback": {
+        "saved": "Configuració desada correctament",
+        "saving": "Desant...",
+        "saveError": "No s'ha pogut desar la configuració",
+        "deleted": "Configuració eliminada",
+        "testSuccess": "Connexió correcta",
+        "testSuccessHint": "Tot funciona. Els teus correus sortiran correctament.",
+        "testFailed": "No s'ha pogut connectar",
+        "testFailedHint": "Revisa les dades i torna-ho a provar.",
+        "testCertHelp": "El servidor té un certificat no reconegut. Activa l'opció \"El servidor té un certificat propi\" i torna-ho a provar."
+      },
+      "permissions": {
+        "ownerOnly": "Només l'OWNER pot modificar la configuració del correu.",
+        "adminCanTest": "Pots provar la connexió i veure la configuració, però no modificar-la."
+      },
+      "errors": {
+        "load": "No s'ha pogut carregar la configuració",
+        "save": "No s'ha pogut desar la configuració",
+        "test": "No s'ha pogut provar la connexió"
+      }
+    },
+    "company": {
+      "title": "Dades de l'empresa",
+      "subtitle": "Configura la informació que apareixerà als pressupostos, factures i correus. Si us plau, no comparteixis informació sensible en aquesta secció.",
+      "sections": {
+        "identity": "Dades bàsiques",
+        "identityDescription": "El nom fiscal, NIF i dades de contacte que veuran els teus clients als documents i correus.",
+        "address": "Adreça fiscal",
+        "addressDescription": "Aquesta adreça apareixerà a la capçalera de tots els documents generats (pressupostos, factures).",
+        "preferences": "Preferències",
+        "preferencesDescription": "Idioma, zona horària i moneda per defecte dels nous documents.",
+        "documents": "Documents",
+        "documentsDescription": "Prefixos i valors per defecte per a la generació de pressupostos i factures.",
+        "branding": "Marca i text legal",
+        "brandingDescription": "Text al peu dels documents i logo de l'empresa.",
+        "brandingWhyTitle": "Per a què serveix?",
+        "brandingWhyBody": "Aquest text sortirà al peu de tots els pressupostos, factures i correus automàtics. És el lloc ideal per a informació legal obligatòria (registre mercantil, protecció de dades, condicions generals)."
+      },
+      "fields": {
+        "name": "Nom de l'empresa",
+        "nameHint": "El nom oficial amb què et coneixen els clients.",
+        "taxId": "NIF / CIF",
+        "taxIdHint": "El teu identificador fiscal. Apareixerà a totes les factures.",
+        "phone": "Telèfon",
+        "phoneHint": "Telèfon de contacte per als clients.",
+        "email": "Correu",
+        "emailHint": "Correu de contacte general (pot ser diferent del que envia els correus).",
+        "website": "Lloc web",
+        "websiteHint": "Opcional. Ha de començar amb http:// o https://.",
+        "addressStreet": "Carrer i número",
+        "addressStreetHint": "Carrer, número, pis i porta. Tal com ha d'aparèixer a les factures.",
+        "addressCity": "Ciutat",
+        "addressPostalCode": "Codi postal",
+        "addressCountry": "País",
+        "addressCountryHint": "Selecciona el país on està registrada la teva empresa.",
+        "defaultLocale": "Idioma per defecte",
+        "defaultLocaleHint": "Idioma en què es generaran els nous documents.",
+        "timezone": "Zona horària",
+        "timezoneHint": "Hora local de la teva empresa.",
+        "defaultCurrency": "Moneda per defecte",
+        "defaultCurrencyHint": "Moneda utilitzada en pressupostos i factures.",
+        "quotePrefix": "Prefix dels pressupostos",
+        "quotePrefixHint": "Codi al davant del número. Exemple: PRE → PRE-2026-0001.",
+        "invoicePrefix": "Prefix de les factures",
+        "invoicePrefixHint": "Codi al davant del número. Exemple: FAC → FAC-2026-0001.",
+        "defaultTaxRate": "IVA per defecte (%)",
+        "defaultTaxRateHint": "Percentatge d'IVA aplicat per defecte als nous documents.",
+        "travelRatePerKm": "Preu per quilòmetre",
+        "travelRatePerKmHint": "Opcional. Tarifa per defecte en desplaçaments (€/km).",
+        "legalText": "Text legal al peu",
+        "legalTextHint": "Text que apareixerà al peu de tots els documents generats (condicions, registre mercantil, etc.).",
+        "legalTextPlaceholder": "Exemple: \"Reparacions Ribot, SL — CIF B12345678 — Inscrita al Registre Mercantil de Barcelona\""
+      },
+      "actions": {
+        "save": "Desar canvis",
+        "saving": "Desant...",
+        "unsaved": "Tens canvis sense desar",
+        "justSaved": "Canvis desats",
+        "reset": "Desfer",
+        "change": "canvi pendent",
+        "changes": "canvis pendents"
+      },
+      "status": {
+        "active": "Actiu",
+        "inactive": "Inactiu",
+        "updatedAt": "Actualitzat el"
+      },
+      "feedback": {
+        "saved": "Dades de l'empresa desades correctament",
+        "saveFailed": "No s'han pogut desar les dades"
+      },
+      "logoUpload": {
+        "title": "Logo de l'empresa",
+        "subtitle": "Apareixerà a la capçalera dels pressupostos, factures i correus.",
+        "choose": "Tria una imatge",
+        "replace": "Canvia la imatge",
+        "remove": "Elimina",
+        "dragHint": "Arrossega i deixa anar un fitxer aquí, o prem el botó per triar-ne un.",
+        "formats": "Formats: PNG, JPG, WebP, SVG. Màxim 2 MB.",
+        "success": "Logo pujat correctament",
+        "removed": "Logo eliminat",
+        "failed": "No s'ha pogut pujar el logo",
+        "removeFailed": "No s'ha pogut eliminar el logo",
+        "errors": {
+          "unsupported": "Format no suportat. Prova amb PNG, JPG, WebP o SVG.",
+          "tooLarge": "El fitxer és massa gran. Màxim 2 MB.",
+          "empty": "El fitxer és buit."
+        }
+      },
+      "errors": {
+        "load": "No s'han pogut carregar les dades de l'empresa"
+      }
+    },
+    "team": {
+      "title": "Equip",
+      "subtitle": "Convida nous usuaris, gestiona els seus rols i revisa qui està actiu o pendent d'acceptar la invitació.",
+      "header": {
+        "activeCount": "{count, plural, =0 {Cap usuari actiu} =1 {1 actiu} other {{count} actius}}",
+        "noActive": "Cap usuari actiu",
+        "pendingCount": "{count, plural, =1 {1 invitació pendent} other {{count} invitacions pendents}}"
+      },
+      "membersTitle": "{count, plural, =0 {Sense membres} =1 {1 membre} other {{count} membres}}",
+      "membersSubtitle": "Llista de totes les persones amb accés al teu compte de Ribotflow.",
+      "empty": "Encara no hi ha cap membre a l'equip.",
+      "columns": {
+        "user": "Persona",
+        "role": "Rol",
+        "status": "Estat",
+        "actions": "Accions"
+      },
+      "status": {
+        "active": "Actiu",
+        "inactive": "Inactiu",
+        "pending": "Pendent",
+        "invitedDaysAgo": "{days, plural, =0 {Avui} =1 {Ahir} other {Fa {days} dies}}",
+        "expired": "Caducada"
+      },
+      "roles": {
+        "ADMIN": {
+          "label": "Administrador",
+          "hint": "Gairebé tot, menys la gestió de l'equip i la facturació."
+        },
+        "TECHNICIAN": {
+          "label": "Tècnic",
+          "hint": "Només les seves ordres i el catàleg de materials."
+        },
+        "OFFICE": {
+          "label": "Oficina",
+          "hint": "Pressupostos, factures i clients en mode lectura/escriptura."
+        }
+      },
+      "invite": {
+        "button": "Convidar persona",
+        "title": "Convidar una persona",
+        "subtitle": "Enviarà un enllaç per definir la contrasenya i acceptar la invitació.",
+        "name": "Nom complet",
+        "email": "Correu electrònic",
+        "role": "Rol",
+        "cancel": "Cancel·lar",
+        "submit": "Enviar invitació",
+        "submitting": "Enviant...",
+        "close": "Tanca",
+        "done": "Fet",
+        "successDev": "Invitació creada. En mode desenvolupament pots copiar l'enllaç següent per provar el flux d'acceptació.",
+        "invitationUrl": "Enllaç d'invitació",
+        "copy": "Copia",
+        "copied": "Copiat",
+        "errors": {
+          "generic": "No s'ha pogut crear la invitació"
+        }
+      },
+      "row": {
+        "you": "Tu",
+        "actions": "Accions",
+        "changeRole": "Canviar rol",
+        "resend": "Reenviar invitació",
+        "revoke": "Revocar invitació",
+        "deactivate": "Desactivar",
+        "reactivate": "Reactivar"
+      },
+      "errors": {
+        "generic": "No s'ha pogut completar l'acció"
+      }
+    },
+    "profile": {
+      "title": "El meu perfil",
+      "subtitle": "Gestiona el teu nom, avatar i contrasenya. Aquesta informació és privada i només la veus tu.",
+      "sections": {
+        "avatar": "La teva foto",
+        "avatarDesc": "Puja una imatge quadrada que t'identifiqui. Si no en tens, es mostren les inicials del teu nom.",
+        "identity": "Les teves dades",
+        "identityDesc": "El teu nom apareix als pressupostos, factures i correus que envies en nom de l'empresa.",
+        "security": "Contrasenya",
+        "securityDesc": "Tria una contrasenya forta. Si la canvies, hauràs d'iniciar sessió de nou a la resta de dispositius.",
+        "preferences": "Preferències d'interfície",
+        "preferencesDesc": "Tria el tema visual i l'idioma de l'aplicació. Es desen al teu compte i et segueixen a qualsevol dispositiu.",
+        "sessions": "Sessions actives",
+        "sessionsDesc": "Tanca la sessió als dispositius on no vulguis continuar connectat. La sessió actual no es pot tancar des d'aquí — utilitza el botó de tancar sessió."
+      },
+      "sessions": {
+        "empty": "No tens cap sessió activa.",
+        "current": "Aquest dispositiu",
+        "lastActivity": "Última activitat: {when}",
+        "revoke": "Tanca la sessió",
+        "revokeAllOthers": "Tanca totes les altres sessions",
+        "feedback": {
+          "revoked": "Sessió tancada",
+          "revokedMany": "S'han tancat {count} sessions",
+          "revokedNone": "No hi havia cap altra sessió activa"
+        },
+        "errors": {
+          "generic": "No s'ha pogut tancar la sessió",
+          "cannotRevokeCurrent": "No pots tancar la sessió actual des d'aquí. Utilitza el botó de tancar sessió."
+        }
+      },
+      "preferences": {
+        "saving": "Desant…",
+        "saved": "Preferència desada",
+        "theme": {
+          "label": "Tema",
+          "help": "Defineix l'aspecte clar o fosc de tota l'aplicació.",
+          "light": "Clar",
+          "dark": "Fosc"
+        },
+        "language": {
+          "label": "Idioma",
+          "help": "Idioma de tots els textos de l'aplicació.",
+          "ca": "Català",
+          "es": "Castellano"
+        },
+        "errors": {
+          "generic": "No s'ha pogut desar la preferència"
+        }
+      },
+      "avatar": {
+        "title": "Foto de perfil",
+        "subtitle": "Arrossega una imatge o prem el botó per triar-ne una.",
+        "choose": "Tria una imatge",
+        "replace": "Canvia la imatge",
+        "remove": "Elimina",
+        "formats": "Formats: PNG, JPG, WebP, SVG. Màxim 2 MB.",
+        "success": "Foto de perfil actualitzada",
+        "removed": "Foto de perfil eliminada",
+        "failed": "No s'ha pogut pujar la foto",
+        "removeFailed": "No s'ha pogut eliminar la foto",
+        "errors": {
+          "unsupported": "Format no suportat. Prova amb PNG, JPG, WebP o SVG.",
+          "tooLarge": "El fitxer és massa gran. Màxim 2 MB.",
+          "empty": "El fitxer és buit."
+        }
+      },
+      "nameForm": {
+        "name": "Nom complet",
+        "email": "Correu electrònic",
+        "emailHint": "El correu és l'identificador del teu compte. Si el vols canviar, contacta amb el propietari de l'empresa.",
+        "save": "Desar canvis",
+        "saved": "Nom desat correctament"
+      },
+      "passwordForm": {
+        "current": "Contrasenya actual",
+        "next": "Contrasenya nova",
+        "confirm": "Repeteix la contrasenya nova",
+        "hint": "Mínim 8 caràcters. Combina majúscules, minúscules i números per reforçar-la.",
+        "save": "Canviar contrasenya",
+        "saved": "Contrasenya canviada",
+        "show": "Mostra la contrasenya",
+        "hide": "Amaga la contrasenya"
+      },
+      "errors": {
+        "load": "No s'ha pogut carregar el perfil",
+        "generic": "No s'ha pogut completar l'acció"
+      }
+    },
+    "acceptInvitation": {
+      "title": "Accepta la invitació",
+      "subtitle": "Tria una contrasenya per activar el teu compte. Un cop ho facis, iniciaràs sessió automàticament.",
+      "invitedAs": "T'han convidat com a {name} ({email}).",
+      "fields": {
+        "password": "Contrasenya nova",
+        "confirm": "Repeteix la contrasenya",
+        "hint": "Mínim 8 caràcters."
+      },
+      "show": "Mostra la contrasenya",
+      "hide": "Amaga la contrasenya",
+      "submit": "Activar compte i accedir",
+      "success": {
+        "signInPending": "Compte activat. Inicia sessió manualment per continuar."
+      },
+      "errors": {
+        "missingToken": "Falta el token d'invitació a l'URL.",
+        "invalidToken": "Aquesta invitació no és vàlida o ha caducat. Demana al propietari de l'empresa que te la reenviï.",
+        "alreadyAccepted": "Aquesta invitació ja s'ha acceptat. Inicia sessió amb les teves credencials.",
+        "passwordTooShort": "La contrasenya ha de tenir com a mínim 8 caràcters.",
+        "generic": "No s'ha pogut activar el compte. Torna-ho a provar."
+      }
+    },
+    "field": {
+      "title": "El meu dia",
+      "subtitle": "{count, plural, =0 {No tens cap ordre assignada.} one {1 ordre assignada.} other {{count} ordres assignades.}}",
+      "empty": {
+        "title": "Tot al dia",
+        "body": "Quan el despatx us assigni una ordre de treball, apareixerà aquí."
+      },
+      "card": {
+        "openDetailsHint": "Obre els detalls de l'ordre"
+      },
+      "actions": {
+        "in_progress": "Començar",
+        "paused": "Pausar",
+        "completed": "Finalitzar",
+        "closed": "Aquesta ordre ja està tancada.",
+        "success": "Estat actualitzat",
+        "errors": {
+          "generic": "No s'ha pogut actualitzar l'estat",
+          "notAssigned": "Aquesta ordre no està assignada a tu.",
+          "notFound": "L'ordre ja no existeix."
+        }
+      }
     }
   }
 }

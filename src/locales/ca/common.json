@@ -12,6 +12,11 @@
         "label": "SAT",
         "subItems": {
           "workOrders": "Ordres de Treball",
+          "field": "Camp",
+          "quotes": "Pressupostos",
+          "quoteTemplates": "Plantilles",
+          "map": "Mapa",
+          "routes": "Rutes",
           "clients": "Clients",
           "categories": "Categories"
         }
@@ -48,6 +53,7 @@
         "label": "Configuració",
         "subItems": {
           "company": "Empresa",
+          "email": "Correu",
           "users": "Usuaris",
           "profile": "Perfil"
         }

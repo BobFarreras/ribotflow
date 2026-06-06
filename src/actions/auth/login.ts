@@ -24,12 +24,23 @@ export async function loginAction(rawInput: unknown) {
         role: users.role,
         companyId: users.companyId,
         name: users.name,
+        status: users.status,
       })
       .from(users)
       .where(eq(users.email, input.email))
       .limit(1);
 
     if (user.length === 0) {
+      return { success: false, error: "Invalid email or password" };
+    }
+
+    // Pending and inactive users cannot sign in with a password.
+    if (user[0].status !== "active") {
+      return { success: false, error: "Invalid email or password" };
+    }
+
+    // Invited users without a password cannot authenticate.
+    if (!user[0].passwordHash) {
       return { success: false, error: "Invalid email or password" };
     }
 

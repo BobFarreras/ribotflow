@@ -70,6 +70,65 @@ export interface WorkOrder {
   signatureUrl: string | null;
   signatureAt: Date | null;
   pdfUrl: string | null;
+  travelDistanceKm: string | null;
+  travelDurationMinutes: number | null;
   createdAt: Date;
   updatedAt: Date;
+}
+
+export interface WorkOrderMaterial {
+  id: string;
+  workOrderId: string;
+  productId: string | null;
+  name: string;
+  quantity: string;
+  unitPrice: string | null;
+  unitCost: string | null;
+  createdAt: Date;
+}
+
+export interface Product {
+  id: string;
+  companyId: string;
+  name: string;
+  sku: string | null;
+  unitPrice: string | null;
+  unitCost: string | null;
+  stock: number | null;
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface WorkOrderAttachment {
+  id: string;
+  workOrderId: string;
+  uploadedBy: string;
+  type: AttachmentType;
+  fileName: string;
+  storageKey: string;
+  url: string | null;
+  mimeType: string | null;
+  sizeBytes: number | null;
+  width: number | null;
+  height: number | null;
+  durationSeconds: number | null;
+  location: { lat: number; lng: number; accuracy?: number } | null;
+  isBefore: boolean;
+  caption: string | null;
+  createdAt: Date;
+}
+
+export interface WorkOrderLocation {
+  id: string;
+  workOrderId: string;
+  userId: string;
+  eventType: LocationEventType;
+  lat: number;
+  lng: number;
+  accuracy: number | null;
+  altitude: number | null;
+  batteryLevel: number | null;
+  metadata: Record<string, unknown> | null;
+  createdAt: Date;
 }
