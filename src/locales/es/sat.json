@@ -415,6 +415,77 @@
       "errors": {
         "load": "No se han podido cargar los datos de la empresa"
       }
+    },
+    "team": {
+      "title": "Equipo",
+      "subtitle": "Invita a nuevos usuarios, gestiona sus roles y revisa quién está activo o pendiente de aceptar la invitación.",
+      "header": {
+        "activeCount": "{count, plural, =0 {Ningún usuario activo} =1 {1 activo} other {{count} activos}}",
+        "noActive": "Ningún usuario activo",
+        "pendingCount": "{count, plural, =1 {1 invitación pendiente} other {{count} invitaciones pendientes}}"
+      },
+      "membersTitle": "{count, plural, =0 {Sin miembros} =1 {1 miembro} other {{count} miembros}}",
+      "membersSubtitle": "Lista de todas las personas con acceso a tu cuenta de Ribotflow.",
+      "empty": "Todavía no hay ningún miembro en el equipo.",
+      "columns": {
+        "user": "Persona",
+        "role": "Rol",
+        "status": "Estado",
+        "actions": "Acciones"
+      },
+      "status": {
+        "active": "Activo",
+        "inactive": "Inactivo",
+        "pending": "Pendiente",
+        "invitedDaysAgo": "{days, plural, =0 {Hoy} =1 {Ayer} other {Hace {days} días}}",
+        "expired": "Caducada"
+      },
+      "roles": {
+        "ADMIN": {
+          "label": "Administrador",
+          "hint": "Casi todo, menos la gestión del equipo y la facturación."
+        },
+        "TECHNICIAN": {
+          "label": "Técnico",
+          "hint": "Solo sus órdenes y el catálogo de materiales."
+        },
+        "OFFICE": {
+          "label": "Oficina",
+          "hint": "Presupuestos, facturas y clientes en modo lectura/escritura."
+        }
+      },
+      "invite": {
+        "button": "Invitar persona",
+        "title": "Invitar a una persona",
+        "subtitle": "Le enviaremos un enlace para definir la contraseña y aceptar la invitación.",
+        "name": "Nombre completo",
+        "email": "Correo electrónico",
+        "role": "Rol",
+        "cancel": "Cancelar",
+        "submit": "Enviar invitación",
+        "submitting": "Enviando...",
+        "close": "Cerrar",
+        "done": "Hecho",
+        "successDev": "Invitación creada. En modo desarrollo puedes copiar el siguiente enlace para probar el flujo de aceptación.",
+        "invitationUrl": "Enlace de invitación",
+        "copy": "Copiar",
+        "copied": "Copiado",
+        "errors": {
+          "generic": "No se ha podido crear la invitación"
+        }
+      },
+      "row": {
+        "you": "Tú",
+        "actions": "Acciones",
+        "changeRole": "Cambiar rol",
+        "resend": "Reenviar invitación",
+        "revoke": "Revocar invitación",
+        "deactivate": "Desactivar",
+        "reactivate": "Reactivar"
+      },
+      "errors": {
+        "generic": "No se ha podido completar la acción"
+      }
     }
   }
 }

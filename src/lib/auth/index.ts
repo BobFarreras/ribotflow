@@ -33,12 +33,18 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             passwordHash: users.passwordHash,
             role: users.role,
             companyId: users.companyId,
+            status: users.status,
           })
           .from(users)
           .where(eq(users.email, email))
           .limit(1);
 
         if (user.length === 0) return null;
+
+        // Only active users with a password can sign in.
+        if (user[0].status !== "active" || !user[0].passwordHash) {
+          return null;
+        }
 
         const isValid = await verifyPassword(password, user[0].passwordHash);
         if (!isValid) return null;

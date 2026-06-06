@@ -50,15 +50,35 @@ export const users = pgTable(
       .references(() => companies.id, { onDelete: "cascade" })
       .notNull(),
     email: text("email").notNull().unique(),
-    passwordHash: text("password_hash").notNull(),
+    // Nullable: invited users ("pending") have no password yet.
+    passwordHash: text("password_hash"),
     name: text("name").notNull(),
     role: text("role").$type<"OWNER" | "ADMIN" | "TECHNICIAN" | "OFFICE">().notNull(),
+    /** "active" can sign in. "inactive" is suspended. "pending" is invited
+     *  and must set a password via the invitation link. */
+    status: text("status")
+      .$type<"active" | "inactive" | "pending">()
+      .default("active")
+      .notNull(),
+    /** Random opaque token sent in the invitation email. */
+    invitationToken: text("invitation_token").unique(),
+    /** Hard expiry. 7 days from issue. */
+    invitationExpiresAt: timestamp("invitation_expires_at"),
+    /** Who issued the invitation (self-referential FK). */
+    invitedBy: uuid("invited_by").references((): import("drizzle-orm/pg-core").AnyPgColumn => users.id, {
+      onDelete: "set null",
+    }),
+    invitedAt: timestamp("invited_at"),
+    /** Updated on every successful sign-in. Shown in the team list. */
+    lastActiveAt: timestamp("last_active_at"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
   },
   (table) => ({
     companyIdx: index("idx_users_company_id").on(table.companyId),
     emailIdx: index("idx_users_email").on(table.email),
+    invitationTokenIdx: index("idx_users_invitation_token").on(table.invitationToken),
+    companyStatusIdx: index("idx_users_company_status").on(table.companyId, table.status),
   })
 );
 

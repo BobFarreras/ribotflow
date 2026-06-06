@@ -415,6 +415,77 @@
       "errors": {
         "load": "No s'han pogut carregar les dades de l'empresa"
       }
+    },
+    "team": {
+      "title": "Equip",
+      "subtitle": "Convida nous usuaris, gestiona els seus rols i revisa qui està actiu o pendent d'acceptar la invitació.",
+      "header": {
+        "activeCount": "{count, plural, =0 {Cap usuari actiu} =1 {1 actiu} other {{count} actius}}",
+        "noActive": "Cap usuari actiu",
+        "pendingCount": "{count, plural, =1 {1 invitació pendent} other {{count} invitacions pendents}}"
+      },
+      "membersTitle": "{count, plural, =0 {Sense membres} =1 {1 membre} other {{count} membres}}",
+      "membersSubtitle": "Llista de totes les persones amb accés al teu compte de Ribotflow.",
+      "empty": "Encara no hi ha cap membre a l'equip.",
+      "columns": {
+        "user": "Persona",
+        "role": "Rol",
+        "status": "Estat",
+        "actions": "Accions"
+      },
+      "status": {
+        "active": "Actiu",
+        "inactive": "Inactiu",
+        "pending": "Pendent",
+        "invitedDaysAgo": "{days, plural, =0 {Avui} =1 {Ahir} other {Fa {days} dies}}",
+        "expired": "Caducada"
+      },
+      "roles": {
+        "ADMIN": {
+          "label": "Administrador",
+          "hint": "Gairebé tot, menys la gestió de l'equip i la facturació."
+        },
+        "TECHNICIAN": {
+          "label": "Tècnic",
+          "hint": "Només les seves ordres i el catàleg de materials."
+        },
+        "OFFICE": {
+          "label": "Oficina",
+          "hint": "Pressupostos, factures i clients en mode lectura/escriptura."
+        }
+      },
+      "invite": {
+        "button": "Convidar persona",
+        "title": "Convidar una persona",
+        "subtitle": "Enviarà un enllaç per definir la contrasenya i acceptar la invitació.",
+        "name": "Nom complet",
+        "email": "Correu electrònic",
+        "role": "Rol",
+        "cancel": "Cancel·lar",
+        "submit": "Enviar invitació",
+        "submitting": "Enviant...",
+        "close": "Tanca",
+        "done": "Fet",
+        "successDev": "Invitació creada. En mode desenvolupament pots copiar l'enllaç següent per provar el flux d'acceptació.",
+        "invitationUrl": "Enllaç d'invitació",
+        "copy": "Copia",
+        "copied": "Copiat",
+        "errors": {
+          "generic": "No s'ha pogut crear la invitació"
+        }
+      },
+      "row": {
+        "you": "Tu",
+        "actions": "Accions",
+        "changeRole": "Canviar rol",
+        "resend": "Reenviar invitació",
+        "revoke": "Revocar invitació",
+        "deactivate": "Desactivar",
+        "reactivate": "Reactivar"
+      },
+      "errors": {
+        "generic": "No s'ha pogut completar l'acció"
+      }
     }
   }
 }
