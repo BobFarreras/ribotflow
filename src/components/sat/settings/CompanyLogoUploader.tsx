@@ -69,7 +69,6 @@ export function CompanyLogoUploader({ currentLogoUrl, disabled }: Props) {
           onDrop={(e) => logo.onDrop(e, disabled)}
         >
           {displayUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
             <img src={displayUrl} alt="Logo" className="h-full w-full object-contain" />
           ) : (
             <ImageIcon className="h-8 w-8 text-[color:var(--text-muted)]" aria-hidden />

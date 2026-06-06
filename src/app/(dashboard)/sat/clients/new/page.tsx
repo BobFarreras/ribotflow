@@ -164,7 +164,7 @@ export default function NewClientPage() {
               />
             </div>
             <p className="mt-1 text-xs text-[var(--text-muted)]">
-              Opcional. Permet calcular distÃ ncies per als desplaÃ§aments.
+              Opcional. Permet calcular distàncies per als desplaçaments.
             </p>
           </div>
 
