@@ -598,6 +598,29 @@
         "passwordTooShort": "La contraseña debe tener como mínimo 8 caracteres.",
         "generic": "No se ha podido activar la cuenta. Vuelve a intentarlo."
       }
+    },
+    "field": {
+      "title": "Mi día",
+      "subtitle": "{count, plural, =0 {No tienes ninguna orden asignada.} one {1 orden asignada.} other {{count} órdenes asignadas.}}",
+      "empty": {
+        "title": "Todo al día",
+        "body": "Cuando la oficina te asigne una orden de trabajo, aparecerá aquí."
+      },
+      "card": {
+        "openDetailsHint": "Abre los detalles de la orden"
+      },
+      "actions": {
+        "in_progress": "Empezar",
+        "paused": "Pausar",
+        "completed": "Finalizar",
+        "closed": "Esta orden ya está cerrada.",
+        "success": "Estado actualizado",
+        "errors": {
+          "generic": "No se ha podido actualizar el estado",
+          "notAssigned": "Esta orden no está asignada a ti.",
+          "notFound": "La orden ya no existe."
+        }
+      }
     }
   }
 }

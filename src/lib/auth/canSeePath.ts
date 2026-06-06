@@ -41,6 +41,7 @@ const PATH_RULES: readonly PathRule[] = [
   { pattern: /^\/sat\/categories(\/|$)/,   permission: "material:read" },
   { pattern: /^\/sat\/routes(\/|$)/,       permission: "route:read" },
   { pattern: /^\/sat\/map(\/|$)/,          permission: "route:read" },
+  { pattern: /^\/sat\/field(\/|$)/,        permission: "workorder:read:own" },
   { pattern: /^\/sat\/work-orders(\/|$)/,  permission: "workorder:read:own" },
   { pattern: /^\/sat(\/|$)/,               permission: "workorder:read:own" },
 

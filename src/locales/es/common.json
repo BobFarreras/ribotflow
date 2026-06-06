@@ -8,18 +8,19 @@
       "dashboard": {
         "label": "Inicio"
       },
-      "sat": {
-        "label": "SAT",
-        "subItems": {
-          "workOrders": "Órdenes de Trabajo",
-          "quotes": "Presupuestos",
-          "quoteTemplates": "Plantillas",
-          "map": "Mapa",
-          "routes": "Rutas",
-          "clients": "Clientes",
-          "categories": "Categorías"
-        }
-      },
+  "sat": {
+    "label": "SAT",
+    "subItems": {
+      "workOrders": "Ordres de Trabajo",
+      "field": "Campo",
+      "quotes": "Presupuestos",
+      "quoteTemplates": "Plantillas",
+      "map": "Mapa",
+      "routes": "Rutas",
+      "clients": "Clientes",
+      "categories": "Categorías"
+    }
+  },
       "erp": {
         "label": "ERP",
         "subItems": {

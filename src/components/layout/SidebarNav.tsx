@@ -33,6 +33,7 @@ import {
   Map,
   Route,
   Mail,
+  Smartphone,
 } from "lucide-react";
 import { useSidebar } from "./SidebarContext";
 import { requiredPermissionFor } from "@/lib/auth/canSeePath";
@@ -71,6 +72,7 @@ const navItems: NavItem[] = [
     icon: Wrench,
     subItems: [
       { key: "workOrders", href: "/sat", icon: List },
+      { key: "field", href: "/sat/field", icon: Smartphone, permission: "workorder:read:own" },
       { key: "quotes", href: "/sat/quotes", icon: FileText, permission: "quote:read" },
       { key: "quoteTemplates", href: "/sat/quotes/templates", icon: FolderOpen, permission: "quote:read" },
       { key: "map", href: "/sat/map", icon: Map, permission: "route:read" },
