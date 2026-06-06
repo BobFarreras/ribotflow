@@ -10,10 +10,7 @@
 
 import { useState, useRef, useTransition } from "react";
 import { toast } from "sonner";
-import {
-  uploadAvatarAction,
-  removeAvatarAction,
-} from "@/actions/sat/profile/uploadAvatar";
+import { uploadAvatarAction, removeAvatarAction } from "@/actions/sat/profile/uploadAvatar";
 
 const MAX_SIZE = 2 * 1024 * 1024;
 const ACCEPTED = ["image/png", "image/jpeg", "image/webp", "image/svg+xml"];

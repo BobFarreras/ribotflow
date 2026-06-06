@@ -90,7 +90,10 @@ export function CompanyLogoUploader({ currentLogoUrl, disabled }: Props) {
             className="sr-only"
             id={showDropZone ? "company-logo-input" : "company-logo-input-replace"}
           />
-          <label htmlFor={showDropZone ? "company-logo-input" : "company-logo-input-replace"} className="btn btn-secondary btn-sm">
+          <label
+            htmlFor={showDropZone ? "company-logo-input" : "company-logo-input-replace"}
+            className="btn btn-secondary btn-sm"
+          >
             <Upload className="h-4 w-4" aria-hidden />
             {showDropZone ? t("logoUpload.choose") : t("logoUpload.replace")}
           </label>

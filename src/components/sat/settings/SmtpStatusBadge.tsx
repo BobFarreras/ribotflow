@@ -21,7 +21,10 @@ export function SmtpStatusBadge({ configured, lastUpdated }: Props) {
   if (configured) {
     return (
       <div className="flex items-start gap-3 rounded-lg border border-[color:var(--success)]/30 bg-[color:var(--success)]/5 p-4">
-        <CheckCircle2 className="mt-0.5 h-5 w-5 flex-shrink-0 text-[color:var(--success)]" aria-hidden />
+        <CheckCircle2
+          className="mt-0.5 h-5 w-5 flex-shrink-0 text-[color:var(--success)]"
+          aria-hidden
+        />
         <div>
           <span className="text-sm font-semibold text-[color:var(--success)]">
             {t("configured")}
@@ -31,9 +34,7 @@ export function SmtpStatusBadge({ configured, lastUpdated }: Props) {
               {t("lastUpdated", { date: new Date(lastUpdated).toLocaleString() })}
             </span>
           )}
-          <p className="mt-0.5 text-xs text-[color:var(--text-muted)]">
-            {t("configuredDetail")}
-          </p>
+          <p className="mt-0.5 text-xs text-[color:var(--text-muted)]">{t("configuredDetail")}</p>
         </div>
       </div>
     );
@@ -41,14 +42,15 @@ export function SmtpStatusBadge({ configured, lastUpdated }: Props) {
 
   return (
     <div className="flex items-start gap-3 rounded-lg border border-[color:var(--warning)]/30 bg-[color:var(--warning)]/5 p-4">
-      <AlertCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-[color:var(--warning)]" aria-hidden />
+      <AlertCircle
+        className="mt-0.5 h-5 w-5 flex-shrink-0 text-[color:var(--warning)]"
+        aria-hidden
+      />
       <div>
         <span className="text-sm font-semibold text-[color:var(--warning)]">
           {t("notConfigured")}
         </span>
-        <p className="mt-0.5 text-xs text-[color:var(--text-muted)]">
-          {t("notConfiguredDetail")}
-        </p>
+        <p className="mt-0.5 text-xs text-[color:var(--text-muted)]">{t("notConfiguredDetail")}</p>
       </div>
     </div>
   );

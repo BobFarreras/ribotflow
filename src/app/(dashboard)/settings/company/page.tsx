@@ -51,9 +51,7 @@ export default async function CompanySettingsPage() {
               <h1 className="text-2xl font-bold leading-tight tracking-tight text-[color:var(--text)]">
                 {t("title")}
               </h1>
-              <p className="text-sm text-[color:var(--text-muted)]">
-                {t("subtitle")}
-              </p>
+              <p className="text-sm text-[color:var(--text-muted)]">{t("subtitle")}</p>
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-2">

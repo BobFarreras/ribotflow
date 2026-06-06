@@ -7,10 +7,7 @@
 import { db } from "@/db";
 import { quoteItems, quotes } from "@/db/schema/sat";
 import { eq, and, desc, sql } from "drizzle-orm";
-import type {
-  AddQuoteItemInput,
-  UpdateQuoteItemInput,
-} from "@/lib/validators/sat/quoteSchema";
+import type { AddQuoteItemInput, UpdateQuoteItemInput } from "@/lib/validators/sat/quoteSchema";
 
 /* ============================================================
    CALCULATIONS
@@ -38,10 +35,7 @@ function calculateItemTotals(
 }
 
 async function recalculateQuoteTotals(quoteId: string) {
-  const items = await db
-    .select()
-    .from(quoteItems)
-    .where(eq(quoteItems.quoteId, quoteId));
+  const items = await db.select().from(quoteItems).where(eq(quoteItems.quoteId, quoteId));
 
   const subtotal = items.reduce((sum, item) => sum + Number(item.subtotal), 0);
   const taxAmount = items.reduce((sum, item) => sum + Number(item.taxAmount), 0);
@@ -163,7 +157,8 @@ export const quoteItemService = {
         quantity: input.quantity ? String(input.quantity) : undefined,
         unitPrice: input.unitPrice ? String(input.unitPrice) : undefined,
         unitCost: input.unitCost !== undefined ? String(input.unitCost) : undefined,
-        discountPercent: input.discountPercent !== undefined ? String(input.discountPercent) : undefined,
+        discountPercent:
+          input.discountPercent !== undefined ? String(input.discountPercent) : undefined,
         discountAmount: String(totals.discountAmount),
         subtotal: String(totals.subtotal),
         taxRate: String(taxRate),

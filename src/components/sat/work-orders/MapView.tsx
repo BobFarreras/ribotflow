@@ -115,8 +115,7 @@ export function MapView({ orders, hqLocation, companyName = "Seu" }: Props) {
           popupAnchor: [0, -36],
         });
 
-        const hqMarker = L.marker([hqLocation.lat, hqLocation.lng], { icon: hqIcon })
-          .addTo(map)
+        const hqMarker = L.marker([hqLocation.lat, hqLocation.lng], { icon: hqIcon }).addTo(map)
           .bindPopup(`
             <div style="font-family: system-ui, sans-serif; min-width: 160px;">
               <div style="font-weight: 700; font-size: 14px; color: #0f766e;">
@@ -170,10 +169,9 @@ export function MapView({ orders, hqLocation, companyName = "Seu" }: Props) {
           popupAnchor: [0, -36],
         });
 
-        const marker = L.marker(
-          [order.client.location.lat, order.client.location.lng],
-          { icon: customIcon }
-        ).addTo(map);
+        const marker = L.marker([order.client.location.lat, order.client.location.lng], {
+          icon: customIcon,
+        }).addTo(map);
 
         // Rich popup
         const phoneHtml = order.client.phone

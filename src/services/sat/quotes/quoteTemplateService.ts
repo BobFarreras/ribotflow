@@ -7,10 +7,7 @@
 import { db } from "@/db";
 import { quoteTemplates } from "@/db/schema/sat";
 import { eq, and, desc, sql } from "drizzle-orm";
-import type {
-  CreateTemplateInput,
-  UpdateTemplateInput,
-} from "@/lib/validators/sat/quoteSchema";
+import type { CreateTemplateInput, UpdateTemplateInput } from "@/lib/validators/sat/quoteSchema";
 
 export const quoteTemplateService = {
   async create(companyId: string, userId: string, input: CreateTemplateInput) {

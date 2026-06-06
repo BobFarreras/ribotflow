@@ -89,10 +89,7 @@ export function ActiveSessionsList({ sessions: rows, currentSessionId }: Props) 
             const isCurrent = s.id === currentSessionId;
             const deviceLabel = humanizeDevice(s.userAgent);
             return (
-              <li
-                key={s.id}
-                className="flex items-start gap-3 px-3 py-3"
-              >
+              <li key={s.id} className="flex items-start gap-3 px-3 py-3">
                 <span className="mt-0.5 text-[color:var(--text-muted)]">
                   {deviceIcon(s.userAgent)}
                 </span>
@@ -164,20 +161,28 @@ function deviceIcon(ua: string | null) {
 function humanizeDevice(ua: string | null): string {
   if (!ua) return "Dispositiu desconegut";
   const lower = ua.toLowerCase();
-  const os =
-    /windows/.test(lower) ? "Windows"
-    : /mac os x|macintosh/.test(lower) ? "macOS"
-    : /android/.test(lower) ? "Android"
-    : /iphone|ipad|ipod/.test(lower) ? "iOS"
-    : /linux/.test(lower) ? "Linux"
-    : "Dispositiu";
-  const browser =
-    /edg\//.test(lower) ? "Edge"
-    : /chrome\//.test(lower) ? "Chrome"
-    : /firefox\//.test(lower) ? "Firefox"
-    : /safari\//.test(lower) ? "Safari"
-    : /opera|opr\//.test(lower) ? "Opera"
-    : "";
+  const os = /windows/.test(lower)
+    ? "Windows"
+    : /mac os x|macintosh/.test(lower)
+      ? "macOS"
+      : /android/.test(lower)
+        ? "Android"
+        : /iphone|ipad|ipod/.test(lower)
+          ? "iOS"
+          : /linux/.test(lower)
+            ? "Linux"
+            : "Dispositiu";
+  const browser = /edg\//.test(lower)
+    ? "Edge"
+    : /chrome\//.test(lower)
+      ? "Chrome"
+      : /firefox\//.test(lower)
+        ? "Firefox"
+        : /safari\//.test(lower)
+          ? "Safari"
+          : /opera|opr\//.test(lower)
+            ? "Opera"
+            : "";
   return browser ? `${os} · ${browser}` : os;
 }
 

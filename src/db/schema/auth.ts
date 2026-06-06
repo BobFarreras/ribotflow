@@ -56,18 +56,18 @@ export const users = pgTable(
     role: text("role").$type<"OWNER" | "ADMIN" | "TECHNICIAN" | "OFFICE">().notNull(),
     /** "active" can sign in. "inactive" is suspended. "pending" is invited
      *  and must set a password via the invitation link. */
-    status: text("status")
-      .$type<"active" | "inactive" | "pending">()
-      .default("active")
-      .notNull(),
+    status: text("status").$type<"active" | "inactive" | "pending">().default("active").notNull(),
     /** Random opaque token sent in the invitation email. */
     invitationToken: text("invitation_token").unique(),
     /** Hard expiry. 7 days from issue. */
     invitationExpiresAt: timestamp("invitation_expires_at"),
     /** Who issued the invitation (self-referential FK). */
-    invitedBy: uuid("invited_by").references((): import("drizzle-orm/pg-core").AnyPgColumn => users.id, {
-      onDelete: "set null",
-    }),
+    invitedBy: uuid("invited_by").references(
+      (): import("drizzle-orm/pg-core").AnyPgColumn => users.id,
+      {
+        onDelete: "set null",
+      }
+    ),
     invitedAt: timestamp("invited_at"),
     /** Updated on every successful sign-in. Shown in the team list. */
     lastActiveAt: timestamp("last_active_at"),

@@ -21,10 +21,7 @@ export async function addMaterialAction(rawInput: unknown) {
 
     const input = addMaterialSchema.parse(rawInput);
 
-    const material = await materialService.add(
-      session.user.companyId,
-      input
-    );
+    const material = await materialService.add(session.user.companyId, input);
 
     revalidatePath(`/sat/${input.workOrderId}`);
 

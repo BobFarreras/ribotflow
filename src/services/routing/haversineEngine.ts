@@ -25,9 +25,7 @@ export class HaversineEngine implements DistanceEngine {
 
   async calculateMatrix(origin: GeoPoint, destinations: GeoPoint[]) {
     return Promise.all(
-      destinations.map((dest) =>
-        this.calculateDistance(origin, dest).then((r) => r.leg)
-      )
+      destinations.map((dest) => this.calculateDistance(origin, dest).then((r) => r.leg))
     );
   }
 
@@ -40,10 +38,7 @@ export class HaversineEngine implements DistanceEngine {
 
     const haversine =
       Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos(toRad(a.lat)) *
-        Math.cos(toRad(b.lat)) *
-        Math.sin(dLng / 2) *
-        Math.sin(dLng / 2);
+      Math.cos(toRad(a.lat)) * Math.cos(toRad(b.lat)) * Math.sin(dLng / 2) * Math.sin(dLng / 2);
 
     const c = 2 * Math.atan2(Math.sqrt(haversine), Math.sqrt(1 - haversine));
 

@@ -72,9 +72,8 @@ export function buildStorageContext(input: {
   clientId: string;
   clientName: string;
 }): StorageContext {
-  const mode: DeploymentMode = process.env.NEXT_PUBLIC_APP_MODE === "self-hosted"
-    ? "self-hosted"
-    : "cloud";
+  const mode: DeploymentMode =
+    process.env.NEXT_PUBLIC_APP_MODE === "self-hosted" ? "self-hosted" : "cloud";
 
   return {
     mode,
@@ -134,11 +133,7 @@ export function getEntityFolder(ctx: StorageContext, module: string, entityNumbe
  * Build storage key for a quote PDF.
  * Example: quotes/digitalagency/ajuntament-barcelona-1fa711/PRES-2026-0001/quote-ca.pdf
  */
-export function buildQuotePdfKey(
-  ctx: StorageContext,
-  quoteNumber: string,
-  lang: string
-): string {
+export function buildQuotePdfKey(ctx: StorageContext, quoteNumber: string, lang: string): string {
   const folder = getEntityFolder(ctx, "quotes", quoteNumber);
   return `${folder}quote-${lang}.pdf`;
 }
@@ -147,10 +142,7 @@ export function buildQuotePdfKey(
  * Build storage key for a quote signature (PNG).
  * Example: quotes/digitalagency/.../PRES-2026-0001/signature.png
  */
-export function buildQuoteSignatureKey(
-  ctx: StorageContext,
-  quoteNumber: string
-): string {
+export function buildQuoteSignatureKey(ctx: StorageContext, quoteNumber: string): string {
   const folder = getEntityFolder(ctx, "quotes", quoteNumber);
   return `${folder}signature.png`;
 }
@@ -197,10 +189,7 @@ export function buildWorkOrderAttachmentKey(
  * Build storage key for a work order signature.
  * Example: work-orders/digitalagency/.../OT-2026-0042/signature.png
  */
-export function buildWorkOrderSignatureKey(
-  ctx: StorageContext,
-  workOrderNumber: string
-): string {
+export function buildWorkOrderSignatureKey(ctx: StorageContext, workOrderNumber: string): string {
   const folder = getEntityFolder(ctx, "work-orders", workOrderNumber);
   return `${folder}signature.png`;
 }
@@ -227,10 +216,7 @@ export function buildWorkOrderReportKey(
  * re-uploads don't collide and CDN caches can be busted.
  * Example: branding/digitalagency/logo-1717351234.png
  */
-export function buildCompanyLogoKey(
-  ctx: StorageContext,
-  fileExtension: string
-): string {
+export function buildCompanyLogoKey(ctx: StorageContext, fileExtension: string): string {
   const company = getCompanyFolder(ctx);
   const cleanExt = fileExtension.replace(/^\./, "").toLowerCase() || "png";
   const parts = ["branding"];
@@ -273,9 +259,7 @@ export function buildUserAvatarKey(
 /** Storage key prefix used to find previous avatars for a user. */
 export function getUserAvatarPrefix(ctx: StorageContext, userId: string): string {
   const company = getCompanyFolder(ctx);
-  return company
-    ? `branding/${company}/avatars/${userId}-`
-    : `branding/avatars/${userId}-`;
+  return company ? `branding/${company}/avatars/${userId}-` : `branding/avatars/${userId}-`;
 }
 
 /* ============================================================
@@ -296,10 +280,7 @@ export function buildAttachmentStorageKey(
   companyName?: string
 ): string {
   const mode = process.env.NEXT_PUBLIC_APP_MODE;
-  const folder =
-    mode === "self-hosted" && companyName
-      ? sanitizeFileName(companyName)
-      : companyId;
+  const folder = mode === "self-hosted" && companyName ? sanitizeFileName(companyName) : companyId;
   const ext = originalFileName.includes(".")
     ? originalFileName.slice(originalFileName.lastIndexOf("."))
     : "";
@@ -323,10 +304,7 @@ export function buildPdfStorageKey(
   companyName?: string
 ): string {
   const mode = process.env.NEXT_PUBLIC_APP_MODE;
-  const folder =
-    mode === "self-hosted" && companyName
-      ? sanitizeFileName(companyName)
-      : companyId;
+  const folder = mode === "self-hosted" && companyName ? sanitizeFileName(companyName) : companyId;
   return `${module}/${folder}/${sanitizeFileName(entityNumber)}-report-${lang}.pdf`;
 }
 
@@ -341,9 +319,6 @@ export function buildSignatureStorageKey(
   companyName?: string
 ): string {
   const mode = process.env.NEXT_PUBLIC_APP_MODE;
-  const folder =
-    mode === "self-hosted" && companyName
-      ? sanitizeFileName(companyName)
-      : companyId;
+  const folder = mode === "self-hosted" && companyName ? sanitizeFileName(companyName) : companyId;
   return `${module}/${folder}/${sanitizeFileName(entityNumber)}-signature.png`;
 }

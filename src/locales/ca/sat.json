@@ -303,7 +303,7 @@
         "lastUpdated": "Actualitzat el {date}",
         "fromFallback": "Si no hi ha res configurat aquí, fem servir el servidor per defecte del sistema."
       },
-"feedback": {
+      "feedback": {
         "saved": "Configuració desada correctament",
         "saving": "Desant...",
         "saveError": "No s'ha pogut desar la configuració",

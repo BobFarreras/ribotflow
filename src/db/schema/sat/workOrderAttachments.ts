@@ -4,7 +4,16 @@
  * Description: Work order attachments (photos, videos, documents, audio).
  */
 
-import { pgTable, uuid, text, timestamp, index, integer, boolean, jsonb } from "drizzle-orm/pg-core";
+import {
+  pgTable,
+  uuid,
+  text,
+  timestamp,
+  index,
+  integer,
+  boolean,
+  jsonb,
+} from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { workOrders } from "./workOrders";
 

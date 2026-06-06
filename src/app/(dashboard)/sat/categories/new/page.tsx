@@ -14,9 +14,16 @@ import { ArrowLeft, Tag, Loader2 } from "lucide-react";
 import { ICONS, CategoryIcon } from "@/components/sat/shared/CategoryIcon";
 
 const COLOR_OPTIONS = [
-  "#3b82f6", "#10b981", "#f59e0b", "#ef4444",
-  "#8b5cf6", "#ec4899", "#06b6d4", "#6366f1",
-  "#84cc16", "#f97316",
+  "#3b82f6",
+  "#10b981",
+  "#f59e0b",
+  "#ef4444",
+  "#8b5cf6",
+  "#ec4899",
+  "#06b6d4",
+  "#6366f1",
+  "#84cc16",
+  "#f97316",
 ];
 
 const ICON_SLUGS = Object.keys(ICONS);
@@ -92,7 +99,10 @@ export default function NewCategoryPage() {
       </header>
 
       <main className="mx-auto max-w-2xl px-4 py-6 sm:px-6">
-        <form onSubmit={handleSubmit} className="space-y-5 rounded-xl border border-[var(--border)] bg-[var(--surface)] p-6">
+        <form
+          onSubmit={handleSubmit}
+          className="space-y-5 rounded-xl border border-[var(--border)] bg-[var(--surface)] p-6"
+        >
           {error && (
             <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
               {error}
@@ -140,7 +150,9 @@ export default function NewCategoryPage() {
                   type="button"
                   onClick={() => setFormData((p) => ({ ...p, color: c }))}
                   className={`h-8 w-8 rounded-full border-2 transition-all ${
-                    formData.color === c ? "border-white shadow-md scale-110" : "border-transparent hover:scale-105"
+                    formData.color === c
+                      ? "border-white shadow-md scale-110"
+                      : "border-transparent hover:scale-105"
                   }`}
                   style={{ backgroundColor: c }}
                 />
@@ -175,7 +187,8 @@ export default function NewCategoryPage() {
               })}
             </div>
             <p className="mt-1.5 text-xs text-[var(--text-muted)]">
-              Seleccionada: <span className="font-medium text-[var(--text)]">{ICONS[formData.icon].label}</span>
+              Seleccionada:{" "}
+              <span className="font-medium text-[var(--text)]">{ICONS[formData.icon].label}</span>
             </p>
           </div>
 
@@ -187,7 +200,9 @@ export default function NewCategoryPage() {
               className="h-4 w-4 rounded border-[var(--border)]"
             />
             <span className="text-sm text-[var(--text)]">Categoria per defecte</span>
-            <span className="text-xs text-[var(--text-muted)]">(surt prÃ©-seleccionada en crear OT)</span>
+            <span className="text-xs text-[var(--text-muted)]">
+              (surt prÃ©-seleccionada en crear OT)
+            </span>
           </label>
 
           <div className="flex justify-end gap-3 pt-2">

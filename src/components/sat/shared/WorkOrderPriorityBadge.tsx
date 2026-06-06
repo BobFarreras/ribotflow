@@ -26,10 +26,7 @@ export function WorkOrderPriorityBadge({ priority }: Props) {
 
   return (
     <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-[var(--text-muted)]">
-      <span
-        className="h-1.5 w-1.5 rounded-full shrink-0"
-        style={{ backgroundColor: color }}
-      />
+      <span className="h-1.5 w-1.5 rounded-full shrink-0" style={{ backgroundColor: color }} />
       {t(`list.priority.${priority}`)}
     </span>
   );

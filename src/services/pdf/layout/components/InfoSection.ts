@@ -19,7 +19,7 @@ export function drawInfoSection(
   const t = LABELS[builder.lang];
   const topY = builder.y;
 
-  const col1W = CONTENT_W * 0.30;
+  const col1W = CONTENT_W * 0.3;
   const col2W = CONTENT_W * 0.35;
   const col3W = CONTENT_W * 0.31;
   const col1X = MARGIN;
@@ -52,7 +52,10 @@ export function drawInfoSection(
   c3Lines.push(`${t.issueDate} ${today}`);
   if (validUntil) {
     const validDate = new Date(validUntil).toLocaleDateString("ca-ES");
-    const daysLeft = Math.max(0, Math.ceil((new Date(validUntil).getTime() - Date.now()) / 86400000));
+    const daysLeft = Math.max(
+      0,
+      Math.ceil((new Date(validUntil).getTime() - Date.now()) / 86400000)
+    );
     c3Lines.push(`${t.validity} ${validDate}`);
     c3Lines.push(`${t.term} ${daysLeft} ${t.days}`);
   }
@@ -62,16 +65,29 @@ export function drawInfoSection(
 
   // Backgrounds
   builder.page.drawRectangle({
-    x: col2X, y: topY - sectionH, width: col2W, height: sectionH,
-    color: COLORS.slate50, borderColor: COLORS.slate200, borderWidth: 0.5,
+    x: col2X,
+    y: topY - sectionH,
+    width: col2W,
+    height: sectionH,
+    color: COLORS.slate50,
+    borderColor: COLORS.slate200,
+    borderWidth: 0.5,
   });
   builder.page.drawRectangle({
-    x: col2X, y: topY - sectionH, width: 3, height: sectionH,
+    x: col2X,
+    y: topY - sectionH,
+    width: 3,
+    height: sectionH,
     color: COLORS.blue500,
   });
   builder.page.drawRectangle({
-    x: col3X, y: topY - sectionH, width: col3W, height: sectionH,
-    color: COLORS.slate100, borderColor: COLORS.slate200, borderWidth: 0.5,
+    x: col3X,
+    y: topY - sectionH,
+    width: col3W,
+    height: sectionH,
+    color: COLORS.slate100,
+    borderColor: COLORS.slate200,
+    borderWidth: 0.5,
   });
 
   // Labels
@@ -82,7 +98,11 @@ export function drawInfoSection(
   let y1 = topY - labelH - 4;
   for (const line of c1Lines) {
     const isBold = line === company.name;
-    builder.drawText(line, col1X, y1, { bold: isBold, size: 9, color: isBold ? COLORS.slate900 : COLORS.slate600 });
+    builder.drawText(line, col1X, y1, {
+      bold: isBold,
+      size: 9,
+      color: isBold ? COLORS.slate900 : COLORS.slate600,
+    });
     y1 -= lineH;
   }
 
@@ -90,7 +110,11 @@ export function drawInfoSection(
   let y2 = topY - labelH - 4;
   for (const line of c2Lines) {
     const isBold = line === client.name;
-    builder.drawText(line, col2X + pad, y2, { bold: isBold, size: 9, color: isBold ? COLORS.slate900 : COLORS.slate600 });
+    builder.drawText(line, col2X + pad, y2, {
+      bold: isBold,
+      size: 9,
+      color: isBold ? COLORS.slate900 : COLORS.slate600,
+    });
     y2 -= lineH;
   }
 
@@ -101,9 +125,16 @@ export function drawInfoSection(
     if (colonIdx > 0) {
       const labelPart = line.slice(0, colonIdx + 1);
       const valuePart = line.slice(colonIdx + 1).trim();
-      builder.drawText(labelPart, col3X + pad, y3, { bold: true, size: 8.5, color: COLORS.slate600 });
+      builder.drawText(labelPart, col3X + pad, y3, {
+        bold: true,
+        size: 8.5,
+        color: COLORS.slate600,
+      });
       const valueW = builder.measureWidth(valuePart, 9, false);
-      builder.drawText(valuePart, col3X + col3W - valueW - pad, y3, { size: 9, color: COLORS.slate700 });
+      builder.drawText(valuePart, col3X + col3W - valueW - pad, y3, {
+        size: 9,
+        color: COLORS.slate700,
+      });
     } else {
       builder.drawText(line, col3X + pad, y3, { size: 9, color: COLORS.slate700 });
     }

@@ -28,8 +28,7 @@ const META: Record<TeamRole, { label: string; classes: string; Icon: typeof Crow
   },
   TECHNICIAN: {
     label: "Tècnic",
-    classes:
-      "border-[color:var(--info)]/40 bg-[color:var(--info)]/10 text-[color:var(--info)]",
+    classes: "border-[color:var(--info)]/40 bg-[color:var(--info)]/10 text-[color:var(--info)]",
     Icon: Wrench,
   },
   OFFICE: {

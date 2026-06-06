@@ -46,7 +46,10 @@ export function ProfileNameForm({ initialName, initialEmail }: Props) {
   return (
     <form onSubmit={onSubmit} className="space-y-4">
       <div>
-        <label htmlFor="profile-name" className="mb-1.5 block text-sm font-medium text-[color:var(--text)]">
+        <label
+          htmlFor="profile-name"
+          className="mb-1.5 block text-sm font-medium text-[color:var(--text)]"
+        >
           {t("nameForm.name")}
         </label>
         <input
@@ -71,9 +74,7 @@ export function ProfileNameForm({ initialName, initialEmail }: Props) {
           value={initialEmail}
           className="w-full max-w-md rounded-md border border-[color:var(--border)] bg-[color:var(--surface-2)] px-3 py-2 text-sm text-[color:var(--text-muted)]"
         />
-        <p className="mt-1.5 text-xs text-[color:var(--text-muted)]">
-          {t("nameForm.emailHint")}
-        </p>
+        <p className="mt-1.5 text-xs text-[color:var(--text-muted)]">{t("nameForm.emailHint")}</p>
       </div>
 
       {feedback && (

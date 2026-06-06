@@ -18,10 +18,7 @@ import { CompanyDocumentsSection } from "./CompanyDocumentsSection";
 import { CompanyBrandingSection } from "./CompanyBrandingSection";
 import { CompanyLogoUploader } from "./CompanyLogoUploader";
 import { SaveBar } from "./SaveBar";
-import {
-  useCompanySettingsForm,
-  type CompanySettingsDTO,
-} from "./useCompanySettingsForm";
+import { useCompanySettingsForm, type CompanySettingsDTO } from "./useCompanySettingsForm";
 
 interface Props {
   initial: CompanySettingsDTO;
@@ -33,9 +30,19 @@ export function CompanySettingsForm({ initial, userRole }: Props) {
   const canEdit = userRole === "OWNER";
 
   const {
-    values, isDirty, dirtyCount, isSaving, saveError, justSaved,
-    applyIdentityPatch, applyAddressPatch, applyPreferencesPatch,
-    applyDocumentsPatch, applyBrandingPatch, save, reset,
+    values,
+    isDirty,
+    dirtyCount,
+    isSaving,
+    saveError,
+    justSaved,
+    applyIdentityPatch,
+    applyAddressPatch,
+    applyPreferencesPatch,
+    applyDocumentsPatch,
+    applyBrandingPatch,
+    save,
+    reset,
   } = useCompanySettingsForm(initial);
 
   return (
@@ -54,11 +61,31 @@ export function CompanySettingsForm({ initial, userRole }: Props) {
         className="mx-auto max-w-3xl space-y-6"
       >
         <fieldset disabled={!canEdit} className="space-y-6">
-          <CompanyIdentitySection state={pickIdentity(values)} disabled={!canEdit} onChange={applyIdentityPatch} />
-          <CompanyAddressSection state={pickAddress(values)} disabled={!canEdit} onChange={applyAddressPatch} />
-          <CompanyPreferencesSection state={pickPreferences(values)} disabled={!canEdit} onChange={applyPreferencesPatch} />
-          <CompanyDocumentsSection state={pickDocuments(values)} disabled={!canEdit} onChange={applyDocumentsPatch} />
-          <CompanyBrandingSection state={{ legalText: values.legalText }} disabled={!canEdit} onChange={applyBrandingPatch} />
+          <CompanyIdentitySection
+            state={pickIdentity(values)}
+            disabled={!canEdit}
+            onChange={applyIdentityPatch}
+          />
+          <CompanyAddressSection
+            state={pickAddress(values)}
+            disabled={!canEdit}
+            onChange={applyAddressPatch}
+          />
+          <CompanyPreferencesSection
+            state={pickPreferences(values)}
+            disabled={!canEdit}
+            onChange={applyPreferencesPatch}
+          />
+          <CompanyDocumentsSection
+            state={pickDocuments(values)}
+            disabled={!canEdit}
+            onChange={applyDocumentsPatch}
+          />
+          <CompanyBrandingSection
+            state={{ legalText: values.legalText }}
+            disabled={!canEdit}
+            onChange={applyBrandingPatch}
+          />
           {canEdit && <CompanyLogoUploader currentLogoUrl={initial.logoUrl} disabled={!canEdit} />}
         </fieldset>
 
@@ -87,7 +114,29 @@ export function CompanySettingsForm({ initial, userRole }: Props) {
 }
 
 type V = ReturnType<typeof useCompanySettingsForm>["values"];
-function pickIdentity(v: V) { return { name: v.name, taxId: v.taxId, phone: v.phone, email: v.email, website: v.website }; }
-function pickAddress(v: V) { return { addressStreet: v.addressStreet, addressCity: v.addressCity, addressPostalCode: v.addressPostalCode, addressCountry: v.addressCountry }; }
-function pickPreferences(v: V) { return { defaultLocale: v.defaultLocale, timezone: v.timezone, defaultCurrency: v.defaultCurrency }; }
-function pickDocuments(v: V) { return { quotePrefix: v.quotePrefix, invoicePrefix: v.invoicePrefix, defaultTaxRate: v.defaultTaxRate, travelRatePerKm: v.travelRatePerKm }; }
+function pickIdentity(v: V) {
+  return { name: v.name, taxId: v.taxId, phone: v.phone, email: v.email, website: v.website };
+}
+function pickAddress(v: V) {
+  return {
+    addressStreet: v.addressStreet,
+    addressCity: v.addressCity,
+    addressPostalCode: v.addressPostalCode,
+    addressCountry: v.addressCountry,
+  };
+}
+function pickPreferences(v: V) {
+  return {
+    defaultLocale: v.defaultLocale,
+    timezone: v.timezone,
+    defaultCurrency: v.defaultCurrency,
+  };
+}
+function pickDocuments(v: V) {
+  return {
+    quotePrefix: v.quotePrefix,
+    invoicePrefix: v.invoicePrefix,
+    defaultTaxRate: v.defaultTaxRate,
+    travelRatePerKm: v.travelRatePerKm,
+  };
+}

@@ -78,7 +78,10 @@ export function SendQuoteEmailModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/50" onClick={status === "sending" ? undefined : onClose} />
+      <div
+        className="absolute inset-0 bg-black/50"
+        onClick={status === "sending" ? undefined : onClose}
+      />
 
       {/* Modal */}
       <div className="relative mx-4 w-full max-w-md rounded-xl border border-[var(--border)] bg-[var(--surface)] shadow-xl">

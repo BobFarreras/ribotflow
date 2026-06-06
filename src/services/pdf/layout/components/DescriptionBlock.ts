@@ -36,11 +36,20 @@ export function drawDescriptionBlock(builder: PdfBuilder, description: string) {
   const boxH = titleH + lines * lineH + pad * 2;
 
   builder.page.drawRectangle({
-    x: MARGIN, y: topY - boxH, width: CONTENT_W, height: boxH,
-    color: COLORS.slate50, borderColor: COLORS.slate200, borderWidth: 0.5,
+    x: MARGIN,
+    y: topY - boxH,
+    width: CONTENT_W,
+    height: boxH,
+    color: COLORS.slate50,
+    borderColor: COLORS.slate200,
+    borderWidth: 0.5,
   });
 
-  builder.drawText(title, MARGIN + pad, topY - 16, { bold: true, size: 8.5, color: COLORS.slate500 });
+  builder.drawText(title, MARGIN + pad, topY - 16, {
+    bold: true,
+    size: 8.5,
+    color: COLORS.slate500,
+  });
 
   builder.y = topY - titleH - 4;
   builder.drawDescription(description);

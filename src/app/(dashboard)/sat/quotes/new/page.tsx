@@ -24,14 +24,8 @@ export default async function NewQuotePage({ searchParams }: Props) {
   const companyId = session.user.companyId;
 
   const [clientList, productList, workOrderList, workOrder, companyResult] = await Promise.all([
-    db
-      .select()
-      .from(clients)
-      .where(eq(clients.companyId, companyId)),
-    db
-      .select()
-      .from(products)
-      .where(eq(products.companyId, companyId)),
+    db.select().from(clients).where(eq(clients.companyId, companyId)),
+    db.select().from(products).where(eq(products.companyId, companyId)),
     db
       .select({
         id: workOrders.id,
@@ -51,9 +45,18 @@ export default async function NewQuotePage({ searchParams }: Props) {
     getCompanySettingsAction(),
   ]);
 
-  const company = companyResult.success && companyResult.data
-    ? toCompanySummary(companyResult.data)
-    : { name: "Empresa", taxId: null, address: null, phone: null, email: null, website: null, logoUrl: null };
+  const company =
+    companyResult.success && companyResult.data
+      ? toCompanySummary(companyResult.data)
+      : {
+          name: "Empresa",
+          taxId: null,
+          address: null,
+          phone: null,
+          email: null,
+          website: null,
+          logoUrl: null,
+        };
 
   return (
     <div className="flex h-[calc(100dvh-1px)] flex-col bg-[var(--bg)]">

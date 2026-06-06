@@ -43,12 +43,10 @@ export async function buildWorkOrderPdf(builder: PdfBuilder, data: WorkOrderPdfD
   await drawWorkOrderHeader(builder, data.workOrderNumber, data.companyName, data.companyLogoUrl);
 
   // Generated date
-    builder.drawText(
-    `${t.generated}: ${new Date().toLocaleDateString("ca-ES")}`,
-    48,
-    builder.y,
-    { size: 9, color: rgb(0.4, 0.4, 0.4) }
-  );
+  builder.drawText(`${t.generated}: ${new Date().toLocaleDateString("ca-ES")}`, 48, builder.y, {
+    size: 9,
+    color: rgb(0.4, 0.4, 0.4),
+  });
   builder.addSpace(28);
 
   // Client section

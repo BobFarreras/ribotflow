@@ -31,7 +31,9 @@ export async function updateCategoryAction(categoryId: string, input: unknown) {
     const [existing] = await db
       .select()
       .from(workOrderCategories)
-      .where(and(eq(workOrderCategories.id, categoryId), eq(workOrderCategories.companyId, companyId)))
+      .where(
+        and(eq(workOrderCategories.id, categoryId), eq(workOrderCategories.companyId, companyId))
+      )
       .limit(1);
 
     if (!existing) {

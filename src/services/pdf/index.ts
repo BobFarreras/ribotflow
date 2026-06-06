@@ -51,13 +51,15 @@ export class PdfService {
       },
       validUntil: data.quote.validUntil ? data.quote.validUntil.toISOString() : null,
       description: data.quote.description,
-      items: (data.quote.items ?? []).filter((i) => i.description).map((i) => ({
-        description: i.description,
-        quantity: String(i.quantity),
-        unit: i.unit,
-        unitPrice: i.unitPrice,
-        total: i.total,
-      })),
+      items: (data.quote.items ?? [])
+        .filter((i) => i.description)
+        .map((i) => ({
+          description: i.description,
+          quantity: String(i.quantity),
+          unit: i.unit,
+          unitPrice: i.unitPrice,
+          total: i.total,
+        })),
       subtotal: Number(data.quote.subtotal),
       discountPercent: Number(data.quote.discountPercent),
       discountAmount: Number(data.quote.subtotal) * (Number(data.quote.discountPercent) / 100),
@@ -104,13 +106,15 @@ export class PdfService {
       },
       validUntil: data.quote.validUntil ? data.quote.validUntil.toISOString() : null,
       description: data.quote.description,
-      items: (data.quote.items ?? []).filter((i) => i.description).map((i) => ({
-        description: i.description,
-        quantity: String(i.quantity),
-        unit: i.unit,
-        unitPrice: i.unitPrice,
-        total: i.total,
-      })),
+      items: (data.quote.items ?? [])
+        .filter((i) => i.description)
+        .map((i) => ({
+          description: i.description,
+          quantity: String(i.quantity),
+          unit: i.unit,
+          unitPrice: i.unitPrice,
+          total: i.total,
+        })),
       subtotal: Number(data.quote.subtotal),
       discountPercent: Number(data.quote.discountPercent),
       discountAmount: Number(data.quote.subtotal) * (Number(data.quote.discountPercent) / 100),
@@ -186,7 +190,10 @@ export class PdfService {
     const storageKey = buildWorkOrderReportKey(ctx, data.workOrder.number, lang);
     const upload = await this.storage.upload({ buffer, storageKey, mimeType: "application/pdf" });
 
-    await db.update(workOrders).set({ pdfUrl: upload.publicUrl }).where(eq(workOrders.id, workOrderId));
+    await db
+      .update(workOrders)
+      .set({ pdfUrl: upload.publicUrl })
+      .where(eq(workOrders.id, workOrderId));
     return { url: upload.publicUrl };
   }
 
@@ -255,7 +262,16 @@ export class PdfService {
       workOrder: orderData.workOrder,
       client: orderData.client,
       category: orderData.category,
-      company: company ?? { name: "", tenantSlug: "", logoUrl: null, legalText: null, website: null, phone: null, email: null, taxId: null },
+      company: company ?? {
+        name: "",
+        tenantSlug: "",
+        logoUrl: null,
+        legalText: null,
+        website: null,
+        phone: null,
+        email: null,
+        taxId: null,
+      },
       materials,
       attachments,
       signature,

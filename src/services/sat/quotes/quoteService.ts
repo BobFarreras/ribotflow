@@ -7,12 +7,7 @@
  */
 
 import { db } from "@/db";
-import {
-  quotes,
-  quoteItems,
-  quoteStatusHistory,
-  quoteTemplates,
-} from "@/db/schema/sat";
+import { quotes, quoteItems, quoteStatusHistory, quoteTemplates } from "@/db/schema/sat";
 import { eq, and, desc, sql, count } from "drizzle-orm";
 import type {
   CreateQuoteInput,
@@ -198,7 +193,8 @@ export const quoteService = {
       if (input.title !== undefined) updateData.title = input.title;
       if (input.description !== undefined) updateData.description = input.description;
       if (input.taxRate !== undefined) updateData.taxRate = String(input.taxRate);
-      if (input.discountPercent !== undefined) updateData.discountPercent = String(input.discountPercent);
+      if (input.discountPercent !== undefined)
+        updateData.discountPercent = String(input.discountPercent);
       if (input.notes !== undefined) updateData.notes = input.notes;
       if (input.clientNotes !== undefined) updateData.clientNotes = input.clientNotes;
 
@@ -219,9 +215,10 @@ export const quoteService = {
 
         const itemsWithTotals = input.items.map((item, index) => {
           const subtotal = item.quantity * item.unitPrice;
-          const discount = item.discountAmount > 0
-            ? item.discountAmount
-            : (subtotal * (item.discountPercent ?? 0)) / 100;
+          const discount =
+            item.discountAmount > 0
+              ? item.discountAmount
+              : (subtotal * (item.discountPercent ?? 0)) / 100;
           const itemSubtotal = subtotal - discount;
           const taxAmount = (itemSubtotal * taxRate) / 100;
           const total = itemSubtotal + taxAmount;
@@ -270,12 +267,7 @@ export const quoteService = {
     return result;
   },
 
-  async updateStatus(
-    companyId: string,
-    quoteId: string,
-    userId: string,
-    input: QuoteStatusInput
-  ) {
+  async updateStatus(companyId: string, quoteId: string, userId: string, input: QuoteStatusInput) {
     const existing = await db
       .select()
       .from(quotes)

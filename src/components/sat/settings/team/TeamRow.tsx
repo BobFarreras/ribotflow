@@ -82,9 +82,7 @@ export function TeamRow({ member, canManage }: Props) {
                 </span>
               )}
             </div>
-            <div className="truncate text-xs text-[color:var(--text-muted)]">
-              {member.email}
-            </div>
+            <div className="truncate text-xs text-[color:var(--text-muted)]">{member.email}</div>
           </div>
         </div>
       </td>
@@ -145,9 +143,7 @@ export function TeamRow({ member, canManage }: Props) {
                         >
                           <span>{tList(`roles.${r}.label`)}</span>
                           {member.role === r && (
-                            <span className="text-[10px] text-[color:var(--text-muted)]">
-                              ✓
-                            </span>
+                            <span className="text-[10px] text-[color:var(--text-muted)]">✓</span>
                           )}
                         </button>
                       ))}
@@ -161,9 +157,7 @@ export function TeamRow({ member, canManage }: Props) {
                     <button
                       type="button"
                       disabled={isPending || member.isSelf}
-                      onClick={() =>
-                        run(() => resendInvitationAction({ userId: member.id }))
-                      }
+                      onClick={() => run(() => resendInvitationAction({ userId: member.id }))}
                       className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-[color:var(--text)] transition-colors hover:bg-[color:var(--surface-2)] disabled:opacity-50"
                     >
                       <RefreshCw className="h-3.5 w-3.5" />
@@ -172,9 +166,7 @@ export function TeamRow({ member, canManage }: Props) {
                     <button
                       type="button"
                       disabled={isPending || member.isSelf}
-                      onClick={() =>
-                        run(() => revokeInvitationAction({ userId: member.id }))
-                      }
+                      onClick={() => run(() => revokeInvitationAction({ userId: member.id }))}
                       className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-[color:var(--danger)] transition-colors hover:bg-[color:var(--surface-2)] disabled:opacity-50"
                     >
                       <X className="h-3.5 w-3.5" />
@@ -196,9 +188,7 @@ export function TeamRow({ member, canManage }: Props) {
                       )
                     }
                     className={`flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition-colors hover:bg-[color:var(--surface-2)] disabled:opacity-50 ${
-                      isInactive
-                        ? "text-[color:var(--text)]"
-                        : "text-[color:var(--danger)]"
+                      isInactive ? "text-[color:var(--text)]" : "text-[color:var(--danger)]"
                     }`}
                   >
                     {isInactive ? (

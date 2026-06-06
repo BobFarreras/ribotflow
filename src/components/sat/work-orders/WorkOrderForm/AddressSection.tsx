@@ -42,7 +42,9 @@ export function AddressSection({ state, actions, hasClient }: AddressSectionProp
 
       <AddressAutocomplete
         value={state.address}
-        onChange={(addr: string, loc: WorkOrderLocation | null) => actions.handleAddressChange(addr, loc)}
+        onChange={(addr: string, loc: WorkOrderLocation | null) =>
+          actions.handleAddressChange(addr, loc)
+        }
         placeholder="Cerca adreça de l'ordre..."
       />
 

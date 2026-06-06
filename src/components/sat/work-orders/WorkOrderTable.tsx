@@ -23,7 +23,15 @@ interface TableOrder {
   technician: { id: string; name: string } | null;
 }
 
-type SortKey = "number" | "title" | "client" | "status" | "priority" | "category" | "scheduledDate" | "distance";
+type SortKey =
+  | "number"
+  | "title"
+  | "client"
+  | "status"
+  | "priority"
+  | "category"
+  | "scheduledDate"
+  | "distance";
 type SortDir = "asc" | "desc";
 
 interface Props {
@@ -99,7 +107,8 @@ export function WorkOrderTable({ orders }: Props) {
   }, [orders, sortKey, sortDir]);
 
   const SortIcon = ({ column }: { column: SortKey }) => {
-    if (sortKey !== column) return <ArrowUpDown className="ml-1 h-3 w-3 text-[var(--text-muted)]" />;
+    if (sortKey !== column)
+      return <ArrowUpDown className="ml-1 h-3 w-3 text-[var(--text-muted)]" />;
     return sortDir === "asc" ? (
       <ArrowUp className="ml-1 h-3 w-3 text-[var(--module-sat)]" />
     ) : (
@@ -107,7 +116,15 @@ export function WorkOrderTable({ orders }: Props) {
     );
   };
 
-  const Th = ({ column, children, className = "" }: { column: SortKey; children: React.ReactNode; className?: string }) => (
+  const Th = ({
+    column,
+    children,
+    className = "",
+  }: {
+    column: SortKey;
+    children: React.ReactNode;
+    className?: string;
+  }) => (
     <th
       className={`cursor-pointer select-none px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)] transition-colors hover:bg-[var(--bg)] ${className}`}
       onClick={() => handleSort(column)}
@@ -122,7 +139,9 @@ export function WorkOrderTable({ orders }: Props) {
   if (orders.length === 0) {
     return (
       <div className="rounded-lg border border-dashed border-[var(--border)] bg-[var(--surface)] py-16 text-center">
-        <p className="text-sm text-[var(--text-muted)]">No hi ha ordres que coincideixin amb els filtres.</p>
+        <p className="text-sm text-[var(--text-muted)]">
+          No hi ha ordres que coincideixin amb els filtres.
+        </p>
       </div>
     );
   }
@@ -135,22 +154,23 @@ export function WorkOrderTable({ orders }: Props) {
           <thead className="sticky top-0 z-10 border-b border-[var(--border)] bg-[var(--bg)]">
             <tr>
               <Th column="number">Núm.</Th>
-              <Th column="title" className="min-w-[200px]">Títol</Th>
+              <Th column="title" className="min-w-[200px]">
+                Títol
+              </Th>
               <Th column="client">Client</Th>
               <Th column="category">Categoria</Th>
               <Th column="status">Estat</Th>
               <Th column="priority">Prioritat</Th>
               <Th column="scheduledDate">Data</Th>
               <Th column="distance">Dist.</Th>
-              <Th column="number" className="text-right">Accions</Th>
+              <Th column="number" className="text-right">
+                Accions
+              </Th>
             </tr>
           </thead>
           <tbody className="divide-y divide-[var(--border)]">
             {sorted.map(({ workOrder, client, category, technician }) => (
-              <tr
-                key={workOrder.id}
-                className="group transition-colors hover:bg-[var(--bg)]"
-              >
+              <tr key={workOrder.id} className="group transition-colors hover:bg-[var(--bg)]">
                 <td className="whitespace-nowrap px-4 py-3">
                   <Link
                     href={`/sat/${workOrder.id}`}
@@ -167,9 +187,7 @@ export function WorkOrderTable({ orders }: Props) {
                     {workOrder.title}
                   </Link>
                   {technician && (
-                    <div className="mt-0.5 text-xs text-[var(--text-muted)]">
-                      {technician.name}
-                    </div>
+                    <div className="mt-0.5 text-xs text-[var(--text-muted)]">{technician.name}</div>
                   )}
                 </td>
                 <td className="px-4 py-3">
@@ -187,7 +205,11 @@ export function WorkOrderTable({ orders }: Props) {
                 </td>
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-2">
-                    <CategoryIcon slug={category.icon ?? category.slug} color={category.color} size={16} />
+                    <CategoryIcon
+                      slug={category.icon ?? category.slug}
+                      color={category.color}
+                      size={16}
+                    />
                     <span className="text-[var(--text)]">{category.name}</span>
                   </div>
                 </td>

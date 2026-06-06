@@ -74,7 +74,12 @@ const navItems: NavItem[] = [
       { key: "workOrders", href: "/sat", icon: List },
       { key: "field", href: "/sat/field", icon: Smartphone, permission: "workorder:read:own" },
       { key: "quotes", href: "/sat/quotes", icon: FileText, permission: "quote:read" },
-      { key: "quoteTemplates", href: "/sat/quotes/templates", icon: FolderOpen, permission: "quote:read" },
+      {
+        key: "quoteTemplates",
+        href: "/sat/quotes/templates",
+        icon: FolderOpen,
+        permission: "quote:read",
+      },
       { key: "map", href: "/sat/map", icon: Map, permission: "route:read" },
       { key: "routes", href: "/sat/routes", icon: Route, permission: "route:read" },
       { key: "clients", href: "/sat/clients", icon: UserCircle, permission: "client:read" },
@@ -130,7 +135,12 @@ const navItems: NavItem[] = [
       { key: "company", href: "/settings/company", icon: Building2 },
       { key: "email", href: "/settings/email", icon: Mail, permission: "email:read" },
       { key: "team", href: "/settings/team", icon: Shield, permission: "team:read" },
-      { key: "profile", href: "/settings/profile", icon: UserCircle, permission: "profile:read:self" },
+      {
+        key: "profile",
+        href: "/settings/profile",
+        icon: UserCircle,
+        permission: "profile:read:self",
+      },
     ],
   },
 ];
@@ -149,7 +159,13 @@ function canSee(role: Role | null, perm: Permission | null): boolean {
 
 function CalendarIcon({ className }: { className?: string }) {
   return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <svg
+      className={className}
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      strokeWidth={2}
+    >
       <rect x="3" y="4" width="18" height="18" rx="2" />
       <line x1="16" y1="2" x2="16" y2="6" />
       <line x1="8" y1="2" x2="8" y2="6" />
@@ -176,13 +192,7 @@ function isChildActive(pathname: string, href: string): boolean {
    COLLAPSED TOOLTIP / PANEL
    ================================================================ */
 
-function CollapsedTooltip({
-  label,
-  top,
-}: {
-  label: string;
-  top: number;
-}) {
+function CollapsedTooltip({ label, top }: { label: string; top: number }) {
   return (
     <div
       className="fixed z-[100] rounded-lg bg-[var(--surface)] px-3 py-1.5 text-xs font-medium text-[var(--text)] shadow-lg border border-[var(--border)] whitespace-nowrap pointer-events-none"
@@ -281,7 +291,10 @@ function CollapsedNavItem({ item, pathname }: { item: NavItem; pathname: string 
         <item.icon className="h-5 w-5" />
       </Link>
       {showTooltip && hasSubItems && (
-        <div onMouseEnter={() => leaveTimeoutRef.current && clearTimeout(leaveTimeoutRef.current)} onMouseLeave={handleLeave}>
+        <div
+          onMouseEnter={() => leaveTimeoutRef.current && clearTimeout(leaveTimeoutRef.current)}
+          onMouseLeave={handleLeave}
+        >
           <CollapsedSubMenuPanel item={item} pathname={pathname} top={tooltipTop} />
         </div>
       )}
@@ -340,9 +353,7 @@ function ExpandedNavItem({ item, pathname }: { item: NavItem; pathname: string }
         >
           <item.icon className="h-5 w-5 shrink-0" />
           <span className="flex-1 text-left truncate">{t(`${item.key}.label`)}</span>
-          <ChevronRight
-            className={`h-4 w-4 shrink-0 ${isExpanded ? "rotate-90" : ""}`}
-          />
+          <ChevronRight className={`h-4 w-4 shrink-0 ${isExpanded ? "rotate-90" : ""}`} />
         </button>
       )}
 
@@ -367,9 +378,7 @@ function ExpandedNavItem({ item, pathname }: { item: NavItem; pathname: string }
                 }`}
               >
                 <sub.icon className="h-4 w-4 shrink-0" />
-                <span className="truncate">
-                  {t(`${item.key}.subItems.${sub.key}`)}
-                </span>
+                <span className="truncate">{t(`${item.key}.subItems.${sub.key}`)}</span>
               </Link>
             );
           })}

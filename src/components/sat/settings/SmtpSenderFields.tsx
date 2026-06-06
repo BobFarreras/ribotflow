@@ -30,12 +30,8 @@ export function SmtpSenderFields({ state, disabled, onChange }: Props) {
           3
         </span>
         <div>
-          <h3 className="text-sm font-semibold text-[color:var(--text)]">
-            {t("sections.sender")}
-          </h3>
-          <p className="text-xs text-[color:var(--text-muted)]">
-            {t("sections.senderHint")}
-          </p>
+          <h3 className="text-sm font-semibold text-[color:var(--text)]">{t("sections.sender")}</h3>
+          <p className="text-xs text-[color:var(--text-muted)]">{t("sections.senderHint")}</p>
         </div>
       </div>
       <div className="grid gap-4 sm:grid-cols-2">

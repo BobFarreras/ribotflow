@@ -29,7 +29,15 @@ interface Props {
   };
 }
 
-export function SaveBar({ isDirty, isSaving, saveError, justSaved, dirtyCount, onReset, labels }: Props) {
+export function SaveBar({
+  isDirty,
+  isSaving,
+  saveError,
+  justSaved,
+  dirtyCount,
+  onReset,
+  labels,
+}: Props) {
   return (
     <div className="pointer-events-none sticky bottom-4 z-30 mt-6">
       <div className="pointer-events-auto mx-auto flex max-w-3xl flex-col gap-2">
@@ -95,7 +103,11 @@ export function SaveBar({ isDirty, isSaving, saveError, justSaved, dirtyCount, o
               disabled={isSaving || !isDirty}
               className="btn btn-primary btn-sm"
             >
-              {isSaving ? <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden /> : <Save className="h-3.5 w-3.5" aria-hidden />}
+              {isSaving ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden />
+              ) : (
+                <Save className="h-3.5 w-3.5" aria-hidden />
+              )}
               {isSaving ? labels.saving : labels.save}
             </button>
           </div>

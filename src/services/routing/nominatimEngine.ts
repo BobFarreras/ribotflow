@@ -23,7 +23,10 @@ export class NominatimEngine implements GeocodingEngine {
     this.countryCodes = config.countryCodes?.join(",");
   }
 
-  async autocomplete(query: string, options?: { lat?: number; lng?: number }): Promise<GeocodedAddress[]> {
+  async autocomplete(
+    query: string,
+    options?: { lat?: number; lng?: number }
+  ): Promise<GeocodedAddress[]> {
     if (!query.trim() || query.trim().length < 3) return [];
 
     const params = new URLSearchParams({

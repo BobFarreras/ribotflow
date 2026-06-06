@@ -42,9 +42,7 @@ export function SmtpConnectionFields({ state, disabled, hasExistingConfig, onCha
             <h3 className="text-sm font-semibold text-[color:var(--text)]">
               {t("sections.server")}
             </h3>
-            <p className="text-xs text-[color:var(--text-muted)]">
-              {t("fields.hostHint")}
-            </p>
+            <p className="text-xs text-[color:var(--text-muted)]">{t("fields.hostHint")}</p>
           </div>
         </div>
         <div className="grid gap-4 sm:grid-cols-3">
@@ -91,9 +89,7 @@ export function SmtpConnectionFields({ state, disabled, hasExistingConfig, onCha
           <Shield className="h-4 w-4 text-[color:var(--text-muted)]" aria-hidden />
           <span>{t("fields.secure")}</span>
         </label>
-        <p className="mt-1 pl-7 text-xs text-[color:var(--text-muted)]">
-          {t("fields.secureHint")}
-        </p>
+        <p className="mt-1 pl-7 text-xs text-[color:var(--text-muted)]">{t("fields.secureHint")}</p>
       </section>
 
       {/* Credentials section */}
@@ -106,9 +102,7 @@ export function SmtpConnectionFields({ state, disabled, hasExistingConfig, onCha
             <h3 className="text-sm font-semibold text-[color:var(--text)]">
               {t("sections.credentials")}
             </h3>
-            <p className="text-xs text-[color:var(--text-muted)]">
-              {t("fields.userHint")}
-            </p>
+            <p className="text-xs text-[color:var(--text-muted)]">{t("fields.userHint")}</p>
           </div>
         </div>
         <div className="grid gap-4 sm:grid-cols-2">

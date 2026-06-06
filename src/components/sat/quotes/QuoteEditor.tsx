@@ -212,7 +212,13 @@ export function QuoteEditor({
             client={
               form.useCustomClient
                 ? form.customClient
-                : form.selectedClient ?? { name: "—", email: null, phone: null, address: null, taxId: null }
+                : (form.selectedClient ?? {
+                    name: "—",
+                    email: null,
+                    phone: null,
+                    address: null,
+                    taxId: null,
+                  })
             }
             items={form.items
               .filter((item) => item.description)
@@ -241,8 +247,14 @@ export function QuoteEditor({
         <SendQuoteEmailModal
           quoteId={existingQuote.id}
           quoteNumber={existingQuote.number}
-          clientEmail={form.useCustomClient ? form.customClient.email : form.selectedClient?.email ?? undefined}
-          clientName={form.useCustomClient ? form.customClient.name : form.selectedClient?.name ?? undefined}
+          clientEmail={
+            form.useCustomClient
+              ? form.customClient.email
+              : (form.selectedClient?.email ?? undefined)
+          }
+          clientName={
+            form.useCustomClient ? form.customClient.name : (form.selectedClient?.name ?? undefined)
+          }
           isOpen={form.showEmailModal}
           onClose={() => form.setShowEmailModal(false)}
         />
@@ -250,5 +262,3 @@ export function QuoteEditor({
     </div>
   );
 }
-
-

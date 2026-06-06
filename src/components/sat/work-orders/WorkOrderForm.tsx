@@ -43,7 +43,9 @@ export function WorkOrderForm({ clients, categories }: Props) {
       description: state.description || undefined,
       priority: state.priority,
       scheduledDate: state.scheduledDate || undefined,
-      estimatedDurationMinutes: state.estimatedDuration ? parseInt(state.estimatedDuration, 10) : undefined,
+      estimatedDurationMinutes: state.estimatedDuration
+        ? parseInt(state.estimatedDuration, 10)
+        : undefined,
       notes: state.notes || undefined,
       address: state.address || undefined,
       location: state.location ?? undefined,

@@ -35,26 +35,36 @@ export default async function WorkOrderDetailPage({ params }: Props) {
   const order = await workOrderService.getByIdWithRelations(companyId, id);
   if (!order) notFound();
 
-  const [history, technicians, materials, products, attachments, signature, locations, lastLocation, quotes] =
-    await Promise.all([
-      workOrderService.getStatusHistory(id),
-      workOrderService.getTechniciansByCompany(companyId),
-      materialService.getByWorkOrder(companyId, id),
-      productService.getByCompany(companyId),
-      attachmentService.getByWorkOrder(companyId, id),
-      signatureService.getByEntity(companyId, "work_order", id),
-      locationService.getByWorkOrder(companyId, id),
-      locationService.getLastLocation(companyId, id),
-      quoteService.getByWorkOrder(companyId, id),
-    ]);
+  const [
+    history,
+    technicians,
+    materials,
+    products,
+    attachments,
+    signature,
+    locations,
+    lastLocation,
+    quotes,
+  ] = await Promise.all([
+    workOrderService.getStatusHistory(id),
+    workOrderService.getTechniciansByCompany(companyId),
+    materialService.getByWorkOrder(companyId, id),
+    productService.getByCompany(companyId),
+    attachmentService.getByWorkOrder(companyId, id),
+    signatureService.getByEntity(companyId, "work_order", id),
+    locationService.getByWorkOrder(companyId, id),
+    locationService.getLastLocation(companyId, id),
+    quoteService.getByWorkOrder(companyId, id),
+  ]);
 
   const { workOrder, client, category, technician } = order;
   const isTechnician = session.user.role === "TECHNICIAN";
   const canSign = workOrder.status === "completed" || workOrder.status === "closed";
   const canCheckIn = workOrder.status === "assigned" || workOrder.status === "in_progress";
-  const travelCost = workOrder.travelDistanceKm && session.user.travelRatePerKm
-    ? Number(workOrder.travelDistanceKm) * Number(session.user.travelRatePerKm)
-    : null;
+  const travelCost =
+    workOrder.travelDistanceKm && session.user.travelRatePerKm
+      ? Number(workOrder.travelDistanceKm) * Number(session.user.travelRatePerKm)
+      : null;
   const numericClientLocation = client.location
     ? { lat: Number(client.location.lat), lng: Number(client.location.lng) }
     : null;
@@ -87,7 +97,15 @@ export default async function WorkOrderDetailPage({ params }: Props) {
         technicians={technicians}
         quotes={quotes as any}
         locations={normalizeLocations(locations) as any}
-        lastCheckIn={lastLocation ? { lat: Number(lastLocation.lat), lng: Number(lastLocation.lng), createdAt: lastLocation.createdAt } : null}
+        lastCheckIn={
+          lastLocation
+            ? {
+                lat: Number(lastLocation.lat),
+                lng: Number(lastLocation.lng),
+                createdAt: lastLocation.createdAt,
+              }
+            : null
+        }
         clientLocation={numericClientLocation}
         pdfUrl={workOrder.pdfUrl}
         status={workOrder.status as WorkOrderStatus}

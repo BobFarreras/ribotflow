@@ -94,12 +94,6 @@ export async function countActiveAdminsExcluding(
   const rows = await db
     .select({ id: users.id })
     .from(users)
-    .where(
-      and(
-        eq(users.companyId, companyId),
-        eq(users.status, "active"),
-        ne(users.id, userId)
-      )
-    );
+    .where(and(eq(users.companyId, companyId), eq(users.status, "active"), ne(users.id, userId)));
   return rows.length;
 }

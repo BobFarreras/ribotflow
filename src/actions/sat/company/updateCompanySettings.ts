@@ -11,7 +11,10 @@
 import { auth } from "@/lib/auth";
 import { can } from "@/lib/auth/permissions";
 import { companySettingsService } from "@/services/sat/company/companySettingsService";
-import { companySettingsSchema, type CompanySettingsInput } from "@/lib/validators/sat/companySchema";
+import {
+  companySettingsSchema,
+  type CompanySettingsInput,
+} from "@/lib/validators/sat/companySchema";
 import { revalidatePath } from "next/cache";
 
 export async function updateCompanySettingsAction(input: CompanySettingsInput) {

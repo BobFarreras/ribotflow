@@ -27,11 +27,7 @@ export async function createWorkOrderAction(rawInput: unknown) {
     const companyId = session.user.companyId;
     const input = createWorkOrderSchema.parse(rawInput);
 
-    const workOrder = await workOrderService.create(
-      companyId,
-      session.user.id as string,
-      input
-    );
+    const workOrder = await workOrderService.create(companyId, session.user.id as string, input);
 
     // Calculate travel distance from company headquarters to order location
     try {
@@ -55,10 +51,7 @@ export async function createWorkOrderAction(rawInput: unknown) {
 
       if (company?.companyLocation && destination) {
         const engine = createDistanceEngine();
-        const route = await engine.calculateDistance(
-          company.companyLocation,
-          destination
-        );
+        const route = await engine.calculateDistance(company.companyLocation, destination);
 
         await workOrderService.updateTravelMetrics(
           companyId,

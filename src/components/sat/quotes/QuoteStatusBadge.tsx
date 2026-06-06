@@ -13,10 +13,7 @@ interface Props {
   size?: "sm" | "md";
 }
 
-const STATUS_CONFIG: Record<
-  QuoteStatus,
-  { label: string; color: string; bgColor: string }
-> = {
+const STATUS_CONFIG: Record<QuoteStatus, { label: string; color: string; bgColor: string }> = {
   draft: {
     label: "Esborrany",
     color: "text-amber-700",

@@ -59,12 +59,8 @@ export function AvatarUploader({ currentAvatarUrl, displayName }: Props) {
       <div className="mb-3 flex items-start gap-2">
         <UserIcon className="mt-0.5 h-4 w-4 flex-shrink-0 text-[color:var(--info)]" aria-hidden />
         <div>
-          <h4 className="text-sm font-semibold text-[color:var(--text)]">
-            {t("avatar.title")}
-          </h4>
-          <p className="mt-0.5 text-xs text-[color:var(--text-muted)]">
-            {t("avatar.subtitle")}
-          </p>
+          <h4 className="text-sm font-semibold text-[color:var(--text)]">{t("avatar.title")}</h4>
+          <p className="mt-0.5 text-xs text-[color:var(--text-muted)]">{t("avatar.subtitle")}</p>
         </div>
       </div>
 
@@ -132,9 +128,7 @@ export function AvatarUploader({ currentAvatarUrl, displayName }: Props) {
               </button>
             )}
           </div>
-          <p className="text-xs text-[color:var(--text-muted)]">
-            {t("avatar.formats")}
-          </p>
+          <p className="text-xs text-[color:var(--text-muted)]">{t("avatar.formats")}</p>
         </div>
       </div>
     </div>

@@ -17,11 +17,7 @@ export async function generatePdfAction(workOrderId: string, lang: "ca" | "es" |
       return { success: false, error: "Unauthorized" };
     }
 
-    const result = await pdfService.generateWorkOrderPdf(
-      session.user.companyId,
-      workOrderId,
-      lang
-    );
+    const result = await pdfService.generateWorkOrderPdf(session.user.companyId, workOrderId, lang);
 
     revalidatePath(`/sat/${workOrderId}`);
 

@@ -18,7 +18,10 @@ import {
   getCompanyLogoPrefix,
   sanitizeFileName,
 } from "@/lib/utils/storageKeys";
-import { logoUploadMetaSchema, type CompanySettingsInput } from "@/lib/validators/sat/companySchema";
+import {
+  logoUploadMetaSchema,
+  type CompanySettingsInput,
+} from "@/lib/validators/sat/companySchema";
 
 export interface CompanySettingsDTO {
   id: string;
@@ -74,19 +77,12 @@ function rowToDto(row: CompanyRow): CompanySettingsDTO {
 
 export const companySettingsService = {
   async getById(companyId: string): Promise<CompanySettingsDTO | null> {
-    const rows = await db
-      .select()
-      .from(companies)
-      .where(eq(companies.id, companyId))
-      .limit(1);
+    const rows = await db.select().from(companies).where(eq(companies.id, companyId)).limit(1);
     const row = rows[0];
     return row ? rowToDto(row) : null;
   },
 
-  async update(
-    companyId: string,
-    input: CompanySettingsInput
-  ): Promise<CompanySettingsDTO> {
+  async update(companyId: string, input: CompanySettingsInput): Promise<CompanySettingsDTO> {
     const upper = (s: string | null | undefined) =>
       s && s.trim().length > 0 ? s.trim().toUpperCase() : null;
 
@@ -132,10 +128,15 @@ export const companySettingsService = {
     const meta = logoUploadMetaSchema.parse({ fileName, mimeType, sizeBytes: buffer.length });
     const ext = meta.fileName.includes(".")
       ? meta.fileName.slice(meta.fileName.lastIndexOf(".") + 1)
-      : meta.mimeType.split("/")[1] ?? "png";
+      : (meta.mimeType.split("/")[1] ?? "png");
     const safeExt = sanitizeFileName(ext.toLowerCase());
 
-    const ctx = buildStorageContext({ companyId, tenantSlug, clientId: companyId, clientName: tenantSlug });
+    const ctx = buildStorageContext({
+      companyId,
+      tenantSlug,
+      clientId: companyId,
+      clientName: tenantSlug,
+    });
     const storageKey = buildCompanyLogoKey(ctx, safeExt);
     const storage = createFileStorage();
 
@@ -168,7 +169,9 @@ export const companySettingsService = {
   ): Promise<string | null> {
     if (typeof (storage as { listObjects?: unknown }).listObjects === "function") {
       const prefix = getCompanyLogoPrefix(ctx);
-      const keys = await (storage as unknown as { listObjects: (p: string) => Promise<string[]> }).listObjects(prefix);
+      const keys = await (
+        storage as unknown as { listObjects: (p: string) => Promise<string[]> }
+      ).listObjects(prefix);
       if (keys.length === 0) return null;
       keys.sort();
       return keys[keys.length - 1];

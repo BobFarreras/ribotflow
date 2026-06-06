@@ -106,7 +106,9 @@ export function AttachmentSection({ attachments: initialAttachments, workOrderId
   return (
     <div className="flex h-full flex-col">
       <div className="mb-2 flex items-center justify-between">
-        <h2 className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">{t("title")}</h2>
+        <h2 className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
+          {t("title")}
+        </h2>
         <button
           onClick={() => fileInputRef.current?.click()}
           disabled={isPending}
@@ -128,12 +130,11 @@ export function AttachmentSection({ attachments: initialAttachments, workOrderId
       {previewUrl && pendingFile && (
         <div className="mb-2 space-y-2 rounded-md border border-[var(--border)] bg-[var(--bg)] p-2">
           {/* Preview image */}
-          <div className="relative w-full overflow-hidden rounded-md" style={{ aspectRatio: "16/9" }}>
-            <img
-              src={previewUrl}
-              alt="Vista prÃ¨via"
-              className="h-full w-full object-contain"
-            />
+          <div
+            className="relative w-full overflow-hidden rounded-md"
+            style={{ aspectRatio: "16/9" }}
+          >
+            <img src={previewUrl} alt="Vista prÃ¨via" className="h-full w-full object-contain" />
           </div>
 
           {/* File name â€” editable */}

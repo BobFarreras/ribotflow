@@ -19,7 +19,11 @@ export async function drawSignatureBlock(
   const halfW = CONTENT_W / 2 - 10;
 
   let leftY = topY;
-  builder.drawText(t.signatureTitle, MARGIN, leftY, { bold: true, size: 10, color: COLORS.slate900 });
+  builder.drawText(t.signatureTitle, MARGIN, leftY, {
+    bold: true,
+    size: 10,
+    color: COLORS.slate900,
+  });
   leftY -= 14;
   builder.drawText(t.signatureCaption, MARGIN, leftY, { size: 8, color: COLORS.slate500 });
   leftY -= 16;
@@ -30,19 +34,29 @@ export async function drawSignatureBlock(
       const imgW = 200;
       const imgH = imgW * (img.height / img.width);
       builder.page.drawRectangle({
-        x: MARGIN - 2, y: leftY - imgH - 2, width: imgW + 4, height: imgH + 4,
-        borderColor: COLORS.slate400, borderWidth: 0.5, color: COLORS.white,
+        x: MARGIN - 2,
+        y: leftY - imgH - 2,
+        width: imgW + 4,
+        height: imgH + 4,
+        borderColor: COLORS.slate400,
+        borderWidth: 0.5,
+        color: COLORS.white,
       });
       builder.page.drawImage(img, { x: MARGIN, y: leftY - imgH, width: imgW, height: imgH });
       leftY -= imgH + 6;
       if (opts.signedBy) {
-        builder.drawText(`${t.signedBy}: ${opts.signedBy}`, MARGIN, leftY, { size: 8, color: COLORS.slate600 });
+        builder.drawText(`${t.signedBy}: ${opts.signedBy}`, MARGIN, leftY, {
+          size: 8,
+          color: COLORS.slate600,
+        });
         leftY -= 11;
       }
       if (opts.signedAt) {
         builder.drawText(
           `${t.signedOn}: ${opts.signedAt.toLocaleDateString("ca-ES")}`,
-          MARGIN, leftY, { size: 8, color: COLORS.slate600 }
+          MARGIN,
+          leftY,
+          { size: 8, color: COLORS.slate600 }
         );
         leftY -= 11;
       }
@@ -59,7 +73,10 @@ export async function drawSignatureBlock(
     leftY -= 16;
   }
 
-  builder.drawText(t.signatureThanks, MARGIN + halfW + 20, topY - 4, { size: 8, color: COLORS.slate400 });
+  builder.drawText(t.signatureThanks, MARGIN + halfW + 20, topY - 4, {
+    size: 8,
+    color: COLORS.slate400,
+  });
 
   builder.y = Math.min(leftY, topY - 60) - 20;
 }

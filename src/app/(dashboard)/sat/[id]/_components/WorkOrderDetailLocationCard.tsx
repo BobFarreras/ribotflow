@@ -51,9 +51,14 @@ export function WorkOrderDetailLocationCard({
         <div className="mt-2 space-y-1">
           {locations.slice(0, 3).map((loc) => (
             <div key={loc.id} className="flex items-center justify-between text-sm">
-              <span className="capitalize text-[var(--text)]">{loc.eventType.replace("_", " ")}</span>
+              <span className="capitalize text-[var(--text)]">
+                {loc.eventType.replace("_", " ")}
+              </span>
               <span className="text-xs text-[var(--text-muted)]">
-                {new Date(loc.createdAt).toLocaleTimeString("ca-ES", { hour: "2-digit", minute: "2-digit" })}
+                {new Date(loc.createdAt).toLocaleTimeString("ca-ES", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
               </span>
             </div>
           ))}

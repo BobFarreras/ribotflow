@@ -25,33 +25,30 @@ export function SignatureCanvas({ workOrderId, onSaved }: Props) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const getCanvasPoint = useCallback(
-    (e: React.MouseEvent | React.TouchEvent) => {
-      const canvas = canvasRef.current;
-      if (!canvas) return { x: 0, y: 0 };
+  const getCanvasPoint = useCallback((e: React.MouseEvent | React.TouchEvent) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return { x: 0, y: 0 };
 
-      const rect = canvas.getBoundingClientRect();
-      const scaleX = canvas.width / rect.width;
-      const scaleY = canvas.height / rect.height;
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
 
-      let clientX: number;
-      let clientY: number;
+    let clientX: number;
+    let clientY: number;
 
-      if ("touches" in e) {
-        clientX = e.touches[0]?.clientX ?? e.changedTouches[0]?.clientX ?? 0;
-        clientY = e.touches[0]?.clientY ?? e.changedTouches[0]?.clientY ?? 0;
-      } else {
-        clientX = e.clientX;
-        clientY = e.clientY;
-      }
+    if ("touches" in e) {
+      clientX = e.touches[0]?.clientX ?? e.changedTouches[0]?.clientX ?? 0;
+      clientY = e.touches[0]?.clientY ?? e.changedTouches[0]?.clientY ?? 0;
+    } else {
+      clientX = e.clientX;
+      clientY = e.clientY;
+    }
 
-      return {
-        x: (clientX - rect.left) * scaleX,
-        y: (clientY - rect.top) * scaleY,
-      };
-    },
-    []
-  );
+    return {
+      x: (clientX - rect.left) * scaleX,
+      y: (clientY - rect.top) * scaleY,
+    };
+  }, []);
 
   const startDrawing = useCallback(
     (e: React.MouseEvent | React.TouchEvent) => {

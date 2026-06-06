@@ -60,8 +60,7 @@ export function WorkOrderKanban({ orders: initialOrders }: Props) {
   // Show all columns that have items + always-visible workflow columns
   const visibleColumns = KANBAN_COLUMNS.filter(
     (col) =>
-      items.some((o) => o.workOrder.status === col.key) ||
-      ALWAYS_VISIBLE_COLUMNS.includes(col.key)
+      items.some((o) => o.workOrder.status === col.key) || ALWAYS_VISIBLE_COLUMNS.includes(col.key)
   );
 
   const draggedItem = draggingId ? items.find((o) => o.workOrder.id === draggingId) : null;

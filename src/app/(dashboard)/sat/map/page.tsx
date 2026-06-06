@@ -49,9 +49,10 @@ export default async function WorkOrderMapPage() {
     .map((o) => o.workOrder.assignedTo)
     .filter((id): id is string => !!id);
 
-  const technicians = technicianIds.length > 0
-    ? await db.select().from(users).where(eq(users.companyId, companyId))
-    : [];
+  const technicians =
+    technicianIds.length > 0
+      ? await db.select().from(users).where(eq(users.companyId, companyId))
+      : [];
 
   const technicianMap = new Map(technicians.map((u) => [u.id, u]));
 
@@ -59,7 +60,9 @@ export default async function WorkOrderMapPage() {
     .filter((o) => o.client.location != null)
     .map((o) => ({
       ...o,
-      technician: o.workOrder.assignedTo ? technicianMap.get(o.workOrder.assignedTo) ?? null : null,
+      technician: o.workOrder.assignedTo
+        ? (technicianMap.get(o.workOrder.assignedTo) ?? null)
+        : null,
     }));
 
   if (ordersWithLocation.length === 0) {

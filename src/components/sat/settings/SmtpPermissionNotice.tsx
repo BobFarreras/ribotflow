@@ -23,9 +23,7 @@ export function SmtpPermissionNotice({ role }: Props) {
         <p className="text-sm font-medium text-[color:var(--info)]">
           {role === "ADMIN" ? t("adminReadOnly") : t("ownerOnly")}
         </p>
-        <p className="mt-0.5 text-xs text-[color:var(--text-muted)]">
-          {t("adminCanTest")}
-        </p>
+        <p className="mt-0.5 text-xs text-[color:var(--text-muted)]">{t("adminCanTest")}</p>
       </div>
     </div>
   );

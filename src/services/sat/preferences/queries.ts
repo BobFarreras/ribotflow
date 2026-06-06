@@ -9,10 +9,7 @@
 import { db } from "@/db";
 import { userPreferences } from "@/db/schema/sat/userPreferences";
 import { eq } from "drizzle-orm";
-import {
-  DEFAULT_PREFERENCES,
-  type UserPreferencesDto,
-} from "./types";
+import { DEFAULT_PREFERENCES, type UserPreferencesDto } from "./types";
 
 /** Returns the preferences for a user, falling back to defaults. */
 export async function getUserPreferences(userId: string): Promise<UserPreferencesDto> {

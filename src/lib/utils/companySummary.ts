@@ -15,7 +15,9 @@ export function toCompanySummary(dto: CompanySettingsDTO): CompanySummary {
   return {
     name: dto.name,
     taxId: dto.taxId,
-    address: [dto.addressStreet, dto.addressPostalCode, dto.addressCity].filter(Boolean).join(", ") || null,
+    address:
+      [dto.addressStreet, dto.addressPostalCode, dto.addressCity].filter(Boolean).join(", ") ||
+      null,
     phone: dto.phone,
     email: dto.email,
     website: dto.website,

@@ -4,7 +4,16 @@
  * Description: Quotes linked to work orders.
  */
 
-import { pgTable, uuid, text, timestamp, index, integer, numeric, unique } from "drizzle-orm/pg-core";
+import {
+  pgTable,
+  uuid,
+  text,
+  timestamp,
+  index,
+  integer,
+  numeric,
+  unique,
+} from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { companies } from "../auth";
 import { clients } from "./clients";
@@ -18,8 +27,7 @@ export const quotes = pgTable(
     companyId: uuid("company_id")
       .references(() => companies.id, { onDelete: "cascade" })
       .notNull(),
-    workOrderId: uuid("work_order_id")
-      .references(() => workOrders.id, { onDelete: "set null" }),
+    workOrderId: uuid("work_order_id").references(() => workOrders.id, { onDelete: "set null" }),
     clientId: uuid("client_id")
       .references(() => clients.id, { onDelete: "set null" })
       .notNull(),
@@ -27,14 +35,7 @@ export const quotes = pgTable(
     title: text("title").notNull(),
     description: text("description"),
     status: text("status")
-      .$type<
-        | "draft"
-        | "sent"
-        | "accepted"
-        | "rejected"
-        | "expired"
-        | "cancelled"
-      >()
+      .$type<"draft" | "sent" | "accepted" | "rejected" | "expired" | "cancelled">()
       .default("draft")
       .notNull(),
     version: integer("version").default(1).notNull(),

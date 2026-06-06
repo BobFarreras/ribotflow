@@ -32,7 +32,11 @@ export function CompanyAddressSection({ state, disabled, onChange }: Props) {
   const t = useTranslations("sat.settings.company");
 
   return (
-    <SectionShell step={2} title={t("sections.address")} description={t("sections.addressDescription")}>
+    <SectionShell
+      step={2}
+      title={t("sections.address")}
+      description={t("sections.addressDescription")}
+    >
       <div className="grid gap-x-6 gap-y-4 sm:grid-cols-6">
         <div className="sm:col-span-6">
           <FormField label={t("fields.addressStreet")} hint={t("fields.addressStreetHint")}>
@@ -87,7 +91,9 @@ export function CompanyAddressSection({ state, disabled, onChange }: Props) {
               autoComplete="country"
             >
               {COUNTRIES.map((c) => (
-                <option key={c.code} value={c.code}>{c.name}</option>
+                <option key={c.code} value={c.code}>
+                  {c.name}
+                </option>
               ))}
             </select>
           </FormField>

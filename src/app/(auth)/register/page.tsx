@@ -39,7 +39,12 @@ export default function RegisterPage() {
       setIsPending(false);
       return;
     }
-    const signInResult = await signIn("credentials", { email, password, redirect: false, callbackUrl: "/dashboard" });
+    const signInResult = await signIn("credentials", {
+      email,
+      password,
+      redirect: false,
+      callbackUrl: "/dashboard",
+    });
     setIsPending(false);
     if (signInResult?.error) {
       setError("Registre completat però error en iniciar sessió. Torna a provar.");
@@ -68,9 +73,17 @@ export default function RegisterPage() {
             </div>
           )}
           <RegisterFormFields
-            companyName={companyName} name={name} email={email} password={password} confirmPassword={confirmPassword}
-            onCompanyNameChange={setCompanyName} onNameChange={setName} onEmailChange={setEmail}
-            onPasswordChange={setPassword} onConfirmPasswordChange={setConfirmPassword} disabled={isPending}
+            companyName={companyName}
+            name={name}
+            email={email}
+            password={password}
+            confirmPassword={confirmPassword}
+            onCompanyNameChange={setCompanyName}
+            onNameChange={setName}
+            onEmailChange={setEmail}
+            onPasswordChange={setPassword}
+            onConfirmPasswordChange={setConfirmPassword}
+            disabled={isPending}
           />
           <button
             type="submit"
@@ -81,7 +94,10 @@ export default function RegisterPage() {
           </button>
           <p className="text-center text-sm text-[var(--text-muted)]">
             ¿Ya tienes cuenta?{" "}
-            <a href="/login" className="font-medium text-[var(--primary)] hover:text-[var(--primary-hover)]">
+            <a
+              href="/login"
+              className="font-medium text-[var(--primary)] hover:text-[var(--primary-hover)]"
+            >
               Inicia sesión
             </a>
           </p>

@@ -14,10 +14,7 @@ import Link from "next/link";
 import { WorkOrderStatusBadge } from "@/components/sat/shared/WorkOrderStatusBadge";
 import { WorkOrderPriorityBadge } from "@/components/sat/shared/WorkOrderPriorityBadge";
 import { FieldStatusActions } from "./FieldStatusActions";
-import type {
-  WorkOrder,
-  WorkOrderCategory,
-} from "@/types/sat";
+import type { WorkOrder, WorkOrderCategory } from "@/types/sat";
 
 /** Slim view of a client that the card needs. */
 interface ClientLite {
@@ -51,10 +48,7 @@ export function FieldWorkOrderCard({ workOrder, client, category }: Props) {
       </div>
 
       {/* Title + meta */}
-      <Link
-        href={`/sat/${workOrder.id}`}
-        className="group flex items-start gap-2"
-      >
+      <Link href={`/sat/${workOrder.id}`} className="group flex items-start gap-2">
         <div className="min-w-0 flex-1">
           <h3 className="text-base font-semibold leading-snug text-[color:var(--text)] group-hover:underline">
             {workOrder.title}

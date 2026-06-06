@@ -257,7 +257,12 @@ export const workOrderService = {
     return db
       .select({
         workOrder: workOrders,
-        client: { id: clients.id, name: clients.name, phone: clients.phone, address: clients.address },
+        client: {
+          id: clients.id,
+          name: clients.name,
+          phone: clients.phone,
+          address: clients.address,
+        },
         category: {
           id: workOrderCategories.id,
           name: workOrderCategories.name,

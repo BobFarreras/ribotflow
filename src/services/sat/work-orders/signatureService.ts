@@ -36,11 +36,7 @@ export interface SaveSignatureInput {
 export class SignatureService {
   constructor(private readonly storage: FileStorage) {}
 
-  async getByEntity(
-    companyId: string,
-    entityType: SignatureEntityType,
-    entityId: string
-  ) {
+  async getByEntity(companyId: string, entityType: SignatureEntityType, entityId: string) {
     const result = await db
       .select()
       .from(signatures)
@@ -175,11 +171,7 @@ export class SignatureService {
     return signature;
   }
 
-  async remove(
-    companyId: string,
-    entityType: SignatureEntityType,
-    entityId: string
-  ) {
+  async remove(companyId: string, entityType: SignatureEntityType, entityId: string) {
     const signature = await db
       .select({ signaturePngUrl: signatures.signaturePngUrl })
       .from(signatures)

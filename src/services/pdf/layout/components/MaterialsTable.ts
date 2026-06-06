@@ -23,16 +23,24 @@ export function drawMaterialsTable(builder: PdfBuilder, materials: MaterialRow[]
   // Headers
   const t = LABELS[builder.lang];
   builder.drawText(t.name, cols[0] + 4, builder.y, {
-    bold: true, size: 9, color: COLORS.primaryDark,
+    bold: true,
+    size: 9,
+    color: COLORS.primaryDark,
   });
   builder.drawText(t.qty, cols[1] + 4, builder.y, {
-    bold: true, size: 9, color: COLORS.primaryDark,
+    bold: true,
+    size: 9,
+    color: COLORS.primaryDark,
   });
   builder.drawText(t.unitPrice, cols[2] + 4, builder.y, {
-    bold: true, size: 9, color: COLORS.primaryDark,
+    bold: true,
+    size: 9,
+    color: COLORS.primaryDark,
   });
   builder.drawText(t.lineTotal, cols[3] + 4, builder.y, {
-    bold: true, size: 9, color: COLORS.primaryDark,
+    bold: true,
+    size: 9,
+    color: COLORS.primaryDark,
   });
   builder.addSpace(rowH);
 
@@ -61,7 +69,9 @@ export function drawMaterialsTable(builder: PdfBuilder, materials: MaterialRow[]
   builder.addSpace(6);
   builder.drawText(`${t.total}:`, cols[2] + 4, builder.y, { bold: true, size: 10 });
   builder.drawText(`${grandTotal.toFixed(2)} EUR`, cols[3] + 4, builder.y, {
-    bold: true, size: 10, color: COLORS.primaryDark,
+    bold: true,
+    size: 10,
+    color: COLORS.primaryDark,
   });
   builder.addSpace(14);
 }

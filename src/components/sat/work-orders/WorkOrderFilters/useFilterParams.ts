@@ -42,10 +42,7 @@ export function useFilterParams() {
     [searchParams]
   );
 
-  const getParam = useCallback(
-    (key: string) => searchParams.get(key) ?? "",
-    [searchParams]
-  );
+  const getParam = useCallback((key: string) => searchParams.get(key) ?? "", [searchParams]);
 
   return { setParams, getParamArray, getParam };
 }

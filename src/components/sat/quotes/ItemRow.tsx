@@ -100,7 +100,9 @@ export function ItemRow({
               </div>
               <div className="max-h-40 overflow-y-auto">
                 {filteredProducts.length === 0 ? (
-                  <div className="p-3 text-center text-sm text-[var(--text-muted)]">Cap producte</div>
+                  <div className="p-3 text-center text-sm text-[var(--text-muted)]">
+                    Cap producte
+                  </div>
                 ) : (
                   filteredProducts.map((product) => (
                     <button
@@ -112,7 +114,9 @@ export function ItemRow({
                       <div>
                         <div className="font-medium text-[var(--text)]">{product.name}</div>
                         {product.sku && (
-                          <div className="text-[11px] text-[var(--text-muted)]">SKU: {product.sku}</div>
+                          <div className="text-[11px] text-[var(--text-muted)]">
+                            SKU: {product.sku}
+                          </div>
                         )}
                       </div>
                       <span className="text-sm font-medium text-[var(--text)]">

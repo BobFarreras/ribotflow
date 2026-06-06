@@ -21,11 +21,7 @@ const SECURE_COOKIE = "__Secure-authjs.session-token";
 
 async function readSessionToken(): Promise<string | null> {
   const store = await cookies();
-  return (
-    store.get(SECURE_COOKIE)?.value ??
-    store.get(DEV_COOKIE)?.value ??
-    null
-  );
+  return store.get(SECURE_COOKIE)?.value ?? store.get(DEV_COOKIE)?.value ?? null;
 }
 
 /**

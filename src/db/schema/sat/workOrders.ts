@@ -4,7 +4,16 @@
  * Description: Work orders — core of the SAT module.
  */
 
-import { pgTable, uuid, text, timestamp, index, integer, numeric, jsonb } from "drizzle-orm/pg-core";
+import {
+  pgTable,
+  uuid,
+  text,
+  timestamp,
+  index,
+  integer,
+  numeric,
+  jsonb,
+} from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { companies } from "../auth";
 import { clients } from "./clients";

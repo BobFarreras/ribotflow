@@ -58,12 +58,7 @@ export async function revokeAllOtherSessions(
 ): Promise<number> {
   const deleted = await db
     .delete(sessions)
-    .where(
-      and(
-        eq(sessions.userId, userId),
-        ne(sessions.id, currentSessionId)
-      )
-    )
+    .where(and(eq(sessions.userId, userId), ne(sessions.id, currentSessionId)))
     .returning({ id: sessions.id });
   return deleted.length;
 }

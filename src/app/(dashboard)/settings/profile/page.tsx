@@ -50,12 +50,14 @@ export default async function ProfileSettingsPage() {
     );
   }
   const profile = profileResult.data;
-  const prefs = prefsResult.success && prefsResult.data
-    ? prefsResult.data
-    : { theme: DEFAULT_PREFERENCES.theme, locale: DEFAULT_PREFERENCES.locale };
-  const sessions = sessionsResult.success && sessionsResult.data
-    ? sessionsResult.data
-    : { sessions: [], currentSessionId: null };
+  const prefs =
+    prefsResult.success && prefsResult.data
+      ? prefsResult.data
+      : { theme: DEFAULT_PREFERENCES.theme, locale: DEFAULT_PREFERENCES.locale };
+  const sessions =
+    sessionsResult.success && sessionsResult.data
+      ? sessionsResult.data
+      : { sessions: [], currentSessionId: null };
 
   return (
     <div className="container mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
@@ -69,9 +71,7 @@ export default async function ProfileSettingsPage() {
               <h1 className="text-2xl font-bold leading-tight tracking-tight text-[color:var(--text)]">
                 {t("title")}
               </h1>
-              <p className="text-sm text-[color:var(--text-muted)]">
-                {t("subtitle")}
-              </p>
+              <p className="text-sm text-[color:var(--text-muted)]">{t("subtitle")}</p>
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-2">
@@ -97,15 +97,8 @@ export default async function ProfileSettingsPage() {
       </header>
 
       <div className="mx-auto max-w-3xl space-y-6">
-        <SectionShell
-          step={1}
-          title={t("sections.avatar")}
-          description={t("sections.avatarDesc")}
-        >
-          <AvatarUploader
-            currentAvatarUrl={profile.avatarUrl}
-            displayName={profile.name}
-          />
+        <SectionShell step={1} title={t("sections.avatar")} description={t("sections.avatarDesc")}>
+          <AvatarUploader currentAvatarUrl={profile.avatarUrl} displayName={profile.name} />
         </SectionShell>
 
         <SectionShell
@@ -113,10 +106,7 @@ export default async function ProfileSettingsPage() {
           title={t("sections.identity")}
           description={t("sections.identityDesc")}
         >
-          <ProfileNameForm
-            initialName={profile.name}
-            initialEmail={profile.email}
-          />
+          <ProfileNameForm initialName={profile.name} initialEmail={profile.email} />
         </SectionShell>
 
         <SectionShell
@@ -132,10 +122,7 @@ export default async function ProfileSettingsPage() {
           title={t("sections.preferences")}
           description={t("sections.preferencesDesc")}
         >
-          <PreferencesForm
-            initialTheme={prefs.theme}
-            initialLocale={prefs.locale}
-          />
+          <PreferencesForm initialTheme={prefs.theme} initialLocale={prefs.locale} />
         </SectionShell>
 
         <SectionShell

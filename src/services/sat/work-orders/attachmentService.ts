@@ -53,9 +53,7 @@ export class AttachmentService {
     const order = await db
       .select({ id: workOrders.id })
       .from(workOrders)
-      .where(
-        and(eq(workOrders.id, input.workOrderId), eq(workOrders.companyId, companyId))
-      )
+      .where(and(eq(workOrders.id, input.workOrderId), eq(workOrders.companyId, companyId)))
       .limit(1);
 
     if (order.length === 0) {
@@ -102,12 +100,7 @@ export class AttachmentService {
       })
       .from(workOrderAttachments)
       .innerJoin(workOrders, eq(workOrderAttachments.workOrderId, workOrders.id))
-      .where(
-        and(
-          eq(workOrderAttachments.id, attachmentId),
-          eq(workOrders.companyId, companyId)
-        )
-      )
+      .where(and(eq(workOrderAttachments.id, attachmentId), eq(workOrders.companyId, companyId)))
       .limit(1);
 
     if (attachment.length === 0) {
@@ -116,9 +109,7 @@ export class AttachmentService {
 
     await this.storage.delete(attachment[0].storageKey);
 
-    await db
-      .delete(workOrderAttachments)
-      .where(eq(workOrderAttachments.id, attachmentId));
+    await db.delete(workOrderAttachments).where(eq(workOrderAttachments.id, attachmentId));
 
     return { storageKey: attachment[0].storageKey };
   }

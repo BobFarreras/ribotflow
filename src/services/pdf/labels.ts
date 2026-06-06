@@ -54,7 +54,8 @@ export const LABELS: Record<Lang, Record<string, string>> = {
     itemTotalCol: "Total",
     conditionsTitle: "Condicions generals i forma de pagament",
     signatureTitle: "Acceptacio del Pressupost",
-    signatureCaption: "Per aprovar i formalitzar la comanda, si us plau, signeu i retorneu aquest document.",
+    signatureCaption:
+      "Per aprovar i formalitzar la comanda, si us plau, signeu i retorneu aquest document.",
     signatureLine: "Signatura del client i data",
     signatureThanks: "Gracies per la seva confiança.",
     signedOn: "Signat el",
@@ -107,7 +108,8 @@ export const LABELS: Record<Lang, Record<string, string>> = {
     itemTotalCol: "Total",
     conditionsTitle: "Condiciones generales y forma de pago",
     signatureTitle: "Aceptacion del Presupuesto",
-    signatureCaption: "Para aprobar y formalizar el pedido, por favor firme y devuelva este documento.",
+    signatureCaption:
+      "Para aprobar y formalizar el pedido, por favor firme y devuelva este documento.",
     signatureLine: "Firma del cliente y fecha",
     signatureThanks: "Gracias por su confianza.",
     signedOn: "Firmado el",

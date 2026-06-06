@@ -29,28 +29,67 @@ export function CompanyIdentitySection({ state, disabled, onChange }: Props) {
   const t = useTranslations("sat.settings.company");
 
   return (
-    <SectionShell step={1} title={t("sections.identity")} description={t("sections.identityDescription")}>
+    <SectionShell
+      step={1}
+      title={t("sections.identity")}
+      description={t("sections.identityDescription")}
+    >
       <div className="grid gap-x-6 gap-y-4 sm:grid-cols-2">
         <FormField label={t("fields.name")} hint={t("fields.nameHint")} required>
-          <input type="text" value={state.name} onChange={(e) => onChange({ name: e.target.value })}
-            placeholder="Reparacions Ribot, SL" disabled={disabled} className="input max-w-sm" required />
+          <input
+            type="text"
+            value={state.name}
+            onChange={(e) => onChange({ name: e.target.value })}
+            placeholder="Reparacions Ribot, SL"
+            disabled={disabled}
+            className="input max-w-sm"
+            required
+          />
         </FormField>
         <FormField label={t("fields.taxId")} hint={t("fields.taxIdHint")}>
-          <input type="text" value={state.taxId} onChange={(e) => onChange({ taxId: e.target.value.toUpperCase() })}
-            placeholder="B12345678" disabled={disabled} className="input max-w-[10rem]" maxLength={20} />
+          <input
+            type="text"
+            value={state.taxId}
+            onChange={(e) => onChange({ taxId: e.target.value.toUpperCase() })}
+            placeholder="B12345678"
+            disabled={disabled}
+            className="input max-w-[10rem]"
+            maxLength={20}
+          />
         </FormField>
         <FormField label={t("fields.phone")} hint={t("fields.phoneHint")}>
-          <input type="tel" value={state.phone} onChange={(e) => onChange({ phone: e.target.value })}
-            placeholder="+34 600 000 000" disabled={disabled} className="input max-w-xs" autoComplete="tel" />
+          <input
+            type="tel"
+            value={state.phone}
+            onChange={(e) => onChange({ phone: e.target.value })}
+            placeholder="+34 600 000 000"
+            disabled={disabled}
+            className="input max-w-xs"
+            autoComplete="tel"
+          />
         </FormField>
         <FormField label={t("fields.email")} hint={t("fields.emailHint")}>
-          <input type="email" value={state.email} onChange={(e) => onChange({ email: e.target.value })}
-            placeholder="info@empresa.com" disabled={disabled} className="input max-w-sm" autoComplete="email" />
+          <input
+            type="email"
+            value={state.email}
+            onChange={(e) => onChange({ email: e.target.value })}
+            placeholder="info@empresa.com"
+            disabled={disabled}
+            className="input max-w-sm"
+            autoComplete="email"
+          />
         </FormField>
         <div className="sm:col-span-2">
           <FormField label={t("fields.website")} hint={t("fields.websiteHint")}>
-            <input type="url" value={state.website} onChange={(e) => onChange({ website: e.target.value })}
-              placeholder="https://www.empresa.com" disabled={disabled} className="input max-w-md" autoComplete="url" />
+            <input
+              type="url"
+              value={state.website}
+              onChange={(e) => onChange({ website: e.target.value })}
+              placeholder="https://www.empresa.com"
+              disabled={disabled}
+              className="input max-w-md"
+              autoComplete="url"
+            />
           </FormField>
         </div>
       </div>

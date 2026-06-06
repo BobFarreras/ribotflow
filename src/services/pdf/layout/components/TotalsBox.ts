@@ -24,9 +24,8 @@ export function drawTotalsBox(
   const rowH = 18;
   const startY = builder.y;
 
-  const rows: { label: string; value: string; color?: ReturnType<typeof import("pdf-lib").rgb> }[] = [
-    { label: `${t.subtotal}:`, value: `${subtotal.toFixed(2)} EUR` },
-  ];
+  const rows: { label: string; value: string; color?: ReturnType<typeof import("pdf-lib").rgb> }[] =
+    [{ label: `${t.subtotal}:`, value: `${subtotal.toFixed(2)} EUR` }];
   if (discountPercent > 0) {
     rows.push({
       label: `${t.discount} (${discountPercent}%):`,
@@ -40,7 +39,10 @@ export function drawTotalsBox(
   for (const r of rows) {
     builder.drawText(r.label, boxX, rowY, { size: 9, color: r.color ?? COLORS.slate600 });
     const vW = builder.measureWidth(r.value, 9, false);
-    builder.drawText(r.value, boxX + boxW - vW, rowY, { size: 9, color: r.color ?? COLORS.slate700 });
+    builder.drawText(r.value, boxX + boxW - vW, rowY, {
+      size: 9,
+      color: r.color ?? COLORS.slate700,
+    });
     rowY -= rowH;
   }
 
@@ -50,7 +52,11 @@ export function drawTotalsBox(
   builder.drawText(`${t.total}:`, boxX, rowY, { bold: true, size: 12, color: COLORS.slate900 });
   const totalText = `${total.toFixed(2)} EUR`;
   const tW = builder.measureWidth(totalText, 12, true);
-  builder.drawText(totalText, boxX + boxW - tW, rowY, { bold: true, size: 12, color: COLORS.slate900 });
+  builder.drawText(totalText, boxX + boxW - tW, rowY, {
+    bold: true,
+    size: 12,
+    color: COLORS.slate900,
+  });
 
   builder.y = rowY - 28;
 }

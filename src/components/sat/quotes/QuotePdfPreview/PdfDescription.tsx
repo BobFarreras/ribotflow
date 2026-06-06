@@ -10,11 +10,30 @@ interface PdfDescriptionProps {
 
 export function PdfDescription({ description }: PdfDescriptionProps) {
   return (
-    <div style={{ marginBottom: "25px", padding: "15px", backgroundColor: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: "6px" }}>
-      <div style={{ fontSize: "9pt", fontWeight: "bold", textTransform: "uppercase", letterSpacing: "0.5px", color: "#64748b", marginBottom: "8px" }}>
+    <div
+      style={{
+        marginBottom: "25px",
+        padding: "15px",
+        backgroundColor: "#f8fafc",
+        border: "1px solid #e2e8f0",
+        borderRadius: "6px",
+      }}
+    >
+      <div
+        style={{
+          fontSize: "9pt",
+          fontWeight: "bold",
+          textTransform: "uppercase",
+          letterSpacing: "0.5px",
+          color: "#64748b",
+          marginBottom: "8px",
+        }}
+      >
         Descripció del treball
       </div>
-      <div style={{ fontSize: "9.5pt", color: "#475569", whiteSpace: "pre-wrap" }}>{description}</div>
+      <div style={{ fontSize: "9.5pt", color: "#475569", whiteSpace: "pre-wrap" }}>
+        {description}
+      </div>
     </div>
   );
 }

@@ -32,9 +32,7 @@ export function TeamTable({ members, canManage }: Props) {
           <h2 className="text-lg font-semibold text-[color:var(--text)]">
             {t("membersTitle", { count: members.length })}
           </h2>
-          <p className="text-sm text-[color:var(--text-muted)]">
-            {t("membersSubtitle")}
-          </p>
+          <p className="text-sm text-[color:var(--text-muted)]">{t("membersSubtitle")}</p>
         </div>
         {canManage && (
           <button
@@ -74,9 +72,7 @@ export function TeamTable({ members, canManage }: Props) {
                 </td>
               </tr>
             ) : (
-              members.map((m) => (
-                <TeamRow key={m.id} member={m} canManage={canManage} />
-              ))
+              members.map((m) => <TeamRow key={m.id} member={m} canManage={canManage} />)
             )}
           </tbody>
         </table>

@@ -22,10 +22,7 @@ export async function revokeAllOtherSessionsAction() {
     if (!currentSessionId) {
       return { success: false as const, error: "No active session" };
     }
-    const count = await sessionsService.revokeAllOtherSessions(
-      session.user.id,
-      currentSessionId
-    );
+    const count = await sessionsService.revokeAllOtherSessions(session.user.id, currentSessionId);
     revalidatePath("/settings/profile");
     return { success: true as const, data: { revoked: count } };
   } catch (err) {

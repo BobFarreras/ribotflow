@@ -23,11 +23,7 @@ export async function updateQuoteAction(quoteId: string, input: unknown) {
       return { success: false, error: parsed.error.errors[0]?.message ?? "Invalid data" };
     }
 
-    const quote = await quoteService.update(
-      session.user.companyId,
-      quoteId,
-      parsed.data
-    );
+    const quote = await quoteService.update(session.user.companyId, quoteId, parsed.data);
 
     revalidatePath("/sat/quotes");
     revalidatePath(`/sat/quotes/${quoteId}`);

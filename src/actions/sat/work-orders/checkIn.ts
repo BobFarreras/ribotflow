@@ -73,12 +73,7 @@ export async function checkInAction(formData: FormData) {
     // Calculate distance to client location if available
     let distanceToClient: number | null = null;
     if (client.location?.lat && client.location?.lng) {
-      distanceToClient = calculateDistance(
-        lat,
-        lng,
-        client.location.lat,
-        client.location.lng
-      );
+      distanceToClient = calculateDistance(lat, lng, client.location.lat, client.location.lng);
     }
 
     // Create location record

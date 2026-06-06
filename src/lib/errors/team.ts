@@ -26,7 +26,10 @@ export class UserNotFoundError extends TeamError {
 
 export class UserAlreadyExistsError extends TeamError {
   constructor() {
-    super("An invited user with this email already has a pending invitation", "user_already_exists");
+    super(
+      "An invited user with this email already has a pending invitation",
+      "user_already_exists"
+    );
     this.name = "UserAlreadyExistsError";
   }
 }
@@ -40,7 +43,10 @@ export class CannotModifySelfError extends TeamError {
 
 export class CannotModifyOwnerError extends TeamError {
   constructor() {
-    super("The company owner cannot be deactivated or have their role changed", "cannot_modify_owner");
+    super(
+      "The company owner cannot be deactivated or have their role changed",
+      "cannot_modify_owner"
+    );
     this.name = "CannotModifyOwnerError";
   }
 }

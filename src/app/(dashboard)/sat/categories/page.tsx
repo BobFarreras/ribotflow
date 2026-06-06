@@ -67,15 +67,13 @@ export default async function CategoriesPage() {
                   className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl"
                   style={{ backgroundColor: cat.color ? `${cat.color}20` : undefined }}
                 >
-                  <CategoryIcon
-                    slug={cat.icon ?? cat.slug}
-                    color={cat.color}
-                    size={24}
-                  />
+                  <CategoryIcon slug={cat.icon ?? cat.slug} color={cat.color} size={24} />
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
-                    <h3 className="text-sm font-semibold text-[var(--text)] group-hover:text-[var(--module-sat)]">{cat.name}</h3>
+                    <h3 className="text-sm font-semibold text-[var(--text)] group-hover:text-[var(--module-sat)]">
+                      {cat.name}
+                    </h3>
                     {cat.isDefault && (
                       <span className="flex items-center gap-0.5 rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium text-amber-700">
                         <Star className="h-3 w-3" />
@@ -89,7 +87,9 @@ export default async function CategoriesPage() {
                       className="inline-block h-3 w-3 rounded-full"
                       style={{ backgroundColor: cat.color ?? "#6b7280" }}
                     />
-                    <span className="text-xs text-[var(--text-muted)]">{cat.color ?? "Sense color"}</span>
+                    <span className="text-xs text-[var(--text-muted)]">
+                      {cat.color ?? "Sense color"}
+                    </span>
                   </div>
                 </div>
               </Link>

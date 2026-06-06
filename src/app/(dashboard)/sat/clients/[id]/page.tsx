@@ -24,11 +24,7 @@ export default async function ClientDetailPage({ params }: Props) {
   const { id } = await params;
   const companyId = session.user.companyId;
 
-  const [client] = await db
-    .select()
-    .from(clients)
-    .where(eq(clients.id, id))
-    .limit(1);
+  const [client] = await db.select().from(clients).where(eq(clients.id, id)).limit(1);
 
   if (!client || client.companyId !== companyId) {
     notFound();
@@ -78,7 +74,10 @@ export default async function ClientDetailPage({ params }: Props) {
                 {client.phone && (
                   <div className="flex items-center gap-2 text-[var(--text)]">
                     <Phone className="h-4 w-4 text-[var(--text-muted)]" />
-                    <a href={`tel:${client.phone}`} className="hover:text-[var(--module-sat)] hover:underline">
+                    <a
+                      href={`tel:${client.phone}`}
+                      className="hover:text-[var(--module-sat)] hover:underline"
+                    >
                       {client.phone}
                     </a>
                   </div>
@@ -86,7 +85,10 @@ export default async function ClientDetailPage({ params }: Props) {
                 {client.email && (
                   <div className="flex items-center gap-2 text-[var(--text)]">
                     <Mail className="h-4 w-4 text-[var(--text-muted)]" />
-                    <a href={`mailto:${client.email}`} className="hover:text-[var(--module-sat)] hover:underline">
+                    <a
+                      href={`mailto:${client.email}`}
+                      className="hover:text-[var(--module-sat)] hover:underline"
+                    >
                       {client.email}
                     </a>
                   </div>
@@ -141,7 +143,9 @@ export default async function ClientDetailPage({ params }: Props) {
                 Ordres de treball ({orders.length})
               </h2>
               {orders.length === 0 ? (
-                <p className="text-sm text-[var(--text-muted)]">Aquest client no té ordres de treball.</p>
+                <p className="text-sm text-[var(--text-muted)]">
+                  Aquest client no té ordres de treball.
+                </p>
               ) : (
                 <div className="space-y-2">
                   {orders.map((order) => (
@@ -152,10 +156,14 @@ export default async function ClientDetailPage({ params }: Props) {
                     >
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2">
-                          <span className="text-xs font-mono text-[var(--text-muted)]">{order.number}</span>
+                          <span className="text-xs font-mono text-[var(--text-muted)]">
+                            {order.number}
+                          </span>
                           <WorkOrderStatusBadge status={order.status} size="sm" />
                         </div>
-                        <p className="mt-0.5 text-sm font-medium text-[var(--text)]">{order.title}</p>
+                        <p className="mt-0.5 text-sm font-medium text-[var(--text)]">
+                          {order.title}
+                        </p>
                       </div>
                       {order.scheduledDate && (
                         <span className="shrink-0 text-xs text-[var(--text-muted)]">

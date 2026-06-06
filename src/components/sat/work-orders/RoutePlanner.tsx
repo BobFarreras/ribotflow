@@ -24,7 +24,9 @@ interface Props {
 export function RoutePlanner({ orders, hq, companyName, selectedDate }: Props) {
   const t = useTranslations("sat.routes");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [optimizedRoute, setOptimizedRoute] = useState<ReturnType<typeof optimizeRoute> | null>(null);
+  const [optimizedRoute, setOptimizedRoute] = useState<ReturnType<typeof optimizeRoute> | null>(
+    null
+  );
 
   const toggleSelection = useCallback((id: string) => {
     setSelectedIds((prev) => {
@@ -99,7 +101,9 @@ export function RoutePlanner({ orders, hq, companyName, selectedDate }: Props) {
                 >
                   <div
                     className={`flex h-5 w-5 shrink-0 items-center justify-center rounded border ${
-                      isSelected ? "bg-[var(--module-sat)] border-[var(--module-sat)]" : "border-[var(--border)]"
+                      isSelected
+                        ? "bg-[var(--module-sat)] border-[var(--module-sat)]"
+                        : "border-[var(--border)]"
                     }`}
                   >
                     {isSelected && <Check className="h-3.5 w-3.5 text-white" />}
@@ -115,7 +119,9 @@ export function RoutePlanner({ orders, hq, companyName, selectedDate }: Props) {
                         </span>
                       )}
                     </div>
-                    <p className="truncate text-sm font-medium text-[var(--text)]">{order.workOrder.title}</p>
+                    <p className="truncate text-sm font-medium text-[var(--text)]">
+                      {order.workOrder.title}
+                    </p>
                     <p className="truncate text-xs text-[var(--text-muted)]">{order.client.name}</p>
                   </div>
                   {order.client.location && (
@@ -155,18 +161,28 @@ export function RoutePlanner({ orders, hq, companyName, selectedDate }: Props) {
             {/* Summary */}
             <div className="mb-4 grid grid-cols-3 gap-2">
               <div className="rounded-lg bg-[var(--bg)] p-3 text-center">
-                <div className="text-lg font-bold text-[var(--module-sat)]">{optimizedRoute.stops.length}</div>
-                <div className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">{t("stops")}</div>
+                <div className="text-lg font-bold text-[var(--module-sat)]">
+                  {optimizedRoute.stops.length}
+                </div>
+                <div className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">
+                  {t("stops")}
+                </div>
               </div>
               <div className="rounded-lg bg-[var(--bg)] p-3 text-center">
-                <div className="text-lg font-bold text-[var(--module-sat)]">{optimizedRoute.totalDistanceKm} km</div>
-                <div className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">{t("totalDistance")}</div>
+                <div className="text-lg font-bold text-[var(--module-sat)]">
+                  {optimizedRoute.totalDistanceKm} km
+                </div>
+                <div className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">
+                  {t("totalDistance")}
+                </div>
               </div>
               <div className="rounded-lg bg-[var(--bg)] p-3 text-center">
                 <div className="text-lg font-bold text-[var(--module-sat)]">
                   {formatDuration(optimizedRoute.totalDurationMinutes)}
                 </div>
-                <div className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">{t("totalTime")}</div>
+                <div className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">
+                  {t("totalTime")}
+                </div>
               </div>
             </div>
 

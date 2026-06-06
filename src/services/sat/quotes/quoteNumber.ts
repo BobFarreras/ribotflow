@@ -15,10 +15,7 @@ export async function getNextQuoteNumber(companyId: string): Promise<string> {
   const result = await db
     .select({ maxNumber: sql<string>`MAX(${quotes.number})` })
     .from(quotes)
-    .where(
-      and(eq(quotes.companyId, companyId), sql`${quotes.number} LIKE ${prefix + "%"}`
-    )
-  );
+    .where(and(eq(quotes.companyId, companyId), sql`${quotes.number} LIKE ${prefix + "%"}`));
 
   const maxNumber = result[0]?.maxNumber;
   let sequence = 1;

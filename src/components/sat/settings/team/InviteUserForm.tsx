@@ -65,12 +65,8 @@ export function InviteUserForm({ onClose }: Props) {
               <Mail className="h-5 w-5" />
             </span>
             <div>
-              <h2 className="text-lg font-semibold text-[color:var(--text)]">
-                {t("title")}
-              </h2>
-              <p className="text-sm text-[color:var(--text-muted)]">
-                {t("subtitle")}
-              </p>
+              <h2 className="text-lg font-semibold text-[color:var(--text)]">{t("title")}</h2>
+              <p className="text-sm text-[color:var(--text-muted)]">{t("subtitle")}</p>
             </div>
           </div>
           <button
@@ -131,7 +127,10 @@ export function InviteUserForm({ onClose }: Props) {
         ) : (
           <form onSubmit={onSubmit} className="space-y-4">
             <div>
-              <label htmlFor="invite-name" className="mb-1.5 block text-sm font-medium text-[color:var(--text)]">
+              <label
+                htmlFor="invite-name"
+                className="mb-1.5 block text-sm font-medium text-[color:var(--text)]"
+              >
                 {t("name")}
               </label>
               <input
@@ -145,7 +144,10 @@ export function InviteUserForm({ onClose }: Props) {
               />
             </div>
             <div>
-              <label htmlFor="invite-email" className="mb-1.5 block text-sm font-medium text-[color:var(--text)]">
+              <label
+                htmlFor="invite-email"
+                className="mb-1.5 block text-sm font-medium text-[color:var(--text)]"
+              >
                 {t("email")}
               </label>
               <input

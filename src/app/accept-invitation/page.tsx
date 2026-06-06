@@ -50,9 +50,7 @@ export default async function AcceptInvitationPage({ searchParams }: Props) {
         <h1 className="mb-2 text-center text-2xl font-bold text-[color:var(--text)]">
           {t("title")}
         </h1>
-        <p className="mb-6 text-center text-sm text-[color:var(--text-muted)]">
-          {t("subtitle")}
-        </p>
+        <p className="mb-6 text-center text-sm text-[color:var(--text-muted)]">{t("subtitle")}</p>
 
         <div className="w-full rounded-lg border border-[color:var(--border)] bg-[color:var(--surface)] p-5 shadow-sm">
           {validationError ? (

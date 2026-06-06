@@ -120,9 +120,7 @@ export function FieldStatusActions({ workOrderId, status }: Props) {
         <p
           className={
             "inline-flex items-center gap-1.5 text-xs " +
-            (feedback.kind === "ok"
-              ? "text-[color:var(--success)]"
-              : "text-[color:var(--danger)]")
+            (feedback.kind === "ok" ? "text-[color:var(--success)]" : "text-[color:var(--danger)]")
           }
         >
           {feedback.kind === "err" && <AlertTriangle className="h-3.5 w-3.5" />}

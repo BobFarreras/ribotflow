@@ -45,9 +45,18 @@ export default async function QuoteDetailPage({ params }: Props) {
     getCompanySettingsAction(),
   ]);
 
-  const company = companyResult.success && companyResult.data
-    ? toCompanySummary(companyResult.data)
-    : { name: "Empresa", taxId: null, address: null, phone: null, email: null, website: null, logoUrl: null };
+  const company =
+    companyResult.success && companyResult.data
+      ? toCompanySummary(companyResult.data)
+      : {
+          name: "Empresa",
+          taxId: null,
+          address: null,
+          phone: null,
+          email: null,
+          website: null,
+          logoUrl: null,
+        };
 
   return (
     <div className="flex h-[calc(100dvh-1px)] flex-col bg-[var(--bg)]">

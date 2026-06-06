@@ -20,7 +20,12 @@ interface Props {
 
 const TRANSITIONS: Record<
   WorkOrderStatus,
-  { status: WorkOrderStatus; label: string; icon: typeof Play; variant: "primary" | "danger" | "neutral" }[]
+  {
+    status: WorkOrderStatus;
+    label: string;
+    icon: typeof Play;
+    variant: "primary" | "danger" | "neutral";
+  }[]
 > = {
   pending: [
     { status: "in_progress", label: "detail.actions.start", icon: Play, variant: "primary" },
@@ -36,7 +41,12 @@ const TRANSITIONS: Record<
   ],
   in_progress: [
     { status: "paused", label: "detail.actions.pause", icon: Pause, variant: "neutral" },
-    { status: "completed", label: "detail.actions.complete", icon: CheckCircle, variant: "primary" },
+    {
+      status: "completed",
+      label: "detail.actions.complete",
+      icon: CheckCircle,
+      variant: "primary",
+    },
     { status: "cancelled", label: "detail.actions.cancel", icon: XCircle, variant: "danger" },
   ],
   paused: [

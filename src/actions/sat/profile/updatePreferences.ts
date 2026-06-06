@@ -14,10 +14,7 @@ import { revalidatePath } from "next/cache";
 import { auth } from "@/lib/auth";
 import { preferencesService } from "@/services/sat/preferences";
 import { updatePreferencesSchema } from "@/lib/validators/sat/preferencesSchema";
-import {
-  writeThemeCookie,
-  writeLocaleCookie,
-} from "@/lib/cookies/preferencesCookies";
+import { writeThemeCookie, writeLocaleCookie } from "@/lib/cookies/preferencesCookies";
 
 export async function updatePreferencesAction(input: unknown) {
   try {

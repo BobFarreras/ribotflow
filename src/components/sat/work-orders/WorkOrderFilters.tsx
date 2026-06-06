@@ -46,9 +46,7 @@ export function WorkOrderFilters({ categories, technicians }: Props) {
 
   const toggleArrayFilter = (key: string, value: string) => {
     const current = getParamArray(key);
-    const next = current.includes(value)
-      ? current.filter((v) => v !== value)
-      : [...current, value];
+    const next = current.includes(value) ? current.filter((v) => v !== value) : [...current, value];
     setParams({ [key]: next.length > 0 ? next : null });
   };
 
@@ -132,10 +130,7 @@ export function WorkOrderFilters({ categories, technicians }: Props) {
       </FilterDropdown>
 
       {/* Priority filter */}
-      <FilterDropdown
-        label="Prio."
-        activeCount={priorityFilters.length || undefined}
-      >
+      <FilterDropdown label="Prio." activeCount={priorityFilters.length || undefined}>
         {PRIORITY_OPTIONS.map((p) => (
           <CheckboxItem
             key={p.key}
@@ -165,7 +160,9 @@ export function WorkOrderFilters({ categories, technicians }: Props) {
             type="button"
             onClick={() => setParams({ technician: tech.id, page: null })}
             className={`w-full rounded-md px-2 py-1.5 text-left text-sm ${
-              technicianFilter === tech.id ? "bg-[var(--bg)] font-medium text-[var(--module-sat)]" : "text-[var(--text)] hover:bg-[var(--bg)]"
+              technicianFilter === tech.id
+                ? "bg-[var(--bg)] font-medium text-[var(--module-sat)]"
+                : "text-[var(--text)] hover:bg-[var(--bg)]"
             }`}
           >
             {tech.name}
@@ -174,7 +171,11 @@ export function WorkOrderFilters({ categories, technicians }: Props) {
       </FilterDropdown>
 
       {/* Date range filter */}
-      <FilterDropdown label="Dates" icon={<Calendar className="h-3 w-3" />} activeCount={dateFrom || dateTo ? 1 : undefined}>
+      <FilterDropdown
+        label="Dates"
+        icon={<Calendar className="h-3 w-3" />}
+        activeCount={dateFrom || dateTo ? 1 : undefined}
+      >
         <div className="space-y-2 p-1">
           <div>
             <label className="text-xs text-[var(--text-muted)]">Des de</label>

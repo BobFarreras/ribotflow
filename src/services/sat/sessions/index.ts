@@ -13,7 +13,4 @@ export const sessionsService = {
 };
 
 export type { ActiveSessionDto } from "./types";
-export {
-  SessionNotFoundError,
-  CannotRevokeCurrentSessionError,
-} from "./mutations";
+export { SessionNotFoundError, CannotRevokeCurrentSessionError } from "./mutations";

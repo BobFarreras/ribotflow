@@ -13,7 +13,11 @@ export const categorySchema = z.object({
     .min(1, "El slug és obligatori")
     .max(50)
     .regex(/^[a-z0-9_-]+$/, "Només lletres minúscules, números, guions i guions baixos"),
-  color: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional().nullable(),
+  color: z
+    .string()
+    .regex(/^#[0-9A-Fa-f]{6}$/)
+    .optional()
+    .nullable(),
   icon: z.string().max(50).optional().nullable(),
   isDefault: z.boolean().default(false),
   sortOrder: z.coerce.number().int().min(0).default(0),

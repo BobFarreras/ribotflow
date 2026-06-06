@@ -69,7 +69,10 @@ export default function NewClientPage() {
       </header>
 
       <main className="mx-auto max-w-2xl px-4 py-6 sm:px-6">
-        <form onSubmit={handleSubmit} className="space-y-5 rounded-xl border border-[var(--border)] bg-[var(--surface)] p-6">
+        <form
+          onSubmit={handleSubmit}
+          className="space-y-5 rounded-xl border border-[var(--border)] bg-[var(--surface)] p-6"
+        >
           {error && (
             <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
               {error}
@@ -104,7 +107,9 @@ export default function NewClientPage() {
               />
             </div>
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-[var(--text)]">TelÃ¨fon</label>
+              <label className="mb-1.5 block text-sm font-medium text-[var(--text)]">
+                TelÃ¨fon
+              </label>
               <input
                 type="tel"
                 value={formData.phone}

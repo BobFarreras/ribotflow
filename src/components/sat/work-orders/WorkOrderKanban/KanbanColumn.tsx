@@ -79,8 +79,8 @@ export function KanbanColumn({
         isDragOver && isValidTarget
           ? "border-[var(--module-sat)] bg-[var(--module-sat)]/5"
           : draggingId && !isValidTarget
-          ? "border-red-300/30 bg-red-500/[0.02]"
-          : "border-[var(--border)] bg-[var(--surface)]"
+            ? "border-red-300/30 bg-red-500/[0.02]"
+            : "border-[var(--border)] bg-[var(--surface)]"
       }`}
       onDragOver={(e) => onDragOver(e, column.key)}
       onDrop={(e) => onDrop(e, column.key)}
@@ -89,10 +89,7 @@ export function KanbanColumn({
       {/* Column header */}
       <div className="flex items-center justify-between px-3 py-2.5">
         <div className="flex items-center gap-2">
-          <span
-            className="h-2 w-2 rounded-full"
-            style={{ backgroundColor: column.color }}
-          />
+          <span className="h-2 w-2 rounded-full" style={{ backgroundColor: column.color }} />
           <span className="text-sm font-semibold" style={{ color: column.color }}>
             {column.label}
           </span>

@@ -49,21 +49,15 @@ export const isValidTransition = isValidWorkOrderTransition;
    QUOTE STATUS TRANSITIONS
    ============================================================ */
 
-export type QuoteStatus =
-  | "draft"
-  | "sent"
-  | "accepted"
-  | "rejected"
-  | "expired"
-  | "cancelled";
+export type QuoteStatus = "draft" | "sent" | "accepted" | "rejected" | "expired" | "cancelled";
 
 export const VALID_QUOTE_TRANSITIONS: Record<QuoteStatus, QuoteStatus[]> = {
   draft: ["sent", "cancelled"],
   sent: ["accepted", "rejected", "cancelled"],
-  accepted: [],  // Final state
-  rejected: ["draft"],  // Can revise and resend
-  expired: ["draft"],  // Can revise and resend
-  cancelled: ["draft"],  // Can reactivate
+  accepted: [], // Final state
+  rejected: ["draft"], // Can revise and resend
+  expired: ["draft"], // Can revise and resend
+  cancelled: ["draft"], // Can reactivate
 };
 
 export function isValidQuoteTransition(from: QuoteStatus, to: QuoteStatus): boolean {

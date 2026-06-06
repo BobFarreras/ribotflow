@@ -48,12 +48,17 @@ export function QuotePdfPreview({
   description,
   clientNotes,
 }: Props) {
-  const totals: QuoteTotals = { subtotal, discountPercent, discountAmount, taxRate, taxAmount, total };
+  const totals: QuoteTotals = {
+    subtotal,
+    discountPercent,
+    discountAmount,
+    taxRate,
+    taxAmount,
+    total,
+  };
   const validItems = items.filter((item) => item.description);
   const today = new Date().toLocaleDateString("ca-ES");
-  const validUntilDate = validUntil
-    ? new Date(validUntil).toLocaleDateString("ca-ES")
-    : null;
+  const validUntilDate = validUntil ? new Date(validUntil).toLocaleDateString("ca-ES") : null;
   const daysLeft = validUntil
     ? Math.ceil((new Date(validUntil).getTime() - Date.now()) / 86400000)
     : null;

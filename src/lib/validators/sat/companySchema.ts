@@ -63,11 +63,7 @@ export const companySettingsSchema = z.object({
   legalText: z.string().max(2000).optional().nullable(),
 
   // Preferences
-  defaultTaxRate: z.coerce
-    .number()
-    .min(0, "Ha de ser ≥ 0")
-    .max(100, "Ha de ser ≤ 100")
-    .default(21),
+  defaultTaxRate: z.coerce.number().min(0, "Ha de ser ≥ 0").max(100, "Ha de ser ≤ 100").default(21),
   defaultCurrency: z
     .string()
     .length(3, "Ha de tenir 3 caràcters (ISO 4217)")
@@ -77,18 +73,8 @@ export const companySettingsSchema = z.object({
   timezone: z.string().max(50).default("Europe/Madrid").optional(),
 
   // Documents
-  quotePrefix: z
-    .string()
-    .min(1, "Mínim 1 caràcter")
-    .max(10)
-    .toUpperCase()
-    .default("PRE"),
-  invoicePrefix: z
-    .string()
-    .min(1, "Mínim 1 caràcter")
-    .max(10)
-    .toUpperCase()
-    .default("INV"),
+  quotePrefix: z.string().min(1, "Mínim 1 caràcter").max(10).toUpperCase().default("PRE"),
+  invoicePrefix: z.string().min(1, "Mínim 1 caràcter").max(10).toUpperCase().default("INV"),
   travelRatePerKm: z.coerce.number().min(0).optional().nullable(),
 });
 

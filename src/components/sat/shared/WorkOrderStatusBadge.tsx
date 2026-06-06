@@ -32,9 +32,7 @@ export function WorkOrderStatusBadge({ status, size = "sm" }: Props) {
   const t = useTranslations("sat.workOrder");
   const color = STATUS_COLORS[status];
 
-  const sizeClasses = size === "md"
-    ? "px-2 py-1 text-xs"
-    : "px-1.5 py-0.5 text-[11px]";
+  const sizeClasses = size === "md" ? "px-2 py-1 text-xs" : "px-1.5 py-0.5 text-[11px]";
 
   return (
     <span
@@ -44,10 +42,7 @@ export function WorkOrderStatusBadge({ status, size = "sm" }: Props) {
         backgroundColor: `${color}14`, // ~8% opacity
       }}
     >
-      <span
-        className="h-1.5 w-1.5 rounded-full shrink-0"
-        style={{ backgroundColor: color }}
-      />
+      <span className="h-1.5 w-1.5 rounded-full shrink-0" style={{ backgroundColor: color }} />
       {t(`list.status.${status}`)}
     </span>
   );

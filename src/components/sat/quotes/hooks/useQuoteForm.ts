@@ -9,12 +9,7 @@ import { useRouter } from "next/navigation";
 import { createQuoteAction } from "@/actions/sat/quotes/createQuote";
 import { updateQuoteAction } from "@/actions/sat/quotes/updateQuote";
 import { toast } from "sonner";
-import type {
-  Client,
-  Product,
-  QuoteItemForm,
-  ExistingQuote,
-} from "../types";
+import type { Client, Product, QuoteItemForm, ExistingQuote } from "../types";
 
 const DEFAULT_VALIDITY_DAYS = 30;
 
@@ -86,8 +81,24 @@ export interface UseQuoteFormReturn {
   setWorkOrderId: (v: string) => void;
   handleClientSelect: (clientId: string) => void;
   setUseCustomClient: (v: boolean) => void;
-  setCustomClient: React.Dispatch<React.SetStateAction<{ name: string; email: string; phone: string; address: string; taxId: string }>>;
-  setFormData: React.Dispatch<React.SetStateAction<{ description: string; validUntil: string; taxRate: number; discountPercent: number; clientNotes: string }>>;
+  setCustomClient: React.Dispatch<
+    React.SetStateAction<{
+      name: string;
+      email: string;
+      phone: string;
+      address: string;
+      taxId: string;
+    }>
+  >;
+  setFormData: React.Dispatch<
+    React.SetStateAction<{
+      description: string;
+      validUntil: string;
+      taxRate: number;
+      discountPercent: number;
+      clientNotes: string;
+    }>
+  >;
   addItem: () => void;
   removeItem: (index: number) => void;
   updateItem: (index: number, field: keyof QuoteItemForm, value: any) => void;
@@ -171,9 +182,7 @@ export function useQuoteForm(props: UseQuoteFormProps): UseQuoteFormReturn {
   const calculateItemTotal = useCallback((item: QuoteItemForm) => {
     const subtotal = item.quantity * item.unitPrice;
     const discount =
-      item.discountAmount > 0
-        ? item.discountAmount
-        : (subtotal * item.discountPercent) / 100;
+      item.discountAmount > 0 ? item.discountAmount : (subtotal * item.discountPercent) / 100;
     return subtotal - discount;
   }, []);
 
@@ -197,7 +206,10 @@ export function useQuoteForm(props: UseQuoteFormProps): UseQuoteFormReturn {
     [subtotalAfterDiscount, formData.taxRate]
   );
 
-  const total = useMemo(() => subtotalAfterDiscount + taxAmount, [subtotalAfterDiscount, taxAmount]);
+  const total = useMemo(
+    () => subtotalAfterDiscount + taxAmount,
+    [subtotalAfterDiscount, taxAmount]
+  );
 
   /* ---------- Client ---------- */
   const selectedClient = useMemo(
@@ -205,20 +217,23 @@ export function useQuoteForm(props: UseQuoteFormProps): UseQuoteFormReturn {
     [props.clients, selectedClientId]
   );
 
-  const handleClientSelect = useCallback((clientId: string) => {
-    setSelectedClientId(clientId);
-    setUseCustomClient(false);
-    const client = props.clients.find((c) => c.id === clientId);
-    if (client) {
-      setCustomClient({
-        name: client.name,
-        email: client.email ?? "",
-        phone: client.phone ?? "",
-        address: client.address ?? "",
-        taxId: client.taxId ?? "",
-      });
-    }
-  }, [props.clients]);
+  const handleClientSelect = useCallback(
+    (clientId: string) => {
+      setSelectedClientId(clientId);
+      setUseCustomClient(false);
+      const client = props.clients.find((c) => c.id === clientId);
+      if (client) {
+        setCustomClient({
+          name: client.name,
+          email: client.email ?? "",
+          phone: client.phone ?? "",
+          address: client.address ?? "",
+          taxId: client.taxId ?? "",
+        });
+      }
+    },
+    [props.clients]
+  );
 
   /* ---------- Items ---------- */
   const addItem = useCallback(() => {
@@ -308,7 +323,7 @@ export function useQuoteForm(props: UseQuoteFormProps): UseQuoteFormReturn {
     const payload = {
       workOrderId: workOrderId || null,
       clientId: useCustomClient ? "00000000-0000-0000-0000-000000000000" : selectedClientId,
-      title: `${useCustomClient ? customClient.name : selectedClient?.name ?? "Pressupost"} - ${new Date().toLocaleDateString("ca-ES")}`,
+      title: `${useCustomClient ? customClient.name : (selectedClient?.name ?? "Pressupost")} - ${new Date().toLocaleDateString("ca-ES")}`,
       description: formData.description || null,
       validUntil: formData.validUntil || null,
       taxRate: formData.taxRate,
@@ -335,7 +350,18 @@ export function useQuoteForm(props: UseQuoteFormProps): UseQuoteFormReturn {
     } else {
       setError(result.error ?? "Error");
     }
-  }, [items, workOrderId, useCustomClient, selectedClientId, customClient, selectedClient, formData, props.mode, props.existingQuote, router]);
+  }, [
+    items,
+    workOrderId,
+    useCustomClient,
+    selectedClientId,
+    customClient,
+    selectedClient,
+    formData,
+    props.mode,
+    props.existingQuote,
+    router,
+  ]);
 
   return {
     isLoading,

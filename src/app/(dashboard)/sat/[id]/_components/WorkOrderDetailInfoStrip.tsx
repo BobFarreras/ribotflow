@@ -54,7 +54,10 @@ export function WorkOrderDetailInfoStrip({
             {client.name}
           </Link>
           {client.phone && (
-            <a href={`tel:${client.phone}`} className="ml-1 text-[var(--module-sat)] hover:underline">
+            <a
+              href={`tel:${client.phone}`}
+              className="ml-1 text-[var(--module-sat)] hover:underline"
+            >
               <Phone className="inline h-3 w-3" />
             </a>
           )}
@@ -66,7 +69,11 @@ export function WorkOrderDetailInfoStrip({
         {scheduledDate && (
           <span className="flex items-center gap-1">
             <Calendar className="h-3 w-3" />
-            {new Date(scheduledDate).toLocaleDateString("ca-ES", { day: "2-digit", month: "short", year: "numeric" })}
+            {new Date(scheduledDate).toLocaleDateString("ca-ES", {
+              day: "2-digit",
+              month: "short",
+              year: "numeric",
+            })}
           </span>
         )}
         {travelDistanceKm && (
@@ -90,7 +97,9 @@ export function WorkOrderDetailInfoStrip({
           <span className="flex items-center gap-1">
             <MapPin className="h-3 w-3" />
             {client.address}
-            {client.location && <GoogleMapsLink lat={client.location.lat} lng={client.location.lng} label="Mapa" />}
+            {client.location && (
+              <GoogleMapsLink lat={client.location.lat} lng={client.location.lng} label="Mapa" />
+            )}
           </span>
         )}
       </div>

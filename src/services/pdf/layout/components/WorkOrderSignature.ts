@@ -45,7 +45,9 @@ export async function drawWorkOrderSignature(
     }
   } else if (signedBy) {
     builder.ensureSpace(20);
-    builder.drawText(`${LABELS[builder.lang].signedBy}: ${signedBy}`, MARGIN, builder.y, { size: 10 });
+    builder.drawText(`${LABELS[builder.lang].signedBy}: ${signedBy}`, MARGIN, builder.y, {
+      size: 10,
+    });
     builder.addSpace(16);
   }
 }

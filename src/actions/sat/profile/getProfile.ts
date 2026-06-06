@@ -17,10 +17,7 @@ export async function getProfileAction() {
     if (!session?.user?.companyId || !session?.user?.id) {
       return { success: false, error: "Unauthorized" };
     }
-    const data = await profileService.getProfile(
-      session.user.companyId,
-      session.user.id
-    );
+    const data = await profileService.getProfile(session.user.companyId, session.user.id);
     if (!data) return { success: false, error: "Profile not found" };
     return { success: true, data };
   } catch (err) {

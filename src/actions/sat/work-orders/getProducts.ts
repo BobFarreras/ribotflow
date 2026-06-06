@@ -17,10 +17,7 @@ export async function getProductsByCompanyAction(search?: string) {
       return { success: false, error: "Unauthorized" };
     }
 
-    const products = await productService.getByCompany(
-      session.user.companyId,
-      search
-    );
+    const products = await productService.getByCompany(session.user.companyId, search);
 
     return { success: true, data: products };
   } catch (error) {

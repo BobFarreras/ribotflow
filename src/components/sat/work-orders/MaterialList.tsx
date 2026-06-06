@@ -104,7 +104,9 @@ export function MaterialList({ materials: initialMaterials, workOrderId, product
   return (
     <div className="flex h-full flex-col">
       <div className="mb-2 flex items-center justify-between">
-        <h2 className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">{t("title")}</h2>
+        <h2 className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
+          {t("title")}
+        </h2>
         <button
           onClick={() => setShowForm(!showForm)}
           disabled={isPending}
@@ -196,14 +198,23 @@ export function MaterialList({ materials: initialMaterials, workOrderId, product
 
           <div className="flex justify-end gap-2">
             <button
-              onClick={() => { setShowForm(false); setSelectedProductId(""); setIsFreeText(false); }}
+              onClick={() => {
+                setShowForm(false);
+                setSelectedProductId("");
+                setIsFreeText(false);
+              }}
               className="rounded-md px-3 py-1.5 text-xs text-[var(--text-muted)] hover:bg-[var(--surface-hover)]"
             >
               {t("cancel")}
             </button>
             <button
               onClick={handleAdd}
-              disabled={isPending || !formData.quantity || (!isFreeText && !selectedProductId) || (isFreeText && !formData.name)}
+              disabled={
+                isPending ||
+                !formData.quantity ||
+                (!isFreeText && !selectedProductId) ||
+                (isFreeText && !formData.name)
+              }
               className="rounded-md bg-[var(--primary)] px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-[var(--primary)]/90 disabled:opacity-50"
             >
               {t("submit")}

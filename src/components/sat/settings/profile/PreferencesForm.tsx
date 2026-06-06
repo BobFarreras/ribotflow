@@ -15,10 +15,7 @@ import { useRouter } from "next/navigation";
 import { useTranslations, useLocale } from "next-intl";
 import { Sun, Moon, Check, Loader2 } from "lucide-react";
 import { updatePreferencesAction } from "@/actions/sat/profile/updatePreferences";
-import type {
-  ThemePreference,
-  LocalePreference,
-} from "@/services/sat/preferences/types";
+import type { ThemePreference, LocalePreference } from "@/services/sat/preferences/types";
 
 interface Props {
   initialTheme: ThemePreference;
@@ -92,7 +89,9 @@ export function PreferencesForm({ initialTheme, initialLocale }: Props) {
 
       {/* Locale selector */}
       <fieldset className="space-y-2">
-        <legend className="text-sm font-medium text-[color:var(--text)]">{t("language.label")}</legend>
+        <legend className="text-sm font-medium text-[color:var(--text)]">
+          {t("language.label")}
+        </legend>
         <p className="text-xs text-[color:var(--text-muted)]">{t("language.help")}</p>
         <div className="flex gap-2" role="radiogroup" aria-label={t("language.label")}>
           <LocaleOption

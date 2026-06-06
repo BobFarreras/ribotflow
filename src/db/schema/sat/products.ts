@@ -4,7 +4,16 @@
  * Description: Products catalog for SAT and future ERP.
  */
 
-import { pgTable, uuid, text, timestamp, index, integer, boolean, numeric } from "drizzle-orm/pg-core";
+import {
+  pgTable,
+  uuid,
+  text,
+  timestamp,
+  index,
+  integer,
+  boolean,
+  numeric,
+} from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { companies } from "../auth";
 

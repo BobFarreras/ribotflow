@@ -109,7 +109,16 @@ export function WorkOrderList({ orders, categories, technicians }: Props) {
 
       return true;
     });
-  }, [orders, search, statusFilters, categoryFilters, priorityFilters, technicianFilter, dateFrom, dateTo]);
+  }, [
+    orders,
+    search,
+    statusFilters,
+    categoryFilters,
+    priorityFilters,
+    technicianFilter,
+    dateFrom,
+    dateTo,
+  ]);
 
   // Pagination slice
   const paginated = useMemo(() => {

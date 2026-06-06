@@ -43,7 +43,10 @@ export async function saveSignatureAction(formData: FormData) {
 
     const allowedStatuses = ["completed", "closed"];
     if (!allowedStatuses.includes(order.status)) {
-      return { success: false, error: "Signature can only be captured when work order is completed or closed" };
+      return {
+        success: false,
+        error: "Signature can only be captured when work order is completed or closed",
+      };
     }
 
     let pngBuffer: Buffer | undefined;
@@ -51,17 +54,13 @@ export async function saveSignatureAction(formData: FormData) {
       pngBuffer = Buffer.from(await signaturePng.arrayBuffer());
     }
 
-    const signature = await signatureService.save(
-      session.user.companyId,
-      order.number,
-      {
-        entityType: "work_order",
-        entityId: workOrderId,
-        signedBy,
-        signatureSvg,
-        signaturePngBuffer: pngBuffer,
-      }
-    );
+    const signature = await signatureService.save(session.user.companyId, order.number, {
+      entityType: "work_order",
+      entityId: workOrderId,
+      signedBy,
+      signatureSvg,
+      signaturePngBuffer: pngBuffer,
+    });
 
     revalidatePath(`/sat/${workOrderId}`);
 

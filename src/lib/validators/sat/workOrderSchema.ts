@@ -34,14 +34,17 @@ export const createWorkOrderSchema = z.object({
     .max(200, "Title must be at most 200 characters"),
   description: z.string().max(2000, "Description too long").optional(),
   priority: z.enum(["low", "medium", "high", "urgent"]).default("medium").optional(),
-  scheduledDate: z.string().transform((val) => {
-    if (!val) return undefined;
-    // datetime-local HTML5 format: "YYYY-MM-DDTHH:mm" → append seconds + Z
-    if (val.length === 16) {
-      return `${val}:00Z`;
-    }
-    return val;
-  }).optional(),
+  scheduledDate: z
+    .string()
+    .transform((val) => {
+      if (!val) return undefined;
+      // datetime-local HTML5 format: "YYYY-MM-DDTHH:mm" → append seconds + Z
+      if (val.length === 16) {
+        return `${val}:00Z`;
+      }
+      return val;
+    })
+    .optional(),
   estimatedDurationMinutes: z.number().int().min(1).max(480).optional(),
   notes: z.string().max(2000).optional(),
   address: z.string().max(500).optional(),

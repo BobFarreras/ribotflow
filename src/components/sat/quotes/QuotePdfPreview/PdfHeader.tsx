@@ -54,7 +54,16 @@ export function PdfHeader({ company, quoteNumber }: PdfHeaderProps) {
         </div>
       </div>
       <div style={{ flex: "0 0 35%", textAlign: "right" }}>
-        <h1 style={{ fontSize: "24pt", fontWeight: 900, color: "#0f172a", textTransform: "uppercase", letterSpacing: "1px", margin: 0 }}>
+        <h1
+          style={{
+            fontSize: "24pt",
+            fontWeight: 900,
+            color: "#0f172a",
+            textTransform: "uppercase",
+            letterSpacing: "1px",
+            margin: 0,
+          }}
+        >
           Pressupost
         </h1>
         <div style={{ fontSize: "12pt", color: "#475569", marginTop: "5px", fontWeight: "bold" }}>

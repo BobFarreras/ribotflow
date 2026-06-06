@@ -22,11 +22,7 @@ import {
   UserNotFoundError,
 } from "@/lib/errors/team";
 import { PasswordTooShortError } from "@/lib/errors/profile";
-import {
-  companyHasOwner,
-  countActiveAdminsExcluding,
-  findTeamMember,
-} from "./queries";
+import { companyHasOwner, countActiveAdminsExcluding, findTeamMember } from "./queries";
 
 /* ----------------------------------------------------------------
    Helpers
@@ -144,18 +140,12 @@ export async function revokeInvitation(companyId: string, userId: string): Promi
   if (member.role === "OWNER") throw new CannotModifyOwnerError();
   if (member.status !== "pending") throw new NotAPendingUserError();
 
-  await db
-    .delete(users)
-    .where(and(eq(users.companyId, companyId), eq(users.id, userId)));
+  await db.delete(users).where(and(eq(users.companyId, companyId), eq(users.id, userId)));
 }
 
 /** Validates an invitation token. Returns the user row or throws. */
 export async function acceptInvitationToken(token: string): Promise<TeamMember> {
-  const rows = await db
-    .select()
-    .from(users)
-    .where(eq(users.invitationToken, token))
-    .limit(1);
+  const rows = await db.select().from(users).where(eq(users.invitationToken, token)).limit(1);
   const row = rows[0];
   if (!row) throw new InvalidInvitationTokenError();
   if (row.status !== "pending") throw new NotAPendingUserError();

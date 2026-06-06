@@ -30,7 +30,8 @@ type CompanyRow = {
 function composeAddress(row: CompanyRow): string | null {
   const parts = [row.addressStreet, row.addressPostalCode, row.addressCity].filter(Boolean);
   if (parts.length > 0) {
-    const country = row.addressCountry && row.addressCountry.length === 2 ? row.addressCountry : null;
+    const country =
+      row.addressCountry && row.addressCountry.length === 2 ? row.addressCountry : null;
     return country ? `${parts.join(", ")} (${country})` : parts.join(", ");
   }
   return row.companyAddress;

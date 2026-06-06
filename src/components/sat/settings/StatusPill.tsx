@@ -39,7 +39,9 @@ export function StatusPill({ configured, lastUpdated, labels }: Props) {
       <span className="font-semibold">{configured ? labels.active : labels.inactive}</span>
       {updated && (
         <>
-          <span className="text-[color:var(--text-muted)]" aria-hidden>·</span>
+          <span className="text-[color:var(--text-muted)]" aria-hidden>
+            ·
+          </span>
           <span className="text-[color:var(--text-muted)]">
             {labels.updatedAt} {updated}
           </span>

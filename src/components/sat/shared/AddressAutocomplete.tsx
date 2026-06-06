@@ -46,14 +46,11 @@ export function AddressAutocomplete({ value, onChange, placeholder }: Props) {
         countrycodes: "es",
       });
 
-      const res = await fetch(
-        `https://nominatim.openstreetmap.org/search?${params.toString()}`,
-        {
-          headers: {
-            "User-Agent": "RIBOTFLOW/1.0 (contact@ribotflow.com)",
-          },
-        }
-      );
+      const res = await fetch(`https://nominatim.openstreetmap.org/search?${params.toString()}`, {
+        headers: {
+          "User-Agent": "RIBOTFLOW/1.0 (contact@ribotflow.com)",
+        },
+      });
 
       if (!res.ok) throw new Error("Nominatim error");
 

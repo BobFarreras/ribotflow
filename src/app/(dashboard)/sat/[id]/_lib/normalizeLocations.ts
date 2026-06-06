@@ -9,7 +9,10 @@
 import type { WorkOrderLocation } from "@/types/sat";
 
 export function normalizeLocation(
-  loc: { lat: string; lng: string; accuracy: string | null; altitude: string | null } & Record<string, unknown>
+  loc: { lat: string; lng: string; accuracy: string | null; altitude: string | null } & Record<
+    string,
+    unknown
+  >
 ): WorkOrderLocation {
   return {
     ...loc,
@@ -20,8 +23,8 @@ export function normalizeLocation(
   } as WorkOrderLocation;
 }
 
-export function normalizeLocations<T extends { lat: string; lng: string; accuracy: string | null; altitude: string | null }>(
-  locations: T[]
-): WorkOrderLocation[] {
+export function normalizeLocations<
+  T extends { lat: string; lng: string; accuracy: string | null; altitude: string | null },
+>(locations: T[]): WorkOrderLocation[] {
   return locations.map(normalizeLocation);
 }

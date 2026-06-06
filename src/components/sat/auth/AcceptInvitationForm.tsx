@@ -124,7 +124,11 @@ export function AcceptInvitationForm({ token, invitedEmail, invitedName }: Props
         disabled={isPending || !password || !confirm}
         className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-[color:var(--primary)] px-3.5 py-2 text-sm font-medium text-[color:var(--primary-foreground)] transition-opacity hover:opacity-90 disabled:opacity-50"
       >
-        {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" aria-hidden />}
+        {isPending ? (
+          <Loader2 className="h-4 w-4 animate-spin" />
+        ) : (
+          <Check className="h-4 w-4" aria-hidden />
+        )}
         {t("submit")}
       </button>
     </form>

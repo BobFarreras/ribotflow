@@ -10,7 +10,11 @@
 
 import { revalidatePath } from "next/cache";
 import { auth } from "@/lib/auth";
-import { sessionsService, CannotRevokeCurrentSessionError, SessionNotFoundError } from "@/services/sat/sessions";
+import {
+  sessionsService,
+  CannotRevokeCurrentSessionError,
+  SessionNotFoundError,
+} from "@/services/sat/sessions";
 import { sessionIdSchema } from "@/lib/validators/sat/sessionsSchema";
 import { getCurrentSessionId } from "@/lib/auth/currentSession";
 import { getTranslations } from "next-intl/server";
@@ -30,11 +34,7 @@ export async function revokeSessionAction(input: unknown) {
       return { success: false as const, error: "No active session" };
     }
     try {
-      await sessionsService.revokeSession(
-        session.user.id,
-        parsed.data.sessionId,
-        currentSessionId
-      );
+      await sessionsService.revokeSession(session.user.id, parsed.data.sessionId, currentSessionId);
     } catch (err) {
       if (err instanceof CannotRevokeCurrentSessionError) {
         const t = await getTranslations("sat.settings.profile.sessions");

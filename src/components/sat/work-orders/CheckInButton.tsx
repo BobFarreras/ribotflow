@@ -49,7 +49,9 @@ export function CheckInButton({ workOrderId, clientLocation, lastCheckIn }: Prop
       // Get battery level if available
       let batteryLevel: number | undefined;
       try {
-        const battery = await (navigator as Navigator & { getBattery?(): Promise<{ level: number }> }).getBattery?.();
+        const battery = await (
+          navigator as Navigator & { getBattery?(): Promise<{ level: number }> }
+        ).getBattery?.();
         if (battery) {
           batteryLevel = Math.round(battery.level * 100);
         }
@@ -100,9 +102,10 @@ export function CheckInButton({ workOrderId, clientLocation, lastCheckIn }: Prop
     }
   }, [workOrderId, t]);
 
-  const isWithinRange = result?.distanceToClient !== null && result?.distanceToClient !== undefined
-    ? result.distanceToClient <= MAX_DISTANCE_METERS
-    : null;
+  const isWithinRange =
+    result?.distanceToClient !== null && result?.distanceToClient !== undefined
+      ? result.distanceToClient <= MAX_DISTANCE_METERS
+      : null;
 
   return (
     <div className="space-y-3">
@@ -111,7 +114,7 @@ export function CheckInButton({ workOrderId, clientLocation, lastCheckIn }: Prop
         <div className="flex items-center gap-2 rounded-md bg-slate-50 px-3 py-2 text-xs text-slate-600">
           <Navigation className="h-3.5 w-3.5" />
           <span>
-            {t("lastCheckIn")}: {" "}
+            {t("lastCheckIn")}:{" "}
             {new Date(lastCheckIn.createdAt).toLocaleTimeString("ca-ES", {
               hour: "2-digit",
               minute: "2-digit",
@@ -152,9 +155,7 @@ export function CheckInButton({ workOrderId, clientLocation, lastCheckIn }: Prop
       {result?.success && isWithinRange !== null && (
         <div
           className={`flex items-center gap-2 rounded-md px-3 py-2 text-sm ${
-            isWithinRange
-              ? "bg-emerald-50 text-emerald-700"
-              : "bg-amber-50 text-amber-700"
+            isWithinRange ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-700"
           }`}
         >
           {isWithinRange ? (

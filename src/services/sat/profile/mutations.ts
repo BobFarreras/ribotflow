@@ -20,11 +20,7 @@ import {
 } from "@/lib/utils/storageKeys";
 import type { ChangePasswordInput, UpdateNameInput } from "./types";
 import { getPasswordHash } from "./queries";
-import {
-  IncorrectPasswordError,
-  UserNotFoundError,
-} from "@/lib/errors/profile";
-
+import { IncorrectPasswordError, UserNotFoundError } from "@/lib/errors/profile";
 
 /* ----------------------------------------------------------------
    Name
@@ -73,9 +69,7 @@ const MAX_AVATAR_BYTES = 2 * 1024 * 1024;
 const ALLOWED_MIME = new Set(["image/png", "image/jpeg", "image/webp", "image/svg+xml"]);
 
 function safeExt(fileName: string, mimeType: string): string {
-  const fromName = fileName.includes(".")
-    ? fileName.slice(fileName.lastIndexOf(".") + 1)
-    : "";
+  const fromName = fileName.includes(".") ? fileName.slice(fileName.lastIndexOf(".") + 1) : "";
   const cleaned = fromName.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
   if (cleaned) return cleaned;
   const fromMime = mimeType.split("/")[1] ?? "png";
@@ -94,7 +88,9 @@ async function findPreviousAvatarKey(
 ): Promise<string | null> {
   if (typeof (storage as { listObjects?: unknown }).listObjects === "function") {
     const prefix = getUserAvatarPrefix(ctx, userId);
-    const keys = await (storage as unknown as { listObjects: (p: string) => Promise<string[]> }).listObjects(prefix);
+    const keys = await (
+      storage as unknown as { listObjects: (p: string) => Promise<string[]> }
+    ).listObjects(prefix);
     if (keys.length === 0) return null;
     keys.sort();
     return keys[keys.length - 1];
@@ -194,4 +190,3 @@ export async function getCompanySlug(companyId: string): Promise<string | null> 
     .limit(1);
   return rows[0]?.tenantSlug ?? null;
 }
-

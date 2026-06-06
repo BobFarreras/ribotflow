@@ -29,9 +29,7 @@ export const locationService = {
     const order = await db
       .select({ id: workOrders.id })
       .from(workOrders)
-      .where(
-        and(eq(workOrders.id, workOrderId), eq(workOrders.companyId, companyId))
-      )
+      .where(and(eq(workOrders.id, workOrderId), eq(workOrders.companyId, companyId)))
       .limit(1);
 
     if (order.length === 0) {
@@ -50,12 +48,7 @@ export const locationService = {
     const order = await db
       .select({ id: workOrders.id, clientId: workOrders.clientId })
       .from(workOrders)
-      .where(
-        and(
-          eq(workOrders.id, input.workOrderId),
-          eq(workOrders.companyId, companyId)
-        )
-      )
+      .where(and(eq(workOrders.id, input.workOrderId), eq(workOrders.companyId, companyId)))
       .limit(1);
 
     if (order.length === 0) {
@@ -85,9 +78,7 @@ export const locationService = {
     const order = await db
       .select({ id: workOrders.id })
       .from(workOrders)
-      .where(
-        and(eq(workOrders.id, workOrderId), eq(workOrders.companyId, companyId))
-      )
+      .where(and(eq(workOrders.id, workOrderId), eq(workOrders.companyId, companyId)))
       .limit(1);
 
     if (order.length === 0) {

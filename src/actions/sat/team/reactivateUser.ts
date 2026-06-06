@@ -30,10 +30,7 @@ export async function reactivateUserAction(input: unknown) {
       return { success: false, error: "Invalid input" };
     }
 
-    const updated = await teamService.reactivateUser(
-      session.user.companyId,
-      parsed.data.userId
-    );
+    const updated = await teamService.reactivateUser(session.user.companyId, parsed.data.userId);
     revalidatePath("/settings/team");
     return { success: true, data: updated };
   } catch (err) {

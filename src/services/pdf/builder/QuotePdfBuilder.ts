@@ -35,13 +35,27 @@ export interface QuotePdfData {
 }
 
 export async function buildQuotePdf(builder: PdfBuilder, data: QuotePdfData) {
-  await drawCompanyHeader(builder, data.quoteNumber, data.company.name, data.company.taxId, data.company.logoUrl);
+  await drawCompanyHeader(
+    builder,
+    data.quoteNumber,
+    data.company.name,
+    data.company.taxId,
+    data.company.logoUrl
+  );
   drawInfoSection(builder, data.company, data.client, data.validUntil);
 
   if (data.description) drawDescriptionBlock(builder, data.description);
   if (data.items.length > 0) drawItemsTable(builder, data.items);
 
-  drawTotalsBox(builder, data.subtotal, data.discountPercent, data.discountAmount, data.taxRate, data.taxAmount, data.total);
+  drawTotalsBox(
+    builder,
+    data.subtotal,
+    data.discountPercent,
+    data.discountAmount,
+    data.taxRate,
+    data.taxAmount,
+    data.total
+  );
   if (data.conditions) drawConditionsBox(builder, data.conditions);
 
   await drawSignatureBlock(builder, {

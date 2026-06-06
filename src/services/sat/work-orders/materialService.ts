@@ -15,9 +15,7 @@ export const materialService = {
     const order = await db
       .select({ id: workOrders.id })
       .from(workOrders)
-      .where(
-        and(eq(workOrders.id, workOrderId), eq(workOrders.companyId, companyId))
-      )
+      .where(and(eq(workOrders.id, workOrderId), eq(workOrders.companyId, companyId)))
       .limit(1);
 
     if (order.length === 0) {
@@ -36,12 +34,7 @@ export const materialService = {
     const order = await db
       .select({ id: workOrders.id })
       .from(workOrders)
-      .where(
-        and(
-          eq(workOrders.id, input.workOrderId),
-          eq(workOrders.companyId, companyId)
-        )
-      )
+      .where(and(eq(workOrders.id, input.workOrderId), eq(workOrders.companyId, companyId)))
       .limit(1);
 
     if (order.length === 0) {
@@ -91,24 +84,14 @@ export const materialService = {
         workOrderId: workOrderMaterials.workOrderId,
       })
       .from(workOrderMaterials)
-      .innerJoin(
-        workOrders,
-        eq(workOrderMaterials.workOrderId, workOrders.id)
-      )
-      .where(
-        and(
-          eq(workOrderMaterials.id, materialId),
-          eq(workOrders.companyId, companyId)
-        )
-      )
+      .innerJoin(workOrders, eq(workOrderMaterials.workOrderId, workOrders.id))
+      .where(and(eq(workOrderMaterials.id, materialId), eq(workOrders.companyId, companyId)))
       .limit(1);
 
     if (material.length === 0) {
       throw new Error("Material not found or access denied");
     }
 
-    await db
-      .delete(workOrderMaterials)
-      .where(eq(workOrderMaterials.id, materialId));
+    await db.delete(workOrderMaterials).where(eq(workOrderMaterials.id, materialId));
   },
 };

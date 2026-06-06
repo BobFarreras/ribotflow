@@ -17,7 +17,10 @@ interface UseWorkOrderFormOptions {
   categories: CategoryOption[];
 }
 
-export function useWorkOrderForm({ clients, categories }: UseWorkOrderFormOptions): WorkOrderFormResult {
+export function useWorkOrderForm({
+  clients,
+  categories,
+}: UseWorkOrderFormOptions): WorkOrderFormResult {
   const [clientId, setClientId] = useState("");
   const [categoryId, setCategoryId] = useState(categories[0]?.id ?? "");
   const [title, setTitle] = useState("");
@@ -30,10 +33,7 @@ export function useWorkOrderForm({ clients, categories }: UseWorkOrderFormOption
   const [location, setLocation] = useState<WorkOrderLocation | null>(null);
   const [useClientAddress, setUseClientAddress] = useState(true);
 
-  const selectedClient = useMemo(
-    () => clients.find((c) => c.id === clientId),
-    [clients, clientId]
-  );
+  const selectedClient = useMemo(() => clients.find((c) => c.id === clientId), [clients, clientId]);
 
   const handleClientChange = (id: string) => {
     setClientId(id);

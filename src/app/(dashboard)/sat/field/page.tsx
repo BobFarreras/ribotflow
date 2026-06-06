@@ -81,11 +81,7 @@ export default async function FieldPage() {
         <ul className="space-y-3">
           {sorted.map(({ workOrder, client, category }) => (
             <li key={workOrder.id}>
-              <FieldWorkOrderCard
-                workOrder={workOrder}
-                client={client}
-                category={category}
-              />
+              <FieldWorkOrderCard workOrder={workOrder} client={client} category={category} />
             </li>
           ))}
         </ul>

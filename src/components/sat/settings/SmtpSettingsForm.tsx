@@ -73,7 +73,23 @@ export function SmtpSettingsForm({ initialConfig, userRole }: Props) {
   const canTest = isOwner || userRole === "ADMIN";
 
   const {
-    state: { host, port, user, password, secure, acceptSelfSigned, fromName, fromEmail, isSaving, isTesting, isDeleting, testResult, saveStatus, saveError, hasConfig },
+    state: {
+      host,
+      port,
+      user,
+      password,
+      secure,
+      acceptSelfSigned,
+      fromName,
+      fromEmail,
+      isSaving,
+      isTesting,
+      isDeleting,
+      testResult,
+      saveStatus,
+      saveError,
+      hasConfig,
+    },
     setters: { setAcceptSelfSigned },
     actions: { save, test, remove },
     applyConnectionPatch,
@@ -127,7 +143,11 @@ export function SmtpSettingsForm({ initialConfig, userRole }: Props) {
         <div className="flex flex-wrap items-center gap-3 border-t border-[color:var(--border)] pt-4">
           {canEdit && (
             <button type="submit" disabled={isSaving} className="btn btn-primary">
-              {isSaving ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <Save className="h-4 w-4" aria-hidden />}
+              {isSaving ? (
+                <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+              ) : (
+                <Save className="h-4 w-4" aria-hidden />
+              )}
               {isSaving ? t("actions.saving") : t("actions.save")}
             </button>
           )}
@@ -139,7 +159,11 @@ export function SmtpSettingsForm({ initialConfig, userRole }: Props) {
               disabled={isTesting || !hasConfig}
               className="btn btn-secondary"
             >
-              {isTesting ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <Plug className="h-4 w-4" aria-hidden />}
+              {isTesting ? (
+                <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+              ) : (
+                <Plug className="h-4 w-4" aria-hidden />
+              )}
               {isTesting ? t("actions.testing") : t("actions.test")}
             </button>
           )}

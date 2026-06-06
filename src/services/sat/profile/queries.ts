@@ -15,10 +15,7 @@ import type { ProfileDto } from "./types";
  * Returns the profile view for the given user inside the given company.
  * Returns null if the user is not in that company (or has been deleted).
  */
-export async function getProfile(
-  companyId: string,
-  userId: string
-): Promise<ProfileDto | null> {
+export async function getProfile(companyId: string, userId: string): Promise<ProfileDto | null> {
   const rows = await db
     .select({
       id: users.id,
@@ -50,10 +47,7 @@ export async function getProfile(
 }
 
 /** Returns only the password hash for a user, or null if not found. */
-export async function getPasswordHash(
-  companyId: string,
-  userId: string
-): Promise<string | null> {
+export async function getPasswordHash(companyId: string, userId: string): Promise<string | null> {
   const rows = await db
     .select({ passwordHash: users.passwordHash })
     .from(users)

@@ -45,13 +45,15 @@ export function useSmtpSettingsForm(initialConfig: SmtpConfigDTO | null) {
   const [saveError, setSaveError] = useState<string | null>(null);
   const [hasConfig, setHasConfig] = useState(!!initialConfig);
 
-  function applyConnectionPatch(patch: Partial<{
-    host: string;
-    port: number;
-    user: string;
-    password: string;
-    secure: boolean;
-  }>) {
+  function applyConnectionPatch(
+    patch: Partial<{
+      host: string;
+      port: number;
+      user: string;
+      password: string;
+      secure: boolean;
+    }>
+  ) {
     if (patch.host !== undefined) setHost(patch.host);
     if (patch.port !== undefined) setPort(patch.port);
     if (patch.user !== undefined) setUser(patch.user);
@@ -144,11 +146,32 @@ export function useSmtpSettingsForm(initialConfig: SmtpConfigDTO | null) {
 
   return {
     state: {
-      host, port, user, password, secure, acceptSelfSigned, fromName, fromEmail,
-      isSaving, isTesting, isDeleting, testResult,
-      saveStatus, saveError, hasConfig,
+      host,
+      port,
+      user,
+      password,
+      secure,
+      acceptSelfSigned,
+      fromName,
+      fromEmail,
+      isSaving,
+      isTesting,
+      isDeleting,
+      testResult,
+      saveStatus,
+      saveError,
+      hasConfig,
     },
-    setters: { setHost, setPort, setUser, setPassword, setSecure, setAcceptSelfSigned, setFromName, setFromEmail },
+    setters: {
+      setHost,
+      setPort,
+      setUser,
+      setPassword,
+      setSecure,
+      setAcceptSelfSigned,
+      setFromName,
+      setFromEmail,
+    },
     actions: { save, test, remove },
     applyConnectionPatch,
     applySenderPatch,

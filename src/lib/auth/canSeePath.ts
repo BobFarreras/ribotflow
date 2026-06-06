@@ -29,30 +29,30 @@ interface PathRule {
 const PATH_RULES: readonly PathRule[] = [
   // --- Settings (admin-area) -----------------------------------------
   { pattern: /^\/settings\/company(\/|$)/, permission: "company:read" },
-  { pattern: /^\/settings\/email(\/|$)/,   permission: "email:read" },
-  { pattern: /^\/settings\/team(\/|$)/,    permission: "team:read" },
+  { pattern: /^\/settings\/email(\/|$)/, permission: "email:read" },
+  { pattern: /^\/settings\/team(\/|$)/, permission: "team:read" },
   { pattern: /^\/settings\/profile(\/|$)/, permission: "profile:read:self" },
   { pattern: /^\/settings\/billing(\/|$)/, permission: "billing:read" },
-  { pattern: /^\/settings(\/|$)/,          permission: "company:read" },
+  { pattern: /^\/settings(\/|$)/, permission: "company:read" },
 
   // --- SAT module ----------------------------------------------------
-  { pattern: /^\/sat\/quotes(\/|$)/,       permission: "quote:read" },
-  { pattern: /^\/sat\/clients(\/|$)/,      permission: "client:read" },
-  { pattern: /^\/sat\/categories(\/|$)/,   permission: "material:read" },
-  { pattern: /^\/sat\/routes(\/|$)/,       permission: "route:read" },
-  { pattern: /^\/sat\/map(\/|$)/,          permission: "route:read" },
-  { pattern: /^\/sat\/field(\/|$)/,        permission: "workorder:read:own" },
-  { pattern: /^\/sat\/work-orders(\/|$)/,  permission: "workorder:read:own" },
-  { pattern: /^\/sat(\/|$)/,               permission: "workorder:read:own" },
+  { pattern: /^\/sat\/quotes(\/|$)/, permission: "quote:read" },
+  { pattern: /^\/sat\/clients(\/|$)/, permission: "client:read" },
+  { pattern: /^\/sat\/categories(\/|$)/, permission: "material:read" },
+  { pattern: /^\/sat\/routes(\/|$)/, permission: "route:read" },
+  { pattern: /^\/sat\/map(\/|$)/, permission: "route:read" },
+  { pattern: /^\/sat\/field(\/|$)/, permission: "workorder:read:own" },
+  { pattern: /^\/sat\/work-orders(\/|$)/, permission: "workorder:read:own" },
+  { pattern: /^\/sat(\/|$)/, permission: "workorder:read:own" },
 
   // --- ERP / Billing / CRM / Access ----------------------------------
-  { pattern: /^\/erp(\/|$)/,               permission: "material:read" },
-  { pattern: /^\/billing(\/|$)/,           permission: "invoice:read" },
-  { pattern: /^\/crm(\/|$)/,               permission: "client:read" },
-  { pattern: /^\/access(\/|$)/,            permission: "workorder:read:own" },
+  { pattern: /^\/erp(\/|$)/, permission: "material:read" },
+  { pattern: /^\/billing(\/|$)/, permission: "invoice:read" },
+  { pattern: /^\/crm(\/|$)/, permission: "client:read" },
+  { pattern: /^\/access(\/|$)/, permission: "workorder:read:own" },
 
   // --- Dashboard (everyone authenticated) ----------------------------
-  { pattern: /^\/dashboard(\/|$)/,         permission: "profile:read:self" },
+  { pattern: /^\/dashboard(\/|$)/, permission: "profile:read:self" },
 ];
 
 /**

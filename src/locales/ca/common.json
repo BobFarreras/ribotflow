@@ -8,19 +8,19 @@
       "dashboard": {
         "label": "Inici"
       },
-  "sat": {
-    "label": "SAT",
-    "subItems": {
-      "workOrders": "Ordres de Treball",
-      "field": "Camp",
-      "quotes": "Pressupostos",
-      "quoteTemplates": "Plantilles",
-      "map": "Mapa",
-      "routes": "Rutes",
-      "clients": "Clients",
-      "categories": "Categories"
-    }
-  },
+      "sat": {
+        "label": "SAT",
+        "subItems": {
+          "workOrders": "Ordres de Treball",
+          "field": "Camp",
+          "quotes": "Pressupostos",
+          "quoteTemplates": "Plantilles",
+          "map": "Mapa",
+          "routes": "Rutes",
+          "clients": "Clients",
+          "categories": "Categories"
+        }
+      },
       "erp": {
         "label": "ERP",
         "subItems": {

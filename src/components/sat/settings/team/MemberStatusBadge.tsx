@@ -48,7 +48,9 @@ export function MemberStatusBadge({ status, invitedAt, labels }: Props) {
     <span className="inline-flex items-center gap-1.5 rounded-full border border-[color:var(--warning)]/40 bg-[color:var(--warning)]/10 px-2.5 py-1 text-xs font-medium text-[color:var(--warning)]">
       <Clock className="h-3 w-3" aria-hidden />
       {labels.pending}
-      <span className="text-[color:var(--text-muted)]" aria-hidden>·</span>
+      <span className="text-[color:var(--text-muted)]" aria-hidden>
+        ·
+      </span>
       <span className="text-[color:var(--text-muted)]">
         {days <= 0 ? labels.invitedDaysAgo(0) : labels.invitedDaysAgo(days)}
       </span>

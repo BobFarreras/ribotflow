@@ -38,13 +38,10 @@ export class MinioStorage implements FileStorage {
   }
 
   async upload(input: UploadFileInput): Promise<UploadFileOutput> {
-    await this.client.putObject(
-      this.bucket,
-      input.storageKey,
-      input.buffer,
-      input.buffer.length,
-      { "Content-Type": input.mimeType, ...input.metadata }
-    );
+    await this.client.putObject(this.bucket, input.storageKey, input.buffer, input.buffer.length, {
+      "Content-Type": input.mimeType,
+      ...input.metadata,
+    });
 
     return {
       storageKey: input.storageKey,

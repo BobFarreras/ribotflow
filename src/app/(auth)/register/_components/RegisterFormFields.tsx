@@ -40,16 +40,56 @@ export function RegisterFormFields({
 }: RegisterFormFieldsProps) {
   return (
     <div className="space-y-4">
-      <FormField id="companyName" name="companyName" label="Nombre de la empresa" icon={Building}
-        placeholder="Mi Empresa S.L." value={companyName} onChange={onCompanyNameChange} disabled={disabled} />
-      <FormField id="name" name="name" label="Nombre completo" icon={User}
-        placeholder="Juan García" value={name} onChange={onNameChange} disabled={disabled} />
-      <FormField id="email" name="email" type="email" label="Correo electrónico" icon={Mail}
-        placeholder="tu@empresa.com" value={email} onChange={onEmailChange} disabled={disabled} autoComplete="email" />
-      <PasswordField id="password" name="password" label="Contraseña" placeholder="Mínimo 8 caracteres"
-        value={password} onChange={onPasswordChange} disabled={disabled} />
-      <PasswordField id="confirmPassword" name="confirmPassword" label="Repetir contraseña"
-        placeholder="Repete tu contraseña" value={confirmPassword} onChange={onConfirmPasswordChange} disabled={disabled} />
+      <FormField
+        id="companyName"
+        name="companyName"
+        label="Nombre de la empresa"
+        icon={Building}
+        placeholder="Mi Empresa S.L."
+        value={companyName}
+        onChange={onCompanyNameChange}
+        disabled={disabled}
+      />
+      <FormField
+        id="name"
+        name="name"
+        label="Nombre completo"
+        icon={User}
+        placeholder="Juan García"
+        value={name}
+        onChange={onNameChange}
+        disabled={disabled}
+      />
+      <FormField
+        id="email"
+        name="email"
+        type="email"
+        label="Correo electrónico"
+        icon={Mail}
+        placeholder="tu@empresa.com"
+        value={email}
+        onChange={onEmailChange}
+        disabled={disabled}
+        autoComplete="email"
+      />
+      <PasswordField
+        id="password"
+        name="password"
+        label="Contraseña"
+        placeholder="Mínimo 8 caracteres"
+        value={password}
+        onChange={onPasswordChange}
+        disabled={disabled}
+      />
+      <PasswordField
+        id="confirmPassword"
+        name="confirmPassword"
+        label="Repetir contraseña"
+        placeholder="Repete tu contraseña"
+        value={confirmPassword}
+        onChange={onConfirmPasswordChange}
+        disabled={disabled}
+      />
     </div>
   );
 }

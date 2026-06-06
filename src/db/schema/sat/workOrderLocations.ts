@@ -4,7 +4,16 @@
  * Description: Work order location tracking and geolocation events.
  */
 
-import { pgTable, uuid, text, timestamp, index, integer, numeric, jsonb } from "drizzle-orm/pg-core";
+import {
+  pgTable,
+  uuid,
+  text,
+  timestamp,
+  index,
+  integer,
+  numeric,
+  jsonb,
+} from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { workOrders } from "./workOrders";
 

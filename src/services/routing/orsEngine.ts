@@ -84,10 +84,7 @@ export class OpenRouteServiceEngine implements DistanceEngine {
     }
 
     const body = JSON.stringify({
-      locations: [
-        [origin.lng, origin.lat],
-        ...destinations.map((d) => [d.lng, d.lat]),
-      ],
+      locations: [[origin.lng, origin.lat], ...destinations.map((d) => [d.lng, d.lat])],
     });
 
     const res = await fetch(url, { method: "POST", headers, body });

@@ -4,7 +4,17 @@
  * Description: Quote templates configurable per company.
  */
 
-import { pgTable, uuid, text, timestamp, index, integer, boolean, numeric, jsonb } from "drizzle-orm/pg-core";
+import {
+  pgTable,
+  uuid,
+  text,
+  timestamp,
+  index,
+  integer,
+  boolean,
+  numeric,
+  jsonb,
+} from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { companies } from "../auth";
 import { workOrderCategories } from "./workOrderCategories";
@@ -18,8 +28,9 @@ export const quoteTemplates = pgTable(
       .notNull(),
     name: text("name").notNull(),
     description: text("description"),
-    categoryId: uuid("category_id")
-      .references(() => workOrderCategories.id, { onDelete: "set null" }),
+    categoryId: uuid("category_id").references(() => workOrderCategories.id, {
+      onDelete: "set null",
+    }),
     defaultItems: jsonb("default_items").$type<
       Array<{
         description: string;

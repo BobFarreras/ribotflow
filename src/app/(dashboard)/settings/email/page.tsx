@@ -20,7 +20,7 @@ export default async function EmailSettingsPage() {
 
   const t = await getTranslations("sat.settings.email");
   const result = await getSmtpConfigAction();
-  const initialConfig = result.success ? result.data ?? null : null;
+  const initialConfig = result.success ? (result.data ?? null) : null;
 
   return (
     <div className="container mx-auto max-w-3xl px-4 py-8">
@@ -34,10 +34,7 @@ export default async function EmailSettingsPage() {
         </div>
       </div>
 
-      <SmtpSettingsForm
-        initialConfig={initialConfig}
-        userRole={session.user.role}
-      />
+      <SmtpSettingsForm initialConfig={initialConfig} userRole={session.user.role} />
     </div>
   );
 }

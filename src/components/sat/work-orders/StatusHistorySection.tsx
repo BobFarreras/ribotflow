@@ -42,18 +42,19 @@ export function StatusHistorySection({ history }: Props) {
                 )}
               </span>
               <span className="text-xs text-[var(--text-muted)]">
-                {new Date(h.createdAt).toLocaleString("ca-ES", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}
+                {new Date(h.createdAt).toLocaleString("ca-ES", {
+                  day: "2-digit",
+                  month: "short",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
               </span>
             </div>
-            {h.reason && (
-              <p className="text-xs text-[var(--text-muted)]">{h.reason}</p>
-            )}
+            {h.reason && <p className="text-xs text-[var(--text-muted)]">{h.reason}</p>}
           </div>
         </div>
       ))}
-      {history.length === 0 && (
-        <p className="text-sm text-[var(--text-muted)]">Sense historial</p>
-      )}
+      {history.length === 0 && <p className="text-sm text-[var(--text-muted)]">Sense historial</p>}
     </div>
   );
 }

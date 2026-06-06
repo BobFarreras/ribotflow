@@ -12,10 +12,7 @@
 
 import { teamService } from "@/services/sat/team";
 import { acceptInvitationSchema } from "@/lib/validators/sat/invitationSchema";
-import {
-  InvalidInvitationTokenError,
-  NotAPendingUserError,
-} from "@/lib/errors/team";
+import { InvalidInvitationTokenError, NotAPendingUserError } from "@/lib/errors/team";
 import { PasswordTooShortError } from "@/lib/errors/profile";
 
 export async function acceptInvitationAction(input: unknown) {

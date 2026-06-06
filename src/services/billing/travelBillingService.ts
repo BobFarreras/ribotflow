@@ -18,7 +18,10 @@ export interface TravelCostResult {
 }
 
 export const travelBillingService = {
-  async calculateTravelCost(companyId: string, workOrderId: string): Promise<TravelCostResult | null> {
+  async calculateTravelCost(
+    companyId: string,
+    workOrderId: string
+  ): Promise<TravelCostResult | null> {
     const [order] = await db
       .select({
         distance: workOrders.travelDistanceKm,
@@ -62,7 +65,7 @@ export const travelBillingService = {
       .where(
         and(
           eq(workOrders.companyId, companyId),
-          eq(workOrders.status, "completed"),
+          eq(workOrders.status, "completed")
           // Note: Drizzle doesn't have direct date range helpers without raw SQL
           // For now we fetch all completed and filter in memory
         )

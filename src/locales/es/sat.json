@@ -303,7 +303,7 @@
         "lastUpdated": "Actualizado el {date}",
         "fromFallback": "Si no hay nada configurado aquí, usamos el servidor por defecto del sistema."
       },
-"feedback": {
+      "feedback": {
         "saved": "Configuración guardada correctamente",
         "saving": "Guardando...",
         "saveError": "No se ha podido guardar la configuración",

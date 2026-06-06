@@ -47,7 +47,12 @@ export function optimizeRoute(stops: RouteStop[], hq: GeoPoint): OptimizedRoute 
     let nearestDist = Infinity;
 
     for (let i = 0; i < unvisited.length; i++) {
-      const dist = calculateDistance(current.lat, current.lng, unvisited[i].location.lat, unvisited[i].location.lng);
+      const dist = calculateDistance(
+        current.lat,
+        current.lng,
+        unvisited[i].location.lat,
+        unvisited[i].location.lng
+      );
       if (dist < nearestDist) {
         nearestDist = dist;
         nearestIdx = i;
@@ -62,7 +67,7 @@ export function optimizeRoute(stops: RouteStop[], hq: GeoPoint): OptimizedRoute 
   }
 
   const totalDistanceKm = Math.round((totalDistanceMeters / 1000) * 10) / 10;
-  const estimatedTravelMinutes = Math.round((totalDistanceMeters / 1000) / 50 * 60);
+  const estimatedTravelMinutes = Math.round((totalDistanceMeters / 1000 / 50) * 60);
   const totalDurationMinutes = totalWorkMinutes + estimatedTravelMinutes;
 
   return {

@@ -16,7 +16,13 @@ interface Props {
   onPageSizeChange: (size: number) => void;
 }
 
-export function Pagination({ currentPage, totalItems, pageSize, onPageChange, onPageSizeChange }: Props) {
+export function Pagination({
+  currentPage,
+  totalItems,
+  pageSize,
+  onPageChange,
+  onPageSizeChange,
+}: Props) {
   const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
   const start = (currentPage - 1) * pageSize + 1;
   const end = Math.min(currentPage * pageSize, totalItems);

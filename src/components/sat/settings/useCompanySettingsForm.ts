@@ -80,8 +80,14 @@ export function useCompanySettingsForm(initial: CompanySettingsDTO) {
 
   const applyIdentityPatch = useCallback((p: Partial<V>) => setValues((v) => ({ ...v, ...p })), []);
   const applyAddressPatch = useCallback((p: Partial<V>) => setValues((v) => ({ ...v, ...p })), []);
-  const applyPreferencesPatch = useCallback((p: Partial<V>) => setValues((v) => ({ ...v, ...p })), []);
-  const applyDocumentsPatch = useCallback((p: Partial<V>) => setValues((v) => ({ ...v, ...p })), []);
+  const applyPreferencesPatch = useCallback(
+    (p: Partial<V>) => setValues((v) => ({ ...v, ...p })),
+    []
+  );
+  const applyDocumentsPatch = useCallback(
+    (p: Partial<V>) => setValues((v) => ({ ...v, ...p })),
+    []
+  );
   const applyBrandingPatch = useCallback((p: Partial<V>) => setValues((v) => ({ ...v, ...p })), []);
 
   const reset = useCallback(() => {
@@ -125,8 +131,18 @@ export function useCompanySettingsForm(initial: CompanySettingsDTO) {
   }
 
   return {
-    values, isDirty, dirtyCount, isSaving, saveError, justSaved,
-    applyIdentityPatch, applyAddressPatch, applyPreferencesPatch,
-    applyDocumentsPatch, applyBrandingPatch, save, reset,
+    values,
+    isDirty,
+    dirtyCount,
+    isSaving,
+    saveError,
+    justSaved,
+    applyIdentityPatch,
+    applyAddressPatch,
+    applyPreferencesPatch,
+    applyDocumentsPatch,
+    applyBrandingPatch,
+    save,
+    reset,
   };
 }

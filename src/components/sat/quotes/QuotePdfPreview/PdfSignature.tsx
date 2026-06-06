@@ -6,9 +6,24 @@
 
 export function PdfSignature() {
   return (
-    <div style={{ display: "flex", alignItems: "flex-end", marginTop: "40px", pageBreakInside: "avoid" }}>
+    <div
+      style={{
+        display: "flex",
+        alignItems: "flex-end",
+        marginTop: "40px",
+        pageBreakInside: "avoid",
+      }}
+    >
       <div style={{ flex: "0 0 50%" }}>
-        <div style={{ fontSize: "10pt", fontWeight: "bold", color: "#1e293b", marginBottom: "5px", textTransform: "uppercase" }}>
+        <div
+          style={{
+            fontSize: "10pt",
+            fontWeight: "bold",
+            color: "#1e293b",
+            marginBottom: "5px",
+            textTransform: "uppercase",
+          }}
+        >
           Acceptació del Pressupost
         </div>
         <div style={{ fontSize: "8.5pt", color: "#64748b", marginBottom: "45px" }}>

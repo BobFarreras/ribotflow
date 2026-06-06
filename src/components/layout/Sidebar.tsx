@@ -17,12 +17,7 @@ import SidebarFooter from "./SidebarFooter";
 function MobileOverlay() {
   const { isMobileOpen, closeMobile } = useSidebar();
   if (!isMobileOpen) return null;
-  return (
-      <div
-      onClick={closeMobile}
-      className="fixed inset-0 z-40 bg-black/40 lg:hidden"
-    />
-  );
+  return <div onClick={closeMobile} className="fixed inset-0 z-40 bg-black/40 lg:hidden" />;
 }
 
 function MobileToggleButton() {
@@ -68,7 +63,9 @@ function SidebarHeader() {
   );
 }
 
-export default function Sidebar({ userRole }: { userRole?: import("@/lib/auth/roles").Role | null } = {}) {
+export default function Sidebar({
+  userRole,
+}: { userRole?: import("@/lib/auth/roles").Role | null } = {}) {
   const { isCollapsed, isMobileOpen } = useSidebar();
 
   return (
@@ -76,12 +73,10 @@ export default function Sidebar({ userRole }: { userRole?: import("@/lib/auth/ro
       <MobileOverlay />
       <MobileToggleButton />
 
-        <aside
+      <aside
         className={`fixed left-0 top-0 z-50 flex h-[100dvh] flex-col border-r border-[var(--border)] bg-[var(--surface)] shadow-lg ${
           isCollapsed ? "w-[72px]" : "w-[260px]"
-        } ${
-          isMobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
-        }`}
+        } ${isMobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}
       >
         <SidebarHeader />
         <SidebarNav userRole={userRole} />

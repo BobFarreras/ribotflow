@@ -77,7 +77,9 @@ function readSmtpConfig(): { config: SmtpConfig | null; missing: string[] } {
   const envReject = process.env.SMTP_TLS_REJECT_UNAUTHORIZED;
   const nodeReject = process.env.NODE_TLS_REJECT_UNAUTHORIZED;
   const rejectUnauthorized =
-    envReject !== undefined ? envReject !== "false" : !(nodeReject === "0" || nodeReject === "false");
+    envReject !== undefined
+      ? envReject !== "false"
+      : !(nodeReject === "0" || nodeReject === "false");
   const requireTLS = process.env.SMTP_REQUIRE_TLS !== "false";
 
   if (!host || !user || !pass) {

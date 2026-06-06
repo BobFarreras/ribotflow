@@ -31,11 +31,14 @@ export function useKanbanPan<T extends HTMLElement>() {
     };
   };
 
-  const onMouseMove = useCallback((e: React.MouseEvent) => {
-    if (!isPanning || !ref.current) return;
-    const dx = e.clientX - panStart.current.x;
-    ref.current.scrollLeft = panStart.current.scrollLeft - dx;
-  }, [isPanning]);
+  const onMouseMove = useCallback(
+    (e: React.MouseEvent) => {
+      if (!isPanning || !ref.current) return;
+      const dx = e.clientX - panStart.current.x;
+      ref.current.scrollLeft = panStart.current.scrollLeft - dx;
+    },
+    [isPanning]
+  );
 
   const onMouseUp = useCallback(() => {
     setIsPanning(false);

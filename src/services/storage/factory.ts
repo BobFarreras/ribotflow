@@ -60,7 +60,15 @@ export function createFileStorage(): FileStorage {
       const port = process.env.MINIO_PORT ? parseInt(process.env.MINIO_PORT, 10) : undefined;
       const publicUrlBase = process.env.MINIO_PUBLIC_URL_BASE || undefined;
 
-      return new MinioStorage({ endPoint, port, useSSL, accessKey, secretKey, bucket, publicUrlBase });
+      return new MinioStorage({
+        endPoint,
+        port,
+        useSSL,
+        accessKey,
+        secretKey,
+        bucket,
+        publicUrlBase,
+      });
     }
 
     case "supabase": {

@@ -30,7 +30,11 @@ export function CompanyBrandingSection({ state, disabled, onChange }: Props) {
   const charCount = state.legalText.length;
 
   return (
-    <SectionShell step={5} title={t("sections.branding")} description={t("sections.brandingDescription")}>
+    <SectionShell
+      step={5}
+      title={t("sections.branding")}
+      description={t("sections.brandingDescription")}
+    >
       <div className="mb-3 flex items-start gap-2.5 rounded-lg border border-[color:var(--info)]/30 bg-[color:var(--info)]/8 p-3 text-sm text-[color:var(--text)]">
         <FileText className="mt-0.5 h-4 w-4 flex-shrink-0 text-[color:var(--info)]" aria-hidden />
         <div className="space-y-1">

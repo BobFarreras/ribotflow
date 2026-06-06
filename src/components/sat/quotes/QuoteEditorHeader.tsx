@@ -56,10 +56,18 @@ export function QuoteEditorHeader({
         <ViewButton active={view === "split"} onClick={() => onViewChange("split")}>
           Dividida
         </ViewButton>
-        <ViewButton active={view === "editor"} onClick={() => onViewChange("editor")} icon={<Edit3 className="mr-1 inline h-3 w-3" />}>
+        <ViewButton
+          active={view === "editor"}
+          onClick={() => onViewChange("editor")}
+          icon={<Edit3 className="mr-1 inline h-3 w-3" />}
+        >
           Editor
         </ViewButton>
-        <ViewButton active={view === "preview"} onClick={() => onViewChange("preview")} icon={<Eye className="mr-1 inline h-3 w-3" />}>
+        <ViewButton
+          active={view === "preview"}
+          onClick={() => onViewChange("preview")}
+          icon={<Eye className="mr-1 inline h-3 w-3" />}
+        >
           Preview
         </ViewButton>
       </div>
@@ -68,9 +76,7 @@ export function QuoteEditorHeader({
       <div className="flex items-center gap-3">
         <div className="text-right">
           <div className="text-[11px] text-[var(--text-muted)]">Total</div>
-          <div className="text-lg font-bold text-[var(--module-sat)]">
-            {total.toFixed(2)} EUR
-          </div>
+          <div className="text-lg font-bold text-[var(--module-sat)]">{total.toFixed(2)} EUR</div>
         </div>
         <div className="h-6 w-px bg-[var(--border)]" />
         {mode === "edit" && existingQuote?.status === "draft" && (

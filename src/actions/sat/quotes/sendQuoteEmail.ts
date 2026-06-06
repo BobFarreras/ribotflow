@@ -39,22 +39,14 @@ export async function sendQuoteEmailAction(input: SendQuoteEmailInput) {
   }
 
   // Fetch company info
-  const [company] = await db
-    .select()
-    .from(companies)
-    .where(eq(companies.id, companyId))
-    .limit(1);
+  const [company] = await db.select().from(companies).where(eq(companies.id, companyId)).limit(1);
 
   const companyName = company?.name ?? "RIBOTFLOW";
 
   // Fetch client name if available
   let clientName = "";
   if (quote.clientId) {
-    const [client] = await db
-      .select()
-      .from(clients)
-      .where(eq(clients.id, quote.clientId))
-      .limit(1);
+    const [client] = await db.select().from(clients).where(eq(clients.id, quote.clientId)).limit(1);
     clientName = client?.name ?? "";
   }
 
@@ -72,11 +64,15 @@ export async function sendQuoteEmailAction(input: SendQuoteEmailInput) {
         <p style="margin: 4px 0;"><strong>Valid fins:</strong> ${quote.validUntil ? new Date(quote.validUntil).toLocaleDateString("ca-ES") : "Sense data límit"}</p>
       </div>
 
-      ${input.message ? `
+      ${
+        input.message
+          ? `
         <div style="margin: 16px 0;">
           <p style="white-space: pre-line;">${input.message}</p>
         </div>
-      ` : ""}
+      `
+          : ""
+      }
 
       <p style="color: #6b7280; font-size: 13px;">
         Trobareu el pressupost adjunt en format PDF. Per acceptar o rebutjar, si us plau contacteu amb nosaltres.
@@ -99,7 +95,10 @@ export async function sendQuoteEmailAction(input: SendQuoteEmailInput) {
       contentType: "application/pdf",
     };
   } catch (pdfErr) {
-    console.warn("[sendQuoteEmailAction] PDF generation failed, sending without attachment:", pdfErr);
+    console.warn(
+      "[sendQuoteEmailAction] PDF generation failed, sending without attachment:",
+      pdfErr
+    );
   }
 
   // Send email with PDF attachment

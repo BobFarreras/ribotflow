@@ -17,10 +17,26 @@ interface Props {
   customClient: { name: string; email: string; phone: string; address: string; taxId: string };
   onClientSelect: (clientId: string) => void;
   onToggleCustom: (v: boolean) => void;
-  onCustomChange: React.Dispatch<React.SetStateAction<{ name: string; email: string; phone: string; address: string; taxId: string }>>;
+  onCustomChange: React.Dispatch<
+    React.SetStateAction<{
+      name: string;
+      email: string;
+      phone: string;
+      address: string;
+      taxId: string;
+    }>
+  >;
 }
 
-function Section({ title, action, children }: { title: string; action?: React.ReactNode; children: React.ReactNode }) {
+function Section({
+  title,
+  action,
+  children,
+}: {
+  title: string;
+  action?: React.ReactNode;
+  children: React.ReactNode;
+}) {
   return (
     <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)]">
       <div className="flex items-center justify-between px-4 py-3">
@@ -62,7 +78,11 @@ export function ClientSelector({
         <div className="space-y-2 text-sm">
           <div className="flex items-center gap-2">
             {company.logoUrl ? (
-              <img src={company.logoUrl} alt={company.name} className="h-10 w-10 rounded-lg object-contain" />
+              <img
+                src={company.logoUrl}
+                alt={company.name}
+                className="h-10 w-10 rounded-lg object-contain"
+              />
             ) : (
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--module-sat)]/10 text-[var(--module-sat)] font-bold text-lg">
                 {company.name.charAt(0)}
@@ -70,7 +90,9 @@ export function ClientSelector({
             )}
             <div>
               <div className="font-semibold text-[var(--text)]">{company.name}</div>
-              {company.taxId && <div className="text-xs text-[var(--text-muted)]">NIF: {company.taxId}</div>}
+              {company.taxId && (
+                <div className="text-xs text-[var(--text-muted)]">NIF: {company.taxId}</div>
+              )}
             </div>
           </div>
           {company.address && <div className="text-[var(--text-muted)]">{company.address}</div>}
@@ -106,11 +128,31 @@ export function ClientSelector({
             </select>
           ) : (
             <div className="space-y-2">
-              <CustomInput value={customClient.name} placeholder="Nom del client" onChange={(v) => onCustomChange((p) => ({ ...p, name: v }))} />
-              <CustomInput value={customClient.email} placeholder="Email" onChange={(v) => onCustomChange((p) => ({ ...p, email: v }))} />
-              <CustomInput value={customClient.phone} placeholder="Telefon" onChange={(v) => onCustomChange((p) => ({ ...p, phone: v }))} />
-              <CustomInput value={customClient.taxId} placeholder="NIF/CIF" onChange={(v) => onCustomChange((p) => ({ ...p, taxId: v }))} />
-              <CustomInput value={customClient.address} placeholder="Adreca" onChange={(v) => onCustomChange((p) => ({ ...p, address: v }))} />
+              <CustomInput
+                value={customClient.name}
+                placeholder="Nom del client"
+                onChange={(v) => onCustomChange((p) => ({ ...p, name: v }))}
+              />
+              <CustomInput
+                value={customClient.email}
+                placeholder="Email"
+                onChange={(v) => onCustomChange((p) => ({ ...p, email: v }))}
+              />
+              <CustomInput
+                value={customClient.phone}
+                placeholder="Telefon"
+                onChange={(v) => onCustomChange((p) => ({ ...p, phone: v }))}
+              />
+              <CustomInput
+                value={customClient.taxId}
+                placeholder="NIF/CIF"
+                onChange={(v) => onCustomChange((p) => ({ ...p, taxId: v }))}
+              />
+              <CustomInput
+                value={customClient.address}
+                placeholder="Adreca"
+                onChange={(v) => onCustomChange((p) => ({ ...p, address: v }))}
+              />
             </div>
           )}
 
@@ -128,13 +170,23 @@ export function ClientSelector({
   );
 }
 
-function ToggleButton({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
+function ToggleButton({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
   return (
     <button
       type="button"
       onClick={onClick}
       className={`rounded-md px-2 py-1 text-xs font-medium transition-colors ${
-        active ? "bg-[var(--module-sat)]/10 text-[var(--module-sat)]" : "text-[var(--text-muted)] hover:bg-[var(--bg)]"
+        active
+          ? "bg-[var(--module-sat)]/10 text-[var(--module-sat)]"
+          : "text-[var(--text-muted)] hover:bg-[var(--bg)]"
       }`}
     >
       {children}
@@ -142,7 +194,15 @@ function ToggleButton({ active, onClick, children }: { active: boolean; onClick:
   );
 }
 
-function CustomInput({ value, placeholder, onChange }: { value: string; placeholder: string; onChange: (v: string) => void }) {
+function CustomInput({
+  value,
+  placeholder,
+  onChange,
+}: {
+  value: string;
+  placeholder: string;
+  onChange: (v: string) => void;
+}) {
   return (
     <input
       type="text"

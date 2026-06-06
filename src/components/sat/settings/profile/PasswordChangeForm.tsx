@@ -111,11 +111,23 @@ interface FieldProps {
   hint?: string;
 }
 
-function PasswordField({ id, label, value, onChange, shown, onToggle, autoComplete, hint }: FieldProps) {
+function PasswordField({
+  id,
+  label,
+  value,
+  onChange,
+  shown,
+  onToggle,
+  autoComplete,
+  hint,
+}: FieldProps) {
   const t = useTranslations("sat.settings.profile");
   return (
     <div>
-      <label htmlFor={`pwd-${id}`} className="mb-1.5 block text-sm font-medium text-[color:var(--text)]">
+      <label
+        htmlFor={`pwd-${id}`}
+        className="mb-1.5 block text-sm font-medium text-[color:var(--text)]"
+      >
         {label}
       </label>
       <div className="relative max-w-md">

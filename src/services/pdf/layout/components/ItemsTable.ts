@@ -17,10 +17,10 @@ export function drawItemsTable(builder: PdfBuilder, items: QuoteItemRow[]) {
   const t = LABELS[builder.lang];
   const cols: ColDef[] = [
     { width: 0.08, align: "center", label: t.ref },
-    { width: 0.50, align: "left",   label: t.itemConcept },
-    { width: 0.10, align: "center", label: t.itemUnits },
-    { width: 0.14, align: "right",  label: t.itemUnitPriceCol },
-    { width: 0.18, align: "right",  label: t.itemTotalCol },
+    { width: 0.5, align: "left", label: t.itemConcept },
+    { width: 0.1, align: "center", label: t.itemUnits },
+    { width: 0.14, align: "right", label: t.itemUnitPriceCol },
+    { width: 0.18, align: "right", label: t.itemTotalCol },
   ];
 
   const colXStart: number[] = [MARGIN];
@@ -43,14 +43,19 @@ export function drawItemsTable(builder: PdfBuilder, items: QuoteItemRow[]) {
   // Header
   const headerTop = builder.y;
   builder.page.drawRectangle({
-    x: MARGIN, y: headerTop - headerH + 6, width: CONTENT_W, height: headerH,
+    x: MARGIN,
+    y: headerTop - headerH + 6,
+    width: CONTENT_W,
+    height: headerH,
     color: COLORS.slate900,
   });
 
   for (let i = 0; i < cols.length; i++) {
     const textW = builder.measureWidth(cols[i].label, 8.5, true);
     builder.drawText(cols[i].label, cellX(i, textW), headerTop - 18, {
-      bold: true, size: 8.5, color: COLORS.white,
+      bold: true,
+      size: 8.5,
+      color: COLORS.white,
     });
   }
   builder.y = headerTop - headerH;
@@ -62,7 +67,10 @@ export function drawItemsTable(builder: PdfBuilder, items: QuoteItemRow[]) {
 
     if (idx % 2 === 1) {
       builder.page.drawRectangle({
-        x: MARGIN, y: rowTop - rowH + 4, width: CONTENT_W, height: rowH,
+        x: MARGIN,
+        y: rowTop - rowH + 4,
+        width: CONTENT_W,
+        height: rowH,
         color: COLORS.slate50,
       });
     }
@@ -81,7 +89,8 @@ export function drawItemsTable(builder: PdfBuilder, items: QuoteItemRow[]) {
       9
     );
     builder.drawText(descText, cellX(1, builder.measureWidth(descText, 9, false)), rowTop - 16, {
-      size: 9, color: COLORS.slate700,
+      size: 9,
+      color: COLORS.slate700,
     });
 
     // Units
@@ -98,7 +107,9 @@ export function drawItemsTable(builder: PdfBuilder, items: QuoteItemRow[]) {
     const totalText = `${parseFloat(item.total).toFixed(2)} EUR`;
     const totalW = builder.measureWidth(totalText, 9, true);
     builder.drawText(totalText, cellX(4, totalW), rowTop - 16, {
-      bold: true, size: 9, color: COLORS.slate900,
+      bold: true,
+      size: 9,
+      color: COLORS.slate900,
     });
 
     builder.y -= rowH;

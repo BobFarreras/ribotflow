@@ -37,7 +37,10 @@ export async function updateWorkOrderStatusAction(rawInput: unknown) {
       try {
         const orderData = await workOrderService.getByIdWithRelations(companyId, input.workOrderId);
         if (orderData) {
-          const travelCost = await travelBillingService.calculateTravelCost(companyId, input.workOrderId);
+          const travelCost = await travelBillingService.calculateTravelCost(
+            companyId,
+            input.workOrderId
+          );
 
           await notificationService.notifyCompletion(companyId, {
             workOrderNumber: orderData.workOrder.number,

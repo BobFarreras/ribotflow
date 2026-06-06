@@ -58,9 +58,7 @@ export function WorkOrderDetailQuotesCard({ workOrderId, quotes }: WorkOrderDeta
                   </span>
                   <QuoteStatusBadge status={quote.status as QuoteStatus} size="sm" />
                 </div>
-                <div className="mt-0.5 text-xs text-[var(--text)] truncate">
-                  {quote.title}
-                </div>
+                <div className="mt-0.5 text-xs text-[var(--text)] truncate">{quote.title}</div>
               </div>
               <span className="ml-2 text-sm font-semibold text-[var(--text)]">
                 {Number(quote.total).toFixed(2)} €
