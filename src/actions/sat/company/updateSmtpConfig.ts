@@ -11,6 +11,7 @@
 "use server";
 
 import { auth } from "@/lib/auth";
+import { can } from "@/lib/auth/permissions";
 import { smtpConfigService } from "@/services/sat/company/smtpConfigService";
 import { clearSmtpCache } from "@/services/notifications/notificationService";
 import { revalidatePath } from "next/cache";
@@ -32,8 +33,8 @@ export async function updateSmtpConfigAction(input: UpdateSmtpInput) {
     if (!session?.user?.companyId) {
       return { success: false, error: "Unauthorized" };
     }
-    if (session.user.role !== "OWNER") {
-      return { success: false, error: "Only OWNER can change SMTP config" };
+    if (!can(session.user.role, "email:write")) {
+      return { success: false, error: "You do not have permission to change SMTP config" };
     }
 
     if (!input.host || !input.user) {

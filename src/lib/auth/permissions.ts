@@ -57,7 +57,6 @@ export const ROLE_PERMISSIONS: Record<Role, ReadonlySet<Permission>> = {
   ADMIN: new Set<Permission>([
     "company:read",
     "email:read",
-    "email:write",
     "team:read",
     "profile:read:self",
     "profile:write:self",

@@ -9,6 +9,7 @@
 "use server";
 
 import { auth } from "@/lib/auth";
+import { can } from "@/lib/auth/permissions";
 import { companySettingsService } from "@/services/sat/company/companySettingsService";
 import { companySettingsSchema, type CompanySettingsInput } from "@/lib/validators/sat/companySchema";
 import { revalidatePath } from "next/cache";
@@ -19,8 +20,8 @@ export async function updateCompanySettingsAction(input: CompanySettingsInput) {
     if (!session?.user?.companyId) {
       return { success: false, error: "Unauthorized" };
     }
-    if (session.user.role !== "OWNER") {
-      return { success: false, error: "Only OWNER can change company settings" };
+    if (!can(session.user.role, "company:write")) {
+      return { success: false, error: "You do not have permission to change company settings" };
     }
 
     const parsed = companySettingsSchema.safeParse(input);

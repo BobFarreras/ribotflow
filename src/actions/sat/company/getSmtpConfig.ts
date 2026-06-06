@@ -9,6 +9,7 @@
 "use server";
 
 import { auth } from "@/lib/auth";
+import { can } from "@/lib/auth/permissions";
 import { smtpConfigService } from "@/services/sat/company/smtpConfigService";
 
 export async function getSmtpConfigAction() {
@@ -17,8 +18,8 @@ export async function getSmtpConfigAction() {
     if (!session?.user?.companyId) {
       return { success: false, error: "Unauthorized" };
     }
-    if (session.user.role !== "OWNER" && session.user.role !== "ADMIN") {
-      return { success: false, error: "Only OWNER/ADMIN can view SMTP config" };
+    if (!can(session.user.role, "email:read")) {
+      return { success: false, error: "You do not have permission to view SMTP config" };
     }
 
     const cfg = await smtpConfigService.getByCompany(session.user.companyId);

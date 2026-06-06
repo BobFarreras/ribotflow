@@ -11,6 +11,7 @@
 "use server";
 
 import { auth } from "@/lib/auth";
+import { can } from "@/lib/auth/permissions";
 import { db } from "@/db";
 import { companies } from "@/db/schema/auth";
 import { eq } from "drizzle-orm";
@@ -30,8 +31,8 @@ export async function uploadCompanyLogoAction(input: {
     if (!session?.user?.companyId) {
       return { success: false, error: "Unauthorized" };
     }
-    if (session.user.role !== "OWNER") {
-      return { success: false, error: "Only OWNER can change the logo" };
+    if (!can(session.user.role, "company:write")) {
+      return { success: false, error: "You do not have permission to change the logo" };
     }
 
     const meta = logoUploadMetaSchema.safeParse({
@@ -88,8 +89,8 @@ export async function removeCompanyLogoAction() {
     if (!session?.user?.companyId) {
       return { success: false, error: "Unauthorized" };
     }
-    if (session.user.role !== "OWNER") {
-      return { success: false, error: "Only OWNER can remove the logo" };
+    if (!can(session.user.role, "company:write")) {
+      return { success: false, error: "You do not have permission to remove the logo" };
     }
     await db
       .update(companies)
