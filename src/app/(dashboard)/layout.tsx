@@ -12,13 +12,15 @@ import { SidebarProvider } from "@/components/layout/SidebarContext";
 import Sidebar from "@/components/layout/Sidebar";
 import DashboardShell from "@/components/layout/DashboardShell";
 import { Toaster } from "@/components/ui/Toaster";
+import { readThemeCookie } from "@/lib/cookies/preferencesCookies";
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const session = await auth();
   const userRole = session?.user?.role ?? null;
+  const initialTheme = await readThemeCookie();
 
   return (
-    <SidebarProvider>
+    <SidebarProvider initialTheme={initialTheme}>
       <Sidebar userRole={userRole} />
       <DashboardShell>{children}</DashboardShell>
       <Toaster />

@@ -19,19 +19,28 @@ interface SidebarContextValue {
   toggleCollapse: () => void;
   toggleMobile: () => void;
   closeMobile: () => void;
+  setTheme: (next: "light" | "dark") => void;
   toggleTheme: () => void;
   toggleExpanded: (key: string) => void;
 }
 
 const SidebarContext = createContext<SidebarContextValue | null>(null);
 
-export function SidebarProvider({ children }: { children: React.ReactNode }) {
+interface SidebarProviderProps {
+  children: React.ReactNode;
+  /** Server-known theme (read from the DB/cookie on the server). */
+  initialTheme?: "light" | "dark";
+}
+
+export function SidebarProvider({ children, initialTheme = "light" }: SidebarProviderProps) {
   // SSR-safe: always start open. localStorage is read after hydration.
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [ready, setReady] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
-  const [theme, setTheme] = useState<"light" | "dark">("light");
+  // The server is the source of truth for the theme. We keep an internal
+  // copy so toggling is instant; the Server Action persists the change.
+  const [theme, setThemeState] = useState<"light" | "dark">(initialTheme);
   const [expandedKeys, setExpandedKeys] = useState<Set<string>>(new Set());
 
   // Detect mobile viewport
@@ -47,12 +56,6 @@ export function SidebarProvider({ children }: { children: React.ReactNode }) {
     const savedCollapsed = localStorage.getItem("sidebar:collapsed");
     if (savedCollapsed !== null) {
       setIsCollapsed(savedCollapsed === "true");
-    }
-
-    const savedTheme = localStorage.getItem("theme") as "light" | "dark" | null;
-    if (savedTheme) {
-      setTheme(savedTheme);
-      document.documentElement.classList.toggle("dark", savedTheme === "dark");
     }
 
     const savedExpanded = localStorage.getItem("sidebar:expanded");
@@ -84,10 +87,14 @@ export function SidebarProvider({ children }: { children: React.ReactNode }) {
     setIsMobileOpen(false);
   }, []);
 
+  const setTheme = useCallback((next: "light" | "dark") => {
+    setThemeState(next);
+    document.documentElement.classList.toggle("dark", next === "dark");
+  }, []);
+
   const toggleTheme = useCallback(() => {
-    setTheme((prev) => {
+    setThemeState((prev) => {
       const next = prev === "light" ? "dark" : "light";
-      localStorage.setItem("theme", next);
       document.documentElement.classList.toggle("dark", next === "dark");
       return next;
     });
@@ -118,6 +125,7 @@ export function SidebarProvider({ children }: { children: React.ReactNode }) {
         toggleMobile,
         closeMobile,
         theme,
+        setTheme,
         toggleTheme,
         toggleExpanded,
       }}

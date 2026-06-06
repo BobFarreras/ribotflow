@@ -496,7 +496,28 @@
         "identity": "Les teves dades",
         "identityDesc": "El teu nom apareix als pressupostos, factures i correus que envies en nom de l'empresa.",
         "security": "Contrasenya",
-        "securityDesc": "Tria una contrasenya forta. Si la canvies, hauràs d'iniciar sessió de nou a la resta de dispositius."
+        "securityDesc": "Tria una contrasenya forta. Si la canvies, hauràs d'iniciar sessió de nou a la resta de dispositius.",
+        "preferences": "Preferències d'interfície",
+        "preferencesDesc": "Tria el tema visual i l'idioma de l'aplicació. Es desen al teu compte i et segueixen a qualsevol dispositiu."
+      },
+      "preferences": {
+        "saving": "Desant…",
+        "saved": "Preferència desada",
+        "theme": {
+          "label": "Tema",
+          "help": "Defineix l'aspecte clar o fosc de tota l'aplicació.",
+          "light": "Clar",
+          "dark": "Fosc"
+        },
+        "language": {
+          "label": "Idioma",
+          "help": "Idioma de tots els textos de l'aplicació.",
+          "ca": "Català",
+          "es": "Castellano"
+        },
+        "errors": {
+          "generic": "No s'ha pogut desar la preferència"
+        }
       },
       "avatar": {
         "title": "Foto de perfil",

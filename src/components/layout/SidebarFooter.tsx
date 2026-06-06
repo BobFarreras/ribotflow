@@ -1,7 +1,9 @@
 /**
- * Creation/modification date: 25/05/2026
+ * Creation/modification date: 06/06/2026
  * Path: src/components/layout/SidebarFooter.tsx
- * Description: Footer section of the sidebar with theme toggle, language switcher, and user actions.
+ * Description: Footer section of the sidebar with theme toggle, language
+ *              switcher, and user actions. Theme and language changes
+ *              persist via Server Actions and revalidate the layout.
  */
 
 "use client";
@@ -11,6 +13,7 @@ import { useTransition } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { Moon, Sun, Languages, LogOut, PanelLeft, PanelLeftClose, User } from "lucide-react";
 import { logoutAction } from "@/actions/auth/logout";
+import { updatePreferencesAction } from "@/actions/sat/profile/updatePreferences";
 import { useSidebar } from "./SidebarContext";
 
 export default function SidebarFooter() {
@@ -20,10 +23,23 @@ export default function SidebarFooter() {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
-  const toggleLanguage = () => {
+  const switchTheme = () => {
+    const next = theme === "light" ? "dark" : "light";
+    toggleTheme();
+    startTransition(async () => {
+      await updatePreferencesAction({ theme: next });
+    });
+  };
+
+  const switchLanguage = () => {
     const next = locale === "ca" ? "es" : "ca";
-    router.push(`/${next}${window.location.pathname.replace(/^\/(ca|es)/, "")}`);
-    router.refresh();
+    startTransition(async () => {
+      await updatePreferencesAction({ locale: next });
+      // The cookie is updated server-side; revalidatePath() inside the
+      // action rebuilds the root layout, so the next paint uses the new
+      // locale without a full page navigation.
+      router.refresh();
+    });
   };
 
   const handleLogout = () => {
@@ -38,15 +54,17 @@ export default function SidebarFooter() {
     return (
       <div className="border-t border-[var(--border)] p-2 space-y-1">
         <button
-          onClick={toggleTheme}
-          className="flex w-full items-center justify-center rounded-lg p-2 text-[var(--text-muted)] transition-colors hover:bg-[var(--surface-hover)] hover:text-[var(--text)]"
+          onClick={switchTheme}
+          disabled={isPending}
+          className="flex w-full items-center justify-center rounded-lg p-2 text-[var(--text-muted)] transition-colors hover:bg-[var(--surface-hover)] hover:text-[var(--text)] disabled:opacity-50"
           title={theme === "light" ? t("actions.darkMode") : t("actions.lightMode")}
         >
           {theme === "light" ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
         </button>
         <button
-          onClick={toggleLanguage}
-          className="flex w-full items-center justify-center rounded-lg p-2 text-[var(--text-muted)] transition-colors hover:bg-[var(--surface-hover)] hover:text-[var(--text)]"
+          onClick={switchLanguage}
+          disabled={isPending}
+          className="flex w-full items-center justify-center rounded-lg p-2 text-[var(--text-muted)] transition-colors hover:bg-[var(--surface-hover)] hover:text-[var(--text)] disabled:opacity-50"
           title={t("actions.language")}
         >
           <Languages className="h-4 w-4" />
@@ -75,15 +93,17 @@ export default function SidebarFooter() {
       {/* Theme & Language */}
       <div className="flex items-center gap-1">
         <button
-          onClick={toggleTheme}
-          className="flex flex-1 items-center gap-2 rounded-lg px-3 py-2 text-xs text-[var(--text-muted)] transition-colors hover:bg-[var(--surface-hover)] hover:text-[var(--text)]"
+          onClick={switchTheme}
+          disabled={isPending}
+          className="flex flex-1 items-center gap-2 rounded-lg px-3 py-2 text-xs text-[var(--text-muted)] transition-colors hover:bg-[var(--surface-hover)] hover:text-[var(--text)] disabled:opacity-50"
         >
           {theme === "light" ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
           {theme === "light" ? t("actions.darkMode") : t("actions.lightMode")}
         </button>
         <button
-          onClick={toggleLanguage}
-          className="flex flex-1 items-center gap-2 rounded-lg px-3 py-2 text-xs text-[var(--text-muted)] transition-colors hover:bg-[var(--surface-hover)] hover:text-[var(--text)]"
+          onClick={switchLanguage}
+          disabled={isPending}
+          className="flex flex-1 items-center gap-2 rounded-lg px-3 py-2 text-xs text-[var(--text-muted)] transition-colors hover:bg-[var(--surface-hover)] hover:text-[var(--text)] disabled:opacity-50"
         >
           <Languages className="h-4 w-4" />
           {locale.toUpperCase()}

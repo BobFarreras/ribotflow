@@ -496,7 +496,28 @@
         "identity": "Tus datos",
         "identityDesc": "Tu nombre aparece en los presupuestos, facturas y correos que envías en nombre de la empresa.",
         "security": "Contraseña",
-        "securityDesc": "Elige una contraseña fuerte. Si la cambias, tendrás que iniciar sesión de nuevo en el resto de dispositivos."
+        "securityDesc": "Elige una contraseña fuerte. Si la cambias, tendrás que iniciar sesión de nuevo en el resto de dispositivos.",
+        "preferences": "Preferencias de interfaz",
+        "preferencesDesc": "Elige el tema visual y el idioma de la aplicación. Se guardan en tu cuenta y te siguen en cualquier dispositivo."
+      },
+      "preferences": {
+        "saving": "Guardando…",
+        "saved": "Preferencia guardada",
+        "theme": {
+          "label": "Tema",
+          "help": "Define el aspecto claro u oscuro de toda la aplicación.",
+          "light": "Claro",
+          "dark": "Oscuro"
+        },
+        "language": {
+          "label": "Idioma",
+          "help": "Idioma de todos los textos de la aplicación.",
+          "ca": "Català",
+          "es": "Castellano"
+        },
+        "errors": {
+          "generic": "No se ha podido guardar la preferencia"
+        }
       },
       "avatar": {
         "title": "Foto de perfil",

@@ -2,10 +2,10 @@
  * Creation/modification date: 06/06/2026
  * Path: src/app/(dashboard)/settings/profile/page.tsx
  * Description: User profile page. Lets the signed-in user manage their
- *              own avatar, display name and password. The user's role is
- *              shown read-only (it is changed from /settings/team by the
- *              OWNER). Theme and language are in commits 2/3 (TODO).
- *              Sessions list is in commit 3 (TODO).
+ *              own avatar, display name, password, UI theme and language.
+ *              The user's role is shown read-only (it is changed from
+ *              /settings/team by the OWNER). Sessions list is in
+ *              commit 3 (TODO).
  */
 
 import { auth } from "@/lib/auth";
@@ -14,11 +14,14 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { UserCircle, Building2, Shield } from "lucide-react";
 import { getProfileAction } from "@/actions/sat/profile/getProfile";
+import { getPreferencesAction } from "@/actions/sat/profile/getPreferences";
 import { AvatarUploader } from "@/components/sat/settings/profile/AvatarUploader";
 import { ProfileNameForm } from "@/components/sat/settings/profile/ProfileNameForm";
 import { PasswordChangeForm } from "@/components/sat/settings/profile/PasswordChangeForm";
+import { PreferencesForm } from "@/components/sat/settings/profile/PreferencesForm";
 import { RoleBadge } from "@/components/sat/settings/team/RoleBadge";
 import { SectionShell } from "@/components/sat/settings/SectionShell";
+import { DEFAULT_PREFERENCES } from "@/services/sat/preferences/types";
 
 export default async function ProfileSettingsPage() {
   const session = await auth();
@@ -30,8 +33,11 @@ export default async function ProfileSettingsPage() {
   const tCompany = await getTranslations("sat.settings.company");
   const tTeam = await getTranslations("sat.settings.team");
 
-  const result = await getProfileAction();
-  if (!result.success || !result.data) {
+  const [profileResult, prefsResult] = await Promise.all([
+    getProfileAction(),
+    getPreferencesAction(),
+  ]);
+  if (!profileResult.success || !profileResult.data) {
     return (
       <div className="container mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-3xl rounded-lg border border-[color:var(--danger)]/40 bg-[color:var(--surface)] p-5 text-base text-[color:var(--danger)] shadow-sm">
@@ -40,8 +46,10 @@ export default async function ProfileSettingsPage() {
       </div>
     );
   }
-
-  const profile = result.data;
+  const profile = profileResult.data;
+  const prefs = prefsResult.success && prefsResult.data
+    ? prefsResult.data
+    : { theme: DEFAULT_PREFERENCES.theme, locale: DEFAULT_PREFERENCES.locale };
 
   return (
     <div className="container mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
@@ -111,6 +119,17 @@ export default async function ProfileSettingsPage() {
           description={t("sections.securityDesc")}
         >
           <PasswordChangeForm />
+        </SectionShell>
+
+        <SectionShell
+          step={4}
+          title={t("sections.preferences")}
+          description={t("sections.preferencesDesc")}
+        >
+          <PreferencesForm
+            initialTheme={prefs.theme}
+            initialLocale={prefs.locale}
+          />
         </SectionShell>
       </div>
     </div>
