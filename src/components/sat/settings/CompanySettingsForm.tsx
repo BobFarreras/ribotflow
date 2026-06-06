@@ -3,8 +3,8 @@
  * Path: src/components/sat/settings/CompanySettingsForm.tsx
  * Description: Orchestrator for the company settings page (/settings/company).
  *              Sectioned layout (identity, address, preferences, documents,
- *              branding). Reuses FormField + permission notice + status badge
- *              primitives from the SMTP settings page.
+ *              branding) with a sticky floating save bar that only appears
+ *              when the form is dirty or has just been saved.
  */
 
 "use client";
@@ -34,61 +34,50 @@ export function CompanySettingsForm({ initial, userRole }: Props) {
   const canEdit = userRole === "OWNER";
 
   const {
-    values, isDirty, isSaving, saveError,
+    values, isDirty, dirtyCount, isSaving, saveError, justSaved,
     applyIdentityPatch, applyAddressPatch, applyPreferencesPatch,
-    applyDocumentsPatch, applyBrandingPatch, save,
+    applyDocumentsPatch, applyBrandingPatch, save, reset,
   } = useCompanySettingsForm(initial);
 
   return (
-    <div className="space-y-6">
-      <SmtpStatusBadge configured={!!initial.name} lastUpdated={initial.updatedAt} />
-      {!canEdit && <SmtpPermissionNotice role={userRole} />}
+    <div className="space-y-6 pb-24">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <SmtpStatusBadge configured={!!initial.name} lastUpdated={initial.updatedAt} />
+        {!canEdit && <SmtpPermissionNotice role={userRole} />}
+      </div>
 
       <form
         onSubmit={(e) => {
           e.preventDefault();
           if (canEdit) save(t);
         }}
-        className="space-y-6 rounded-lg border border-border bg-surface p-4 sm:p-6"
+        className="space-y-6"
       >
         <fieldset disabled={!canEdit} className="space-y-6">
-          <CompanyIdentitySection
-            state={pickIdentity(values)}
-            disabled={!canEdit}
-            onChange={applyIdentityPatch}
-          />
-          <CompanyAddressSection
-            state={pickAddress(values)}
-            disabled={!canEdit}
-            onChange={applyAddressPatch}
-          />
-          <CompanyPreferencesSection
-            state={pickPreferences(values)}
-            disabled={!canEdit}
-            onChange={applyPreferencesPatch}
-          />
-          <CompanyDocumentsSection
-            state={pickDocuments(values)}
-            disabled={!canEdit}
-            onChange={applyDocumentsPatch}
-          />
-          <CompanyBrandingSection
-            state={{ legalText: values.legalText }}
-            disabled={!canEdit}
-            onChange={applyBrandingPatch}
-          />
+          <CompanyIdentitySection state={pickIdentity(values)} disabled={!canEdit} onChange={applyIdentityPatch} />
+          <CompanyAddressSection state={pickAddress(values)} disabled={!canEdit} onChange={applyAddressPatch} />
+          <CompanyPreferencesSection state={pickPreferences(values)} disabled={!canEdit} onChange={applyPreferencesPatch} />
+          <CompanyDocumentsSection state={pickDocuments(values)} disabled={!canEdit} onChange={applyDocumentsPatch} />
+          <CompanyBrandingSection state={{ legalText: values.legalText }} disabled={!canEdit} onChange={applyBrandingPatch} />
           {canEdit && <CompanyLogoUploader currentLogoUrl={initial.logoUrl} disabled={!canEdit} />}
         </fieldset>
 
         {canEdit && (
           <SaveBar
             isDirty={isDirty}
+            dirtyCount={dirtyCount}
             isSaving={isSaving}
             saveError={saveError}
+            justSaved={justSaved}
+            onReset={reset}
             labels={{
               save: t("actions.save"),
               saving: t("actions.saving"),
               unsaved: t("actions.unsaved"),
+              justSaved: t("actions.justSaved"),
+              reset: t("actions.reset"),
+              change: t("actions.change"),
+              changes: t("actions.changes"),
             }}
           />
         )}
@@ -97,8 +86,6 @@ export function CompanySettingsForm({ initial, userRole }: Props) {
   );
 }
 
-/* Tiny pickers keep the parent JSX readable without giving each section
-   a sprawling inline object literal. */
 type V = ReturnType<typeof useCompanySettingsForm>["values"];
 function pickIdentity(v: V) { return { name: v.name, taxId: v.taxId, phone: v.phone, email: v.email, website: v.website }; }
 function pickAddress(v: V) { return { addressStreet: v.addressStreet, addressCity: v.addressCity, addressPostalCode: v.addressPostalCode, addressCountry: v.addressCountry }; }

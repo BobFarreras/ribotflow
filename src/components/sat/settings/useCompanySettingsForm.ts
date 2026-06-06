@@ -3,17 +3,15 @@
  * Path: src/components/sat/settings/useCompanySettingsForm.ts
  * Description: Form state + handlers for the per-company settings form.
  *              - Exposes per-section patch helpers (identity/address/preferences/documents/branding)
- *              - Manages save transitions + toast surface
- *              - Tracks "isDirty" so users know if they have unsaved changes
+ *              - Tracks isDirty / dirtyCount so the floating save bar can show feedback
+ *              - Manages save transitions + "just saved" pulse for the success banner
  */
 
 "use client";
 
-import { useState, useTransition, useMemo } from "react";
+import { useState, useTransition, useMemo, useRef, useCallback } from "react";
 import { toast } from "sonner";
-import {
-  updateCompanySettingsAction,
-} from "@/actions/sat/company/updateCompanySettings";
+import { updateCompanySettingsAction } from "@/actions/sat/company/updateCompanySettings";
 
 export interface CompanySettingsDTO {
   id: string;
@@ -40,54 +38,56 @@ export interface CompanySettingsDTO {
   updatedAt: Date;
 }
 
-export function useCompanySettingsForm(initial: CompanySettingsDTO | null) {
-  const [values, setValues] = useState(() => ({
+type V = ReturnType<typeof buildInitial>;
+
+function buildInitial(initial: CompanySettingsDTO | null) {
+  return {
     name: initial?.name ?? "",
     taxId: initial?.taxId ?? "",
     phone: initial?.phone ?? "",
     email: initial?.email ?? "",
     website: initial?.website ?? "",
-
     addressStreet: initial?.addressStreet ?? "",
     addressCity: initial?.addressCity ?? "",
     addressPostalCode: initial?.addressPostalCode ?? "",
     addressCountry: initial?.addressCountry ?? "ES",
-
     legalText: initial?.legalText ?? "",
-
     defaultTaxRate: initial?.defaultTaxRate ?? "21",
     defaultCurrency: initial?.defaultCurrency ?? "EUR",
     defaultLocale: initial?.defaultLocale ?? "ca",
     timezone: initial?.timezone ?? "Europe/Madrid",
-
     quotePrefix: initial?.quotePrefix ?? "PRE",
     invoicePrefix: initial?.invoicePrefix ?? "INV",
     travelRatePerKm: initial?.travelRatePerKm ?? "",
-  }));
-  const [initialValues, setInitialValues] = useState(values);
+  };
+}
+
+export function useCompanySettingsForm(initial: CompanySettingsDTO) {
+  const [values, setValues] = useState<V>(() => buildInitial(initial));
+  const [initialValues, setInitialValues] = useState<V>(values);
   const [isSaving, startSave] = useTransition();
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [justSaved, setJustSaved] = useState(false);
+  const pulseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const isDirty = useMemo(
-    () => Object.keys(values).some((k) => values[k as keyof typeof values] !== initialValues[k as keyof typeof initialValues]),
-    [values, initialValues]
-  );
+  const { isDirty, dirtyCount } = useMemo(() => {
+    let count = 0;
+    for (const k of Object.keys(values) as (keyof V)[]) {
+      if (values[k] !== initialValues[k]) count++;
+    }
+    return { isDirty: count > 0, dirtyCount: count };
+  }, [values, initialValues]);
 
-  function applyIdentityPatch(p: Partial<typeof values>) {
-    setValues((v) => ({ ...v, ...p }));
-  }
-  function applyAddressPatch(p: Partial<typeof values>) {
-    setValues((v) => ({ ...v, ...p }));
-  }
-  function applyPreferencesPatch(p: Partial<typeof values>) {
-    setValues((v) => ({ ...v, ...p }));
-  }
-  function applyDocumentsPatch(p: Partial<typeof values>) {
-    setValues((v) => ({ ...v, ...p }));
-  }
-  function applyBrandingPatch(p: Partial<typeof values>) {
-    setValues((v) => ({ ...v, ...p }));
-  }
+  const applyIdentityPatch = useCallback((p: Partial<V>) => setValues((v) => ({ ...v, ...p })), []);
+  const applyAddressPatch = useCallback((p: Partial<V>) => setValues((v) => ({ ...v, ...p })), []);
+  const applyPreferencesPatch = useCallback((p: Partial<V>) => setValues((v) => ({ ...v, ...p })), []);
+  const applyDocumentsPatch = useCallback((p: Partial<V>) => setValues((v) => ({ ...v, ...p })), []);
+  const applyBrandingPatch = useCallback((p: Partial<V>) => setValues((v) => ({ ...v, ...p })), []);
+
+  const reset = useCallback(() => {
+    setValues(initialValues);
+    setSaveError(null);
+  }, [initialValues]);
 
   function save(t: (k: string) => string) {
     setSaveError(null);
@@ -113,6 +113,9 @@ export function useCompanySettingsForm(initial: CompanySettingsDTO | null) {
       });
       if (r.success) {
         setInitialValues(values);
+        setJustSaved(true);
+        if (pulseTimer.current) clearTimeout(pulseTimer.current);
+        pulseTimer.current = setTimeout(() => setJustSaved(false), 2200);
         toast.success(t("feedback.saved"));
       } else {
         setSaveError(r.error ?? "Error");
@@ -122,19 +125,8 @@ export function useCompanySettingsForm(initial: CompanySettingsDTO | null) {
   }
 
   return {
-    values,
-    isDirty,
-    isSaving,
-    saveError,
-    applyIdentityPatch,
-    applyAddressPatch,
-    applyPreferencesPatch,
-    applyDocumentsPatch,
-    applyBrandingPatch,
-    setLogoUrl: (url: string | null) => {
-      // Only re-render the relevant value; not in `values` since logo is stored
-      // in a separate state below the hook consumer.
-    },
-    save,
+    values, isDirty, dirtyCount, isSaving, saveError, justSaved,
+    applyIdentityPatch, applyAddressPatch, applyPreferencesPatch,
+    applyDocumentsPatch, applyBrandingPatch, save, reset,
   };
 }

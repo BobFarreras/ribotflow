@@ -24,8 +24,8 @@ export default async function CompanySettingsPage() {
 
   if (!result.success || !result.data) {
     return (
-      <div className="container mx-auto max-w-3xl px-4 py-8">
-        <div className="rounded-md border border-[color:var(--danger)]/30 bg-[color:var(--danger)]/8 p-4 text-sm text-[color:var(--danger)]">
+      <div className="container mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-3xl rounded-lg border border-[color:var(--danger)]/40 bg-[color:var(--surface)] p-5 text-base text-[color:var(--danger)] shadow-sm">
           {t("errors.load")}
         </div>
       </div>
@@ -33,16 +33,22 @@ export default async function CompanySettingsPage() {
   }
 
   return (
-    <div className="container mx-auto max-w-3xl px-4 py-8">
-      <div className="mb-6 flex items-center gap-3">
-        <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[color:var(--primary)] text-white">
-          <Building2 className="h-5 w-5" />
-        </span>
-        <div>
-          <h1 className="text-2xl font-bold text-[color:var(--text)]">{t("title")}</h1>
-          <p className="text-sm text-[color:var(--text-muted)]">{t("subtitle")}</p>
+    <div className="container mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <header className="mx-auto mb-8 max-w-3xl">
+        <div className="mb-3 flex items-center gap-3">
+          <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[color:var(--primary)]/12 text-[color:var(--primary)]">
+            <Building2 className="h-6 w-6" />
+          </span>
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight text-[color:var(--text)]">
+              {t("title")}
+            </h1>
+            <p className="mt-1 text-base text-[color:var(--text-muted)]">
+              {t("subtitle")}
+            </p>
+          </div>
         </div>
-      </div>
+      </header>
 
       <CompanySettingsForm initial={result.data} userRole={session.user.role} />
     </div>

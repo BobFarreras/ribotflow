@@ -329,14 +329,17 @@
       "subtitle": "Configura la información que aparecerá en los presupuestos, facturas y correos. Por favor, no compartas información sensible en esta sección.",
       "sections": {
         "identity": "Datos básicos",
+        "identityDescription": "El nombre fiscal, NIF y datos de contacto que verán tus clientes en los documentos y correos.",
         "address": "Dirección fiscal",
-        "addressHint": "Esta dirección aparecerá en los documentos generados (presupuestos, facturas).",
+        "addressDescription": "Esta dirección aparecerá en la cabecera de todos los documentos generados (presupuestos, facturas).",
         "preferences": "Preferencias",
-        "preferencesHint": "Idioma, zona horaria y moneda por defecto para los nuevos documentos.",
+        "preferencesDescription": "Idioma, zona horaria y moneda por defecto de los nuevos documentos.",
         "documents": "Documentos",
-        "documentsHint": "Prefijos y valores por defecto para la generación de presupuestos y facturas.",
+        "documentsDescription": "Prefijos y valores por defecto para la generación de presupuestos y facturas.",
         "branding": "Marca y texto legal",
-        "brandingHint": "Texto al pie de los documentos y logo de la empresa."
+        "brandingDescription": "Texto al pie de los documentos y logo de la empresa.",
+        "brandingWhyTitle": "¿Para qué sirve?",
+        "brandingWhyBody": "Este texto saldrá al pie de todos los presupuestos, facturas y correos automáticos. Es el lugar ideal para información legal obligatoria (registro mercantil, protección de datos, condiciones generales)."
       },
       "fields": {
         "name": "Nombre de la empresa",
@@ -350,9 +353,11 @@
         "website": "Sitio web",
         "websiteHint": "Opcional. Debe empezar con http:// o https://.",
         "addressStreet": "Calle y número",
+        "addressStreetHint": "Calle, número, piso y puerta. Tal y como debe aparecer en las facturas.",
         "addressCity": "Ciudad",
         "addressPostalCode": "Código postal",
         "addressCountry": "País",
+        "addressCountryHint": "Selecciona el país donde está registrada tu empresa.",
         "defaultLocale": "Idioma por defecto",
         "defaultLocaleHint": "Idioma en el que se generarán los nuevos documentos.",
         "timezone": "Zona horaria",
@@ -374,7 +379,11 @@
       "actions": {
         "save": "Guardar cambios",
         "saving": "Guardando...",
-        "unsaved": "Tienes cambios sin guardar"
+        "unsaved": "Tienes cambios sin guardar",
+        "justSaved": "Cambios guardados",
+        "reset": "Deshacer",
+        "change": "cambio pendiente",
+        "changes": "cambios pendientes"
       },
       "feedback": {
         "saved": "Datos de la empresa guardados correctamente",

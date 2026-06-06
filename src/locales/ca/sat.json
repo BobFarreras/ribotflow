@@ -329,14 +329,17 @@
       "subtitle": "Configura la informació que apareixerà als pressupostos, factures i correus. Si us plau, no comparteixis informació sensible en aquesta secció.",
       "sections": {
         "identity": "Dades bàsiques",
+        "identityDescription": "El nom fiscal, NIF i dades de contacte que veuran els teus clients als documents i correus.",
         "address": "Adreça fiscal",
-        "addressHint": "Aquesta adreça apareixerà als documents generats (pressupostos, factures).",
+        "addressDescription": "Aquesta adreça apareixerà a la capçalera de tots els documents generats (pressupostos, factures).",
         "preferences": "Preferències",
-        "preferencesHint": "Idioma, zona horària i moneda per defecte dels nous documents.",
+        "preferencesDescription": "Idioma, zona horària i moneda per defecte dels nous documents.",
         "documents": "Documents",
-        "documentsHint": "Prefixos i valors per defecte per a la generació de pressupostos i factures.",
+        "documentsDescription": "Prefixos i valors per defecte per a la generació de pressupostos i factures.",
         "branding": "Marca i text legal",
-        "brandingHint": "Text al peu dels documents i logo de l'empresa."
+        "brandingDescription": "Text al peu dels documents i logo de l'empresa.",
+        "brandingWhyTitle": "Per a què serveix?",
+        "brandingWhyBody": "Aquest text sortirà al peu de tots els pressupostos, factures i correus automàtics. És el lloc ideal per a informació legal obligatòria (registre mercantil, protecció de dades, condicions generals)."
       },
       "fields": {
         "name": "Nom de l'empresa",
@@ -350,9 +353,11 @@
         "website": "Lloc web",
         "websiteHint": "Opcional. Ha de començar amb http:// o https://.",
         "addressStreet": "Carrer i número",
+        "addressStreetHint": "Carrer, número, pis i porta. Tal com ha d'aparèixer a les factures.",
         "addressCity": "Ciutat",
         "addressPostalCode": "Codi postal",
         "addressCountry": "País",
+        "addressCountryHint": "Selecciona el país on està registrada la teva empresa.",
         "defaultLocale": "Idioma per defecte",
         "defaultLocaleHint": "Idioma en què es generaran els nous documents.",
         "timezone": "Zona horària",
@@ -374,7 +379,11 @@
       "actions": {
         "save": "Desar canvis",
         "saving": "Desant...",
-        "unsaved": "Tens canvis sense desar"
+        "unsaved": "Tens canvis sense desar",
+        "justSaved": "Canvis desats",
+        "reset": "Desfer",
+        "change": "canvi pendent",
+        "changes": "canvis pendents"
       },
       "feedback": {
         "saved": "Dades de l'empresa desades correctament",
