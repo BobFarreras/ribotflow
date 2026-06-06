@@ -68,7 +68,7 @@ function SidebarHeader() {
   );
 }
 
-export default function Sidebar() {
+export default function Sidebar({ userRole }: { userRole?: import("@/lib/auth/roles").Role | null } = {}) {
   const { isCollapsed, isMobileOpen } = useSidebar();
 
   return (
@@ -84,7 +84,7 @@ export default function Sidebar() {
         }`}
       >
         <SidebarHeader />
-        <SidebarNav />
+        <SidebarNav userRole={userRole} />
         <SidebarFooter />
       </aside>
     </>

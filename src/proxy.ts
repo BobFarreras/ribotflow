@@ -1,21 +1,18 @@
 /**
- * Creation/modification date: 21/05/2026
+ * Creation/modification date: 02/06/2026
  * Path: src/proxy.ts
- * Description: Next.js 16 proxy with Next-Auth v5 session validation.
- *              Uses auth() wrapper to read session from request cookies.
+ * Description: Next.js 16 proxy with Next-Auth v5 session validation and
+ *              role-based access control. The route allowlist now lives in
+ *              src/lib/auth/canSeePath.ts so it stays in sync with the
+ *              SidebarNav and the PermissionGuard.
  */
 
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
+import { canSeePath } from "@/lib/auth/canSeePath";
+import type { Role } from "@/lib/auth/roles";
 
 const PUBLIC_ROUTES = ["/login", "/register", "/setup", "/api/health"];
-
-const ROLE_ROUTE_MATRIX: Record<string, string[]> = {
-  OWNER: ["/dashboard", "/sat", "/erp", "/billing", "/crm", "/access", "/settings"],
-  ADMIN: ["/dashboard", "/sat", "/erp", "/billing", "/crm", "/access", "/settings"],
-  OFFICE: ["/dashboard", "/sat", "/erp", "/billing", "/crm", "/access", "/settings"],
-  TECHNICIAN: ["/dashboard", "/sat", "/access"],
-};
 
 export const proxy = auth((req) => {
   const { pathname } = req.nextUrl;
@@ -37,12 +34,9 @@ export const proxy = auth((req) => {
     return NextResponse.redirect(loginUrl);
   }
 
-  // RBAC check
-  const userRole = req.auth.user.role;
-  const allowedRoutes = ROLE_ROUTE_MATRIX[userRole] ?? [];
-  const isAllowed = allowedRoutes.some((route) => pathname.startsWith(route));
-
-  if (!isAllowed) {
+  // RBAC check via the shared permission map
+  const userRole = req.auth.user.role as Role;
+  if (!canSeePath(userRole, pathname)) {
     return NextResponse.redirect(new URL("/dashboard/unauthorized", req.url));
   }
 

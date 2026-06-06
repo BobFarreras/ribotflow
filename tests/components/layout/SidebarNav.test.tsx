@@ -5,7 +5,7 @@
  *              and sub-menu visibility.
  */
 
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import SidebarNav from "@/components/layout/SidebarNav";
@@ -23,6 +23,8 @@ vi.mock("next-intl", () => ({
       "dashboard.label": "Inici",
       "sat.label": "SAT",
       "sat.subItems.workOrders": "Ordres de Treball",
+      "sat.subItems.quotes": "Pressupostos",
+      "sat.subItems.map": "Mapa",
       "sat.subItems.clients": "Clients",
       "sat.subItems.categories": "Categories",
       "erp.label": "ERP",
@@ -30,6 +32,10 @@ vi.mock("next-intl", () => ({
       "crm.label": "CRM",
       "access.label": "Control d'Accés",
       "settings.label": "Configuració",
+      "settings.subItems.company": "Empresa",
+      "settings.subItems.email": "Correu professional",
+      "settings.subItems.team": "Equip",
+      "settings.subItems.profile": "Perfil",
     };
     return translations[key] || key;
   },
@@ -232,5 +238,97 @@ describe("SidebarNav", () => {
     expect(await screen.findByText("Inici")).toBeInTheDocument();
 
     localStorage.removeItem("sidebar:collapsed");
+  });
+});
+
+/* ================================================================
+   ROLE-BASED FILTERING
+   ================================================================ */
+
+describe("SidebarNav — role-based filtering", () => {
+  beforeEach(() => {
+    localStorage.setItem("sidebar:expanded:sat", "true");
+    localStorage.setItem("sidebar:expanded:settings", "true");
+  });
+  afterEach(() => {
+    localStorage.removeItem("sidebar:expanded:sat");
+    localStorage.removeItem("sidebar:expanded:settings");
+  });
+
+  it("hides Billing, Correu and Team links from TECHNICIAN (keeps ERP/CRM/Map visible per matrix)", () => {
+    mockUsePathname.mockReturnValue("/dashboard");
+    render(
+      <SidebarProvider>
+        <SidebarNav userRole="TECHNICIAN" />
+      </SidebarProvider>
+    );
+    // Hidden (no permission):
+    expect(screen.queryByText("Facturació")).not.toBeInTheDocument();
+    expect(screen.queryByText("Correu professional")).not.toBeInTheDocument();
+    expect(screen.queryByText("Equip")).not.toBeInTheDocument();
+    // Visible per matrix (material:read, client:read):
+    expect(screen.getByText("ERP")).toBeInTheDocument();
+    expect(screen.getByText("CRM")).toBeInTheDocument();
+  });
+
+  it("hides Pressupostos sub-item from TECHNICIAN (no quote:read) but keeps Clients/Map", () => {
+    mockUsePathname.mockReturnValue("/sat");
+    render(
+      <SidebarProvider>
+        <SidebarNav userRole="TECHNICIAN" />
+      </SidebarProvider>
+    );
+    // Hidden (no quote:read):
+    expect(screen.queryByText("Pressupostos")).not.toBeInTheDocument();
+    // Visible per matrix (client:read, route:read, material:read):
+    expect(screen.getByText("Clients")).toBeInTheDocument();
+    expect(screen.getByText("Mapa")).toBeInTheDocument();
+  });
+
+  it("shows all SAT sub-items to OFFICE (read-only access)", () => {
+    mockUsePathname.mockReturnValue("/sat");
+    render(
+      <SidebarProvider>
+        <SidebarNav userRole="OFFICE" />
+      </SidebarProvider>
+    );
+    expect(screen.getByText("Pressupostos")).toBeInTheDocument();
+    expect(screen.getByText("Clients")).toBeInTheDocument();
+    expect(screen.getByText("Mapa")).toBeInTheDocument();
+  });
+
+  it("shows Dashboard to TECHNICIAN but hides Facturació", () => {
+    mockUsePathname.mockReturnValue("/dashboard");
+    render(
+      <SidebarProvider>
+        <SidebarNav userRole="TECHNICIAN" />
+      </SidebarProvider>
+    );
+    expect(screen.getByText("Inici")).toBeInTheDocument();
+    expect(screen.queryByText("Facturació")).not.toBeInTheDocument();
+  });
+
+  it("shows every module to OWNER (full access)", () => {
+    mockUsePathname.mockReturnValue("/dashboard");
+    render(
+      <SidebarProvider>
+        <SidebarNav userRole="OWNER" />
+      </SidebarProvider>
+    );
+    expect(screen.getByText("Inici")).toBeInTheDocument();
+    expect(screen.getByText("ERP")).toBeInTheDocument();
+    expect(screen.getByText("Facturació")).toBeInTheDocument();
+    expect(screen.getByText("CRM")).toBeInTheDocument();
+  });
+
+  it("renders all items when userRole is undefined (back-compat for tests/SSR)", () => {
+    mockUsePathname.mockReturnValue("/dashboard");
+    render(
+      <SidebarProvider>
+        <SidebarNav />
+      </SidebarProvider>
+    );
+    expect(screen.getByText("Inici")).toBeInTheDocument();
+    expect(screen.getByText("ERP")).toBeInTheDocument();
   });
 });

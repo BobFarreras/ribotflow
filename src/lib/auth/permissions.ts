@@ -78,6 +78,7 @@ export const ROLE_PERMISSIONS: Record<Role, ReadonlySet<Permission>> = {
     "team:read",
     "profile:read:self",
     "profile:write:self",
+    "workorder:read:all",
     "client:read",
     "client:write",
     "quote:read",

@@ -35,6 +35,10 @@ import {
   Mail,
 } from "lucide-react";
 import { useSidebar } from "./SidebarContext";
+import { requiredPermissionFor } from "@/lib/auth/canSeePath";
+import { can } from "@/lib/auth/permissions";
+import type { Permission } from "@/lib/auth/permissions";
+import type { Role } from "@/lib/auth/roles";
 
 /* ================================================================
    DATA
@@ -44,12 +48,18 @@ interface SubItem {
   key: string;
   href: string;
   icon: React.ComponentType<{ className?: string }>;
+  /** Permission required to see this sub-item. If absent, derives from the
+   *  href via canSeePath (any signed-in user passes). */
+  permission?: Permission;
 }
 
 interface NavItem {
   key: string;
   href: string;
   icon: React.ComponentType<{ className?: string }>;
+  /** Permission required to see this item. Defaults to "any signed-in
+   *  user can see" unless href is gated in canSeePath. */
+  permission?: Permission;
   subItems?: SubItem[];
 }
 
@@ -61,18 +71,19 @@ const navItems: NavItem[] = [
     icon: Wrench,
     subItems: [
       { key: "workOrders", href: "/sat", icon: List },
-      { key: "quotes", href: "/sat/quotes", icon: FileText },
-      { key: "quoteTemplates", href: "/sat/quotes/templates", icon: FolderOpen },
-      { key: "map", href: "/sat/map", icon: Map },
-      { key: "routes", href: "/sat/routes", icon: Route },
-      { key: "clients", href: "/sat/clients", icon: UserCircle },
-      { key: "categories", href: "/sat/categories", icon: Tag },
+      { key: "quotes", href: "/sat/quotes", icon: FileText, permission: "quote:read" },
+      { key: "quoteTemplates", href: "/sat/quotes/templates", icon: FolderOpen, permission: "quote:read" },
+      { key: "map", href: "/sat/map", icon: Map, permission: "route:read" },
+      { key: "routes", href: "/sat/routes", icon: Route, permission: "route:read" },
+      { key: "clients", href: "/sat/clients", icon: UserCircle, permission: "client:read" },
+      { key: "categories", href: "/sat/categories", icon: Tag, permission: "material:read" },
     ],
   },
   {
     key: "erp",
     href: "/erp",
     icon: Package,
+    permission: "material:read",
     subItems: [
       { key: "products", href: "/erp/products", icon: FolderOpen },
       { key: "inventory", href: "/erp/inventory", icon: BarChart3 },
@@ -82,6 +93,7 @@ const navItems: NavItem[] = [
     key: "billing",
     href: "/billing",
     icon: FileText,
+    permission: "invoice:read",
     subItems: [
       { key: "invoices", href: "/billing/invoices", icon: Receipt },
       { key: "budgets", href: "/billing/budgets", icon: FileText },
@@ -91,6 +103,7 @@ const navItems: NavItem[] = [
     key: "crm",
     href: "/crm",
     icon: Users,
+    permission: "client:read",
     subItems: [
       { key: "contacts", href: "/crm/contacts", icon: UserCircle },
       { key: "opportunities", href: "/crm/opportunities", icon: BarChart3 },
@@ -100,6 +113,7 @@ const navItems: NavItem[] = [
     key: "access",
     href: "/access",
     icon: Clock,
+    permission: "workorder:read:own",
     subItems: [
       { key: "timeTracking", href: "/access/time-tracking", icon: Fingerprint },
       { key: "absences", href: "/access/absences", icon: CalendarIcon },
@@ -109,14 +123,27 @@ const navItems: NavItem[] = [
     key: "settings",
     href: "/settings",
     icon: Settings,
+    permission: "company:read",
     subItems: [
       { key: "company", href: "/settings/company", icon: Building2 },
-      { key: "email", href: "/settings/email", icon: Mail },
-      { key: "users", href: "/settings/users", icon: Shield },
-      { key: "profile", href: "/settings/profile", icon: UserCircle },
+      { key: "email", href: "/settings/email", icon: Mail, permission: "email:read" },
+      { key: "team", href: "/settings/team", icon: Shield, permission: "team:read" },
+      { key: "profile", href: "/settings/profile", icon: UserCircle, permission: "profile:read:self" },
     ],
   },
 ];
+
+/** Resolves the permission required to see an item (explicit > derived). */
+function permissionFor(item: { href: string; permission?: Permission }): Permission | null {
+  if (item.permission) return item.permission;
+  return requiredPermissionFor(item.href);
+}
+
+function canSee(role: Role | null, perm: Permission | null): boolean {
+  if (perm === null) return true; // public
+  if (role === null) return false; // not signed in - hide
+  return can(role, perm);
+}
 
 function CalendarIcon({ className }: { className?: string }) {
   return (
@@ -354,13 +381,43 @@ function ExpandedNavItem({ item, pathname }: { item: NavItem; pathname: string }
    EXPORT
    ================================================================ */
 
-export default function SidebarNav() {
+export default function SidebarNav({ userRole }: { userRole?: Role | null } = {}) {
   const pathname = usePathname();
   const { isCollapsed } = useSidebar();
 
+  // userRole semantics:
+  //   undefined -> not specified (tests / SSR fallback): show every item
+  //   null      -> signed-out: hide every gated item
+  //   "OWNER"   -> filter by the matrix
+  //
+  // Visibility rule:
+  //   - If the item has sub-items: show the parent when at least one child
+  //     is visible. The parent's own permission is ignored (it is just a
+  //     module grouping). This is what lets OFFICE see the SAT module
+  //     (it has workorder:read:all but not workorder:read:own).
+  //   - Leaf items: gate by item.permission, or derive from href via
+  //     canSeePath.
+  const visibleItems =
+    userRole === undefined
+      ? navItems
+      : navItems
+          .map((item) => {
+            const hasSubItems = !!item.subItems && item.subItems.length > 0;
+            if (!hasSubItems) {
+              const leafPerm = permissionFor(item);
+              return canSee(userRole, leafPerm) ? item : null;
+            }
+            const visibleSubs = item.subItems!.filter((sub) =>
+              canSee(userRole, permissionFor(sub))
+            );
+            if (visibleSubs.length === 0) return null;
+            return { ...item, subItems: visibleSubs };
+          })
+          .filter((item): item is NonNullable<typeof item> => item !== null);
+
   return (
     <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-1">
-      {navItems.map((item) =>
+      {visibleItems.map((item) =>
         isCollapsed ? (
           <CollapsedNavItem key={item.key} item={item} pathname={pathname} />
         ) : (

@@ -48,10 +48,10 @@ describe("roles/permissions matrix", () => {
     expect(can("OFFICE", "client:write")).toBe(true);
   });
 
-  it("denies OFFICE workorder:write (technicians are field-only)", () => {
+  it("OFFICE can read work orders but not write them (read-only access)", () => {
+    expect(can("OFFICE", "workorder:read:all")).toBe(true);
     expect(can("OFFICE", "workorder:write:all")).toBe(false);
     expect(can("OFFICE", "workorder:write:own")).toBe(false);
-    expect(can("OFFICE", "workorder:read:all")).toBe(false);
   });
 
   it("gives TECHNICIAN only their own work orders", () => {
