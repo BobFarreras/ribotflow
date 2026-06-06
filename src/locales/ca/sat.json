@@ -498,7 +498,25 @@
         "security": "Contrasenya",
         "securityDesc": "Tria una contrasenya forta. Si la canvies, hauràs d'iniciar sessió de nou a la resta de dispositius.",
         "preferences": "Preferències d'interfície",
-        "preferencesDesc": "Tria el tema visual i l'idioma de l'aplicació. Es desen al teu compte i et segueixen a qualsevol dispositiu."
+        "preferencesDesc": "Tria el tema visual i l'idioma de l'aplicació. Es desen al teu compte i et segueixen a qualsevol dispositiu.",
+        "sessions": "Sessions actives",
+        "sessionsDesc": "Tanca la sessió als dispositius on no vulguis continuar connectat. La sessió actual no es pot tancar des d'aquí — utilitza el botó de tancar sessió."
+      },
+      "sessions": {
+        "empty": "No tens cap sessió activa.",
+        "current": "Aquest dispositiu",
+        "lastActivity": "Última activitat: {when}",
+        "revoke": "Tanca la sessió",
+        "revokeAllOthers": "Tanca totes les altres sessions",
+        "feedback": {
+          "revoked": "Sessió tancada",
+          "revokedMany": "S'han tancat {count} sessions",
+          "revokedNone": "No hi havia cap altra sessió activa"
+        },
+        "errors": {
+          "generic": "No s'ha pogut tancar la sessió",
+          "cannotRevokeCurrent": "No pots tancar la sessió actual des d'aquí. Utilitza el botó de tancar sessió."
+        }
       },
       "preferences": {
         "saving": "Desant…",

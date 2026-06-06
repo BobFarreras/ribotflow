@@ -108,6 +108,14 @@ export const sessions = pgTable("sessions", {
     .notNull(),
   expires: timestamp("expires").notNull(),
   sessionToken: text("session_token").notNull().unique(),
+  /** Optional user agent captured at sign-in (best-effort). */
+  userAgent: text("user_agent"),
+  /** Optional IP address captured at sign-in (best-effort). */
+  ipAddress: text("ip_address"),
+  /** When the row was created (i.e. sign-in time). */
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  /** Updated on every session check. Used to sort by "last activity". */
+  lastUsedAt: timestamp("last_used_at").defaultNow().notNull(),
 });
 
 export const companiesRelations = relations(companies, ({ many }) => ({

@@ -15,10 +15,12 @@ import Link from "next/link";
 import { UserCircle, Building2, Shield } from "lucide-react";
 import { getProfileAction } from "@/actions/sat/profile/getProfile";
 import { getPreferencesAction } from "@/actions/sat/profile/getPreferences";
+import { listActiveSessionsAction } from "@/actions/sat/profile/listActiveSessions";
 import { AvatarUploader } from "@/components/sat/settings/profile/AvatarUploader";
 import { ProfileNameForm } from "@/components/sat/settings/profile/ProfileNameForm";
 import { PasswordChangeForm } from "@/components/sat/settings/profile/PasswordChangeForm";
 import { PreferencesForm } from "@/components/sat/settings/profile/PreferencesForm";
+import { ActiveSessionsList } from "@/components/sat/settings/profile/ActiveSessionsList";
 import { RoleBadge } from "@/components/sat/settings/team/RoleBadge";
 import { SectionShell } from "@/components/sat/settings/SectionShell";
 import { DEFAULT_PREFERENCES } from "@/services/sat/preferences/types";
@@ -33,9 +35,10 @@ export default async function ProfileSettingsPage() {
   const tCompany = await getTranslations("sat.settings.company");
   const tTeam = await getTranslations("sat.settings.team");
 
-  const [profileResult, prefsResult] = await Promise.all([
+  const [profileResult, prefsResult, sessionsResult] = await Promise.all([
     getProfileAction(),
     getPreferencesAction(),
+    listActiveSessionsAction(),
   ]);
   if (!profileResult.success || !profileResult.data) {
     return (
@@ -50,6 +53,9 @@ export default async function ProfileSettingsPage() {
   const prefs = prefsResult.success && prefsResult.data
     ? prefsResult.data
     : { theme: DEFAULT_PREFERENCES.theme, locale: DEFAULT_PREFERENCES.locale };
+  const sessions = sessionsResult.success && sessionsResult.data
+    ? sessionsResult.data
+    : { sessions: [], currentSessionId: null };
 
   return (
     <div className="container mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
@@ -129,6 +135,17 @@ export default async function ProfileSettingsPage() {
           <PreferencesForm
             initialTheme={prefs.theme}
             initialLocale={prefs.locale}
+          />
+        </SectionShell>
+
+        <SectionShell
+          step={5}
+          title={t("sections.sessions")}
+          description={t("sections.sessionsDesc")}
+        >
+          <ActiveSessionsList
+            sessions={sessions.sessions}
+            currentSessionId={sessions.currentSessionId}
           />
         </SectionShell>
       </div>

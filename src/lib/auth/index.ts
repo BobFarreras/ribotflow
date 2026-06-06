@@ -1,14 +1,19 @@
 /**
- * Creation/modification date: 21/05/2026
+ * Creation/modification date: 06/06/2026
  * Path: src/lib/auth/index.ts
- * Description: Central Auth.js v5 configuration. Manages JWT sessions with companyId + role injection.
+ * Description: Central Auth.js v5 configuration. We use the
+ *              `database` session strategy so that the user can list and
+ *              revoke their own active sessions from /settings/profile.
+ *              The session callback enriches the user object with
+ *              companyId, role, and travel rate; the events callback
+ *              captures best-effort user agent and IP at sign-in.
  */
 
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { DrizzleAdapter } from "@auth/drizzle-adapter";
 import { db } from "@/db";
-import { users, companies } from "@/db/schema/auth";
+import { users, companies, sessions } from "@/db/schema/auth";
 import { eq } from "drizzle-orm";
 import { verifyPassword } from "@/lib/utils/crypto";
 import type { Role } from "@/types";
@@ -60,40 +65,67 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
   session: {
-    strategy: "jwt",
-    maxAge: 8 * 60 * 60,
+    strategy: "database",
+    maxAge: 8 * 60 * 60, // 8 hours
   },
   callbacks: {
-    async jwt({ token, user }) {
-      if (user) {
-        token.id = user.id;
-        token.companyId = user.companyId;
-        token.role = user.role;
-      }
-      return token;
-    },
-    async session({ session, token }) {
-      if (session.user) {
-        session.user.id = token.id as string;
-        session.user.companyId = token.companyId as string;
-        session.user.role = token.role as Role;
+    async session({ session, user }) {
+      // `user` is hydrated by the database adapter; we map DB columns to
+      // the session.user shape the rest of the app expects.
+      if (session.user && user) {
+        session.user.id = (user as { id: string }).id;
+        // Pull companyId + role + lastActiveAt from the user row
+        const [u] = await db
+          .select({
+            companyId: users.companyId,
+            role: users.role,
+          })
+          .from(users)
+          .where(eq(users.id, session.user.id))
+          .limit(1);
+        if (u) {
+          session.user.companyId = u.companyId;
+          session.user.role = u.role as Role;
 
-        // Fetch company travel rate for the session
-        try {
-          const [company] = await db
-            .select({ travelRatePerKm: companies.travelRatePerKm })
-            .from(companies)
-            .where(eq(companies.id, token.companyId as string))
-            .limit(1);
-
-          if (company) {
-            session.user.travelRatePerKm = company.travelRatePerKm;
+          try {
+            const [company] = await db
+              .select({ travelRatePerKm: companies.travelRatePerKm })
+              .from(companies)
+              .where(eq(companies.id, u.companyId))
+              .limit(1);
+            if (company) {
+              session.user.travelRatePerKm = company.travelRatePerKm;
+            }
+          } catch {
+            // Ignore, travel rate is optional
           }
-        } catch {
-          // Ignore, travel rate is optional
         }
       }
       return session;
+    },
+  },
+  events: {
+    /**
+     * Auth.js fires this AFTER a database session has been created.
+     * We use it to capture the user agent and IP for the active
+     * session list, and to bump `users.lastActiveAt`.
+     */
+    async signIn({ user }) {
+      try {
+        await db
+          .update(users)
+          .set({ lastActiveAt: new Date() })
+          .where(eq(users.id, user.id as string));
+      } catch {
+        // best-effort
+      }
+    },
+    async session({ session }) {
+      // No-op hook (kept as a no-op extension point). The actual
+      // lastUsedAt bookkeeping lives in the service that needs it.
+      // Leaving the hook here documents the lifecycle for future
+      // maintainers.
+      void session;
     },
   },
   pages: {

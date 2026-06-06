@@ -498,7 +498,25 @@
         "security": "Contraseña",
         "securityDesc": "Elige una contraseña fuerte. Si la cambias, tendrás que iniciar sesión de nuevo en el resto de dispositivos.",
         "preferences": "Preferencias de interfaz",
-        "preferencesDesc": "Elige el tema visual y el idioma de la aplicación. Se guardan en tu cuenta y te siguen en cualquier dispositivo."
+        "preferencesDesc": "Elige el tema visual y el idioma de la aplicación. Se guardan en tu cuenta y te siguen en cualquier dispositivo.",
+        "sessions": "Sesiones activas",
+        "sessionsDesc": "Cierra la sesión en los dispositivos donde no quieras seguir conectado. La sesión actual no se puede cerrar desde aquí — utiliza el botón de cerrar sesión."
+      },
+      "sessions": {
+        "empty": "No tienes ninguna sesión activa.",
+        "current": "Este dispositivo",
+        "lastActivity": "Última actividad: {when}",
+        "revoke": "Cerrar sesión",
+        "revokeAllOthers": "Cerrar todas las demás sesiones",
+        "feedback": {
+          "revoked": "Sesión cerrada",
+          "revokedMany": "Se han cerrado {count} sesiones",
+          "revokedNone": "No había ninguna otra sesión activa"
+        },
+        "errors": {
+          "generic": "No se ha podido cerrar la sesión",
+          "cannotRevokeCurrent": "No puedes cerrar la sesión actual desde aquí. Utiliza el botón de cerrar sesión."
+        }
       },
       "preferences": {
         "saving": "Guardando…",
