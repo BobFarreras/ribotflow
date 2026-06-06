@@ -575,6 +575,29 @@
         "load": "No s'ha pogut carregar el perfil",
         "generic": "No s'ha pogut completar l'acció"
       }
+    },
+    "acceptInvitation": {
+      "title": "Accepta la invitació",
+      "subtitle": "Tria una contrasenya per activar el teu compte. Un cop ho facis, iniciaràs sessió automàticament.",
+      "invitedAs": "T'han convidat com a {name} ({email}).",
+      "fields": {
+        "password": "Contrasenya nova",
+        "confirm": "Repeteix la contrasenya",
+        "hint": "Mínim 8 caràcters."
+      },
+      "show": "Mostra la contrasenya",
+      "hide": "Amaga la contrasenya",
+      "submit": "Activar compte i accedir",
+      "success": {
+        "signInPending": "Compte activat. Inicia sessió manualment per continuar."
+      },
+      "errors": {
+        "missingToken": "Falta el token d'invitació a l'URL.",
+        "invalidToken": "Aquesta invitació no és vàlida o ha caducat. Demana al propietari de l'empresa que te la reenviï.",
+        "alreadyAccepted": "Aquesta invitació ja s'ha acceptat. Inicia sessió amb les teves credencials.",
+        "passwordTooShort": "La contrasenya ha de tenir com a mínim 8 caràcters.",
+        "generic": "No s'ha pogut activar el compte. Torna-ho a provar."
+      }
     }
   }
 }

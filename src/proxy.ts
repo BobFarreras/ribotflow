@@ -12,7 +12,7 @@ import { auth } from "@/lib/auth";
 import { canSeePath } from "@/lib/auth/canSeePath";
 import type { Role } from "@/lib/auth/roles";
 
-const PUBLIC_ROUTES = ["/login", "/register", "/setup", "/api/health"];
+const PUBLIC_ROUTES = ["/login", "/register", "/setup", "/api/health", "/accept-invitation"];
 
 export const proxy = auth((req) => {
   const { pathname } = req.nextUrl;

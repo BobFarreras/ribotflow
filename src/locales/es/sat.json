@@ -575,6 +575,29 @@
         "load": "No se ha podido cargar el perfil",
         "generic": "No se ha podido completar la acción"
       }
+    },
+    "acceptInvitation": {
+      "title": "Acepta la invitación",
+      "subtitle": "Elige una contraseña para activar tu cuenta. En cuanto lo hagas, iniciarás sesión automáticamente.",
+      "invitedAs": "Te han invitado como {name} ({email}).",
+      "fields": {
+        "password": "Contraseña nueva",
+        "confirm": "Repite la contraseña",
+        "hint": "Mínimo 8 caracteres."
+      },
+      "show": "Mostrar la contraseña",
+      "hide": "Ocultar la contraseña",
+      "submit": "Activar cuenta y acceder",
+      "success": {
+        "signInPending": "Cuenta activada. Inicia sesión manualmente para continuar."
+      },
+      "errors": {
+        "missingToken": "Falta el token de invitación en la URL.",
+        "invalidToken": "Esta invitación no es válida o ha caducado. Pide al propietario de la empresa que te la reenvíe.",
+        "alreadyAccepted": "Esta invitación ya se ha aceptado. Inicia sesión con tus credenciales.",
+        "passwordTooShort": "La contraseña debe tener como mínimo 8 caracteres.",
+        "generic": "No se ha podido activar la cuenta. Vuelve a intentarlo."
+      }
     }
   }
 }

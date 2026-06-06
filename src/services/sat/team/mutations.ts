@@ -11,6 +11,7 @@ import { users } from "@/db/schema/auth";
 import { and, eq } from "drizzle-orm";
 import { generateInvitationToken, invitationExpiry } from "./utils/invitations";
 import type { TeamMember, TeamRole } from "./types";
+import { hashPassword } from "@/lib/utils/crypto";
 import {
   CannotInviteOwnerError,
   CannotModifyOwnerError,
@@ -20,6 +21,7 @@ import {
   UserAlreadyExistsError,
   UserNotFoundError,
 } from "@/lib/errors/team";
+import { PasswordTooShortError } from "@/lib/errors/profile";
 import {
   companyHasOwner,
   countActiveAdminsExcluding,
@@ -234,4 +236,55 @@ export async function reactivateUser(companyId: string, userId: string): Promise
     .returning();
 
   return rowToDto(row);
+}
+
+/* ----------------------------------------------------------------
+   Public invitation acceptance (no auth required)
+   ---------------------------------------------------------------- */
+
+/**
+ * Minimum password length for newly-accepted invitations. Mirrors the
+ * value enforced by the profile `changePassword` flow.
+ */
+const MIN_INVITATION_PASSWORD = 8;
+
+export interface AcceptInvitationResult {
+  /** The user that just completed onboarding, for the auto-login step. */
+  member: TeamMember;
+}
+
+/**
+ * Validates an invitation token and finalises the invited user's
+ * account: hashes the new password, marks the user as `active`, and
+ * clears the invitation token + expiry so the link cannot be reused.
+ *
+ * Public: does NOT require an authenticated session. The token itself
+ * is the credential.
+ */
+export async function acceptInvitation(args: {
+  token: string;
+  password: string;
+}): Promise<AcceptInvitationResult> {
+  if (args.password.length < MIN_INVITATION_PASSWORD) {
+    throw new PasswordTooShortError();
+  }
+  // Re-uses the existing validator which checks token existence,
+  // pending status, and expiry.
+  const member = await acceptInvitationToken(args.token);
+
+  const passwordHash = await hashPassword(args.password);
+  const [row] = await db
+    .update(users)
+    .set({
+      passwordHash,
+      status: "active",
+      invitationToken: null,
+      invitationExpiresAt: null,
+      lastActiveAt: new Date(),
+      updatedAt: new Date(),
+    })
+    .where(eq(users.id, member.id))
+    .returning();
+
+  return { member: rowToDto(row) };
 }
