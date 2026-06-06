@@ -48,6 +48,7 @@ import { updateSmtpConfigAction } from "@/actions/sat/company/updateSmtpConfig";
 import { deleteSmtpConfigAction } from "@/actions/sat/company/deleteSmtpConfig";
 import { getSmtpConfigAction } from "@/actions/sat/company/getSmtpConfig";
 import { testSmtpConnectionAction } from "@/actions/sat/company/testSmtpConnection";
+import type { CompanySettingsInput } from "@/lib/validators/sat/companySchema";
 
 function session(role: "OWNER" | "ADMIN" | "OFFICE" | "TECHNICIAN" | null) {
   if (role === null) return null;
@@ -73,7 +74,7 @@ describe("updateCompanySettingsAction — company:write gate", () => {
     ["TECHNICIAN", false],
   ] as const)("blocks %s", async (role, expected) => {
     authMock.mockResolvedValue(session(role));
-    const res = await updateCompanySettingsAction({ name: "X" });
+    const res = await updateCompanySettingsAction({ name: "X" } as CompanySettingsInput);
     expect(res.success).toBe(expected);
   });
 
@@ -103,17 +104,17 @@ describe("updateCompanySettingsAction — company:write gate", () => {
 
   it("rejects an unauthenticated request", async () => {
     authMock.mockResolvedValue(null);
-    const res = await updateCompanySettingsAction({ name: "X" });
+    const res = await updateCompanySettingsAction({ name: "X" } as CompanySettingsInput);
     expect(res).toEqual({ success: false, error: "Unauthorized" });
   });
 });
 
 describe("getCompanySettingsAction — company:read gate", () => {
   it.each([
-    ["OWNER", true],
-    ["ADMIN", true],
-    ["OFFICE", true],
-    ["TECHNICIAN", true], // matrix: every role can read company
+    "OWNER",
+    "ADMIN",
+    "OFFICE",
+    "TECHNICIAN", // matrix: every role can read company
   ] as const)("allows %s", async (role) => {
     authMock.mockResolvedValue(session(role));
     const res = await getCompanySettingsAction();
@@ -129,9 +130,9 @@ describe("getCompanySettingsAction — company:read gate", () => {
 
 describe("uploadCompanyLogoAction — company:write gate", () => {
   it.each([
-    ["ADMIN", false],
-    ["OFFICE", false],
-    ["TECHNICIAN", false],
+    "ADMIN",
+    "OFFICE",
+    "TECHNICIAN",
   ] as const)("blocks %s", async (role) => {
     authMock.mockResolvedValue(session(role));
     const res = await uploadCompanyLogoAction({ fileName: "f", mimeType: "image/png", base64: "" });
