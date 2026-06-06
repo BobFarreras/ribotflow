@@ -75,4 +75,15 @@ export interface Props {
   workOrders?: Array<{ id: string; number: string; title: string }>;
   existingQuote?: ExistingQuote;
   mode?: "create" | "edit";
+  company: CompanySummary;
+}
+
+export interface CompanySummary {
+  name: string;
+  taxId: string | null;
+  address: string | null;
+  phone: string | null;
+  email: string | null;
+  website: string | null;
+  logoUrl: string | null;
 }

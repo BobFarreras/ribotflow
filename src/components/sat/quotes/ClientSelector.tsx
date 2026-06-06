@@ -5,18 +5,10 @@
  */
 
 import { useState } from "react";
-import type { Client } from "./types";
-
-const COMPANY_DATA = {
-  name: "DigitAIStudios",
-  nif: "B12345678",
-  address: "Carrer Nou 15, 17100 La Bisbal d'Emporda",
-  phone: "972 642 100",
-  email: "info@ditaistudios.com",
-  website: "www.ditaistudios.com",
-};
+import type { Client, CompanySummary } from "./types";
 
 interface Props {
+  company: CompanySummary;
   clients: Client[];
   selectedClientId: string;
   selectedClient: Client | undefined;
@@ -39,6 +31,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 }
 
 export function ClientSelector({
+  company,
   clients,
   selectedClientId,
   selectedClient,
@@ -54,17 +47,21 @@ export function ClientSelector({
       <Section title="Empresa">
         <div className="space-y-2 text-sm">
           <div className="flex items-center gap-2">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--module-sat)]/10 text-[var(--module-sat)] font-bold text-lg">
-              {COMPANY_DATA.name.charAt(0)}
-            </div>
+            {company.logoUrl ? (
+              <img src={company.logoUrl} alt={company.name} className="h-10 w-10 rounded-lg object-contain" />
+            ) : (
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--module-sat)]/10 text-[var(--module-sat)] font-bold text-lg">
+                {company.name.charAt(0)}
+              </div>
+            )}
             <div>
-              <div className="font-semibold text-[var(--text)]">{COMPANY_DATA.name}</div>
-              <div className="text-xs text-[var(--text-muted)]">NIF: {COMPANY_DATA.nif}</div>
+              <div className="font-semibold text-[var(--text)]">{company.name}</div>
+              {company.taxId && <div className="text-xs text-[var(--text-muted)]">NIF: {company.taxId}</div>}
             </div>
           </div>
-          <div className="text-[var(--text-muted)]">{COMPANY_DATA.address}</div>
-          <div className="text-[var(--text-muted)]">{COMPANY_DATA.phone}</div>
-          <div className="text-[var(--text-muted)]">{COMPANY_DATA.email}</div>
+          {company.address && <div className="text-[var(--text-muted)]">{company.address}</div>}
+          {company.phone && <div className="text-[var(--text-muted)]">{company.phone}</div>}
+          {company.email && <div className="text-[var(--text-muted)]">{company.email}</div>}
         </div>
       </Section>
 

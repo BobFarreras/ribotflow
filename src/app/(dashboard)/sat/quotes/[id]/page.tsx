@@ -11,6 +11,8 @@ import { clients, products, workOrders } from "@/db/schema/sat";
 import { eq } from "drizzle-orm";
 import { quoteService } from "@/services/sat/quotes/quoteService";
 import { QuoteEditor } from "@/components/sat/quotes/QuoteEditor";
+import { getCompanySettingsAction } from "@/actions/sat/company/getCompanySettings";
+import { toCompanySummary } from "@/lib/utils/companySummary";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -33,25 +35,19 @@ export default async function QuoteDetailPage({ params }: Props) {
     );
   }
 
-  // Fetch clients, products, and work orders
-  const [clientList, productList, workOrderList] = await Promise.all([
+  const [clientList, productList, workOrderList, companyResult] = await Promise.all([
+    db.select().from(clients).where(eq(clients.companyId, companyId)),
+    db.select().from(products).where(eq(products.companyId, companyId)),
     db
-      .select()
-      .from(clients)
-      .where(eq(clients.companyId, companyId)),
-    db
-      .select()
-      .from(products)
-      .where(eq(products.companyId, companyId)),
-    db
-      .select({
-        id: workOrders.id,
-        number: workOrders.number,
-        title: workOrders.title,
-      })
+      .select({ id: workOrders.id, number: workOrders.number, title: workOrders.title })
       .from(workOrders)
       .where(eq(workOrders.companyId, companyId)),
+    getCompanySettingsAction(),
   ]);
+
+  const company = companyResult.success && companyResult.data
+    ? toCompanySummary(companyResult.data)
+    : { name: "Empresa", taxId: null, address: null, phone: null, email: null, website: null, logoUrl: null };
 
   return (
     <div className="flex h-[calc(100dvh-1px)] flex-col bg-[var(--bg)]">
@@ -92,6 +88,7 @@ export default async function QuoteDetailPage({ params }: Props) {
             })),
           }}
           mode="edit"
+          company={company}
         />
       </main>
     </div>

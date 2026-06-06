@@ -32,8 +32,10 @@ export function drawInfoSection(
 
   const c1Lines = [
     company.name,
+    ...(company.taxId ? [`NIF: ${company.taxId}`] : []),
     ...(company.phone ? [`Tel: ${company.phone}`] : []),
     ...(company.email ? [company.email] : []),
+    ...(company.website ? [company.website] : []),
     ...(company.address ? [company.address] : []),
   ];
 

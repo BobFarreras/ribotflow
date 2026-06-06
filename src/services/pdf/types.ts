@@ -17,6 +17,10 @@ export interface CompanyInfo {
   address: string | null;
   phone: string | null;
   email: string | null;
+  website: string | null;
+  taxId: string | null;
+  logoUrl: string | null;
+  legalText: string | null;
 }
 
 export interface ClientInfo {

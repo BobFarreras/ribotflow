@@ -9,6 +9,8 @@ import { db } from "@/db";
 import { clients, products, workOrders } from "@/db/schema/sat";
 import { eq } from "drizzle-orm";
 import { QuoteEditor } from "@/components/sat/quotes/QuoteEditor";
+import { getCompanySettingsAction } from "@/actions/sat/company/getCompanySettings";
+import { toCompanySummary } from "@/lib/utils/companySummary";
 
 interface Props {
   searchParams: Promise<{ otId?: string; templateId?: string }>;
@@ -21,8 +23,7 @@ export default async function NewQuotePage({ searchParams }: Props) {
   const { otId } = await searchParams;
   const companyId = session.user.companyId;
 
-  // Fetch clients, products, work orders, and optionally the work order
-  const [clientList, productList, workOrderList, workOrder] = await Promise.all([
+  const [clientList, productList, workOrderList, workOrder, companyResult] = await Promise.all([
     db
       .select()
       .from(clients)
@@ -47,11 +48,15 @@ export default async function NewQuotePage({ searchParams }: Props) {
           .limit(1)
           .then((r) => r[0] ?? null)
       : Promise.resolve(null),
+    getCompanySettingsAction(),
   ]);
+
+  const company = companyResult.success && companyResult.data
+    ? toCompanySummary(companyResult.data)
+    : { name: "Empresa", taxId: null, address: null, phone: null, email: null, website: null, logoUrl: null };
 
   return (
     <div className="flex h-[calc(100dvh-1px)] flex-col bg-[var(--bg)]">
-      {/* Editor */}
       <main className="min-h-0 flex-1">
         <QuoteEditor
           workOrderId={otId ?? ""}
@@ -59,6 +64,7 @@ export default async function NewQuotePage({ searchParams }: Props) {
           products={productList}
           workOrders={workOrderList}
           mode="create"
+          company={company}
         />
       </main>
     </div>

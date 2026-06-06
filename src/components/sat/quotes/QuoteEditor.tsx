@@ -25,6 +25,7 @@ export function QuoteEditor({
   workOrders = [],
   existingQuote,
   mode = "create",
+  company,
 }: Props) {
   const form = useQuoteForm({
     workOrderId: workOrderIdProp,
@@ -65,6 +66,7 @@ export function QuoteEditor({
             )}
 
             <ClientSelector
+              company={company}
               clients={clients}
               selectedClientId={form.selectedClientId}
               selectedClient={form.selectedClient}
@@ -199,11 +201,11 @@ export function QuoteEditor({
           <QuotePdfPreview
             quoteNumber={existingQuote?.number ?? "PRE-2026-0001"}
             company={{
-              name: "DigitAIStudios",
-              nif: "B12345678",
-              address: "Carrer Nou 15, 17100 La Bisbal d'Emporda",
-              phone: "972 642 100",
-              email: "info@ditaistudios.com",
+              name: company.name,
+              nif: company.taxId ?? "",
+              address: company.address ?? "",
+              phone: company.phone ?? "",
+              email: company.email ?? "",
             }}
             client={
               form.useCustomClient

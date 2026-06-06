@@ -16,6 +16,10 @@ import type { MaterialRow, PhotoRow } from "../types";
 
 export interface WorkOrderPdfData {
   workOrderNumber: string;
+  companyName: string;
+  companyLogoUrl: string | null;
+  companyLegalText: string | null;
+  companyWebsite: string | null;
   clientName: string;
   clientPhone: string | null;
   clientEmail: string | null;
@@ -36,8 +40,7 @@ export interface WorkOrderPdfData {
 export async function buildWorkOrderPdf(builder: PdfBuilder, data: WorkOrderPdfData) {
   const t = LABELS[builder.lang];
 
-  // Header
-  drawWorkOrderHeader(builder, data.workOrderNumber);
+  await drawWorkOrderHeader(builder, data.workOrderNumber, data.companyName, data.companyLogoUrl);
 
   // Generated date
     builder.drawText(
@@ -95,6 +98,12 @@ export async function buildWorkOrderPdf(builder: PdfBuilder, data: WorkOrderPdfD
   if (data.signaturePngUrl || data.signedBy) {
     builder.drawSectionTitle(t.signature);
     await drawWorkOrderSignature(builder, data.signaturePngUrl, data.signedBy);
+  }
+
+  // Legal footer (per-tenant)
+  if (data.companyLegalText || data.companyWebsite) {
+    const { drawLegalFooter } = await import("../layout/components/LegalFooter");
+    drawLegalFooter(builder, { legalText: data.companyLegalText, website: data.companyWebsite });
   }
 
   // Footer on last page

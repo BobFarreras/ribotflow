@@ -11,6 +11,8 @@ import { eq, and } from "drizzle-orm";
 import { notFound } from "next/navigation";
 import { QuoteEditor } from "@/components/sat/quotes/QuoteEditor";
 import { quoteService } from "@/services/sat/quotes/quoteService";
+import { getCompanySettingsAction } from "@/actions/sat/company/getCompanySettings";
+import { toCompanySummary } from "@/lib/utils/companySummary";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -27,17 +29,15 @@ export default async function EditQuotePage({ params }: Props) {
   const quote = await quoteService.getById(companyId, id);
   if (!quote) notFound();
 
-  // Fetch clients and products
-  const [clientList, productList] = await Promise.all([
-    db
-      .select()
-      .from(clients)
-      .where(eq(clients.companyId, companyId)),
-    db
-      .select()
-      .from(products)
-      .where(eq(products.companyId, companyId)),
+  const [clientList, productList, companyResult] = await Promise.all([
+    db.select().from(clients).where(eq(clients.companyId, companyId)),
+    db.select().from(products).where(eq(products.companyId, companyId)),
+    getCompanySettingsAction(),
   ]);
+
+  const company = companyResult.success && companyResult.data
+    ? toCompanySummary(companyResult.data)
+    : { name: "Empresa", taxId: null, address: null, phone: null, email: null, website: null, logoUrl: null };
 
   return (
     <div className="flex h-[calc(100dvh-1px)] flex-col bg-[var(--bg)]">
@@ -77,6 +77,7 @@ export default async function EditQuotePage({ params }: Props) {
             })),
           }}
           mode="edit"
+          company={company}
         />
       </main>
     </div>

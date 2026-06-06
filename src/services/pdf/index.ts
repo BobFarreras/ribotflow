@@ -21,6 +21,7 @@ import {
   buildWorkOrderReportKey,
   type StorageContext,
 } from "@/lib/utils/storageKeys";
+import { mapCompanyToBuilderInfo } from "./utils/companyMapper";
 import type { Lang } from "./types";
 
 export class PdfService {
@@ -40,13 +41,7 @@ export class PdfService {
 
     await buildQuotePdf(builder, {
       quoteNumber: data.quote.number,
-      company: {
-        name: data.company.name,
-        address: data.company.companyAddress,
-        phone: data.company.phone,
-        email: data.company.tenantSlug ? `info@${data.company.tenantSlug}.com` : null,
-        taxId: data.company.taxId,
-      },
+      company: mapCompanyToBuilderInfo(data.company),
       client: {
         name: data.client.name,
         taxId: data.client.taxId,
@@ -99,13 +94,7 @@ export class PdfService {
 
     await buildQuotePdf(builder, {
       quoteNumber: data.quote.number,
-      company: {
-        name: data.company.name,
-        address: data.company.companyAddress,
-        phone: data.company.phone,
-        email: data.company.tenantSlug ? `info@${data.company.tenantSlug}.com` : null,
-        taxId: data.company.taxId,
-      },
+      company: mapCompanyToBuilderInfo(data.company),
       client: {
         name: data.client.name,
         taxId: data.client.taxId,
@@ -158,6 +147,10 @@ export class PdfService {
 
     await buildWorkOrderPdf(builder, {
       workOrderNumber: data.workOrder.number,
+      companyName: data.company.name,
+      companyLogoUrl: data.company.logoUrl,
+      companyLegalText: data.company.legalText,
+      companyWebsite: data.company.website,
       clientName: data.client.name,
       clientPhone: data.client.phone,
       clientEmail: data.client.email,
@@ -240,7 +233,16 @@ export class PdfService {
     if (!orderData) throw new Error("Work order not found or access denied");
 
     const [company] = await db
-      .select({ tenantSlug: companies.tenantSlug })
+      .select({
+        name: companies.name,
+        tenantSlug: companies.tenantSlug,
+        logoUrl: companies.logoUrl,
+        legalText: companies.legalText,
+        website: companies.website,
+        phone: companies.phone,
+        email: companies.email,
+        taxId: companies.taxId,
+      })
       .from(companies)
       .where(eq(companies.id, companyId))
       .limit(1);
@@ -253,7 +255,7 @@ export class PdfService {
       workOrder: orderData.workOrder,
       client: orderData.client,
       category: orderData.category,
-      company: company ?? { tenantSlug: "" },
+      company: company ?? { name: "", tenantSlug: "", logoUrl: null, legalText: null, website: null, phone: null, email: null, taxId: null },
       materials,
       attachments,
       signature,
