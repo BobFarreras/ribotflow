@@ -486,6 +486,56 @@
       "errors": {
         "generic": "No s'ha pogut completar l'acció"
       }
+    },
+    "profile": {
+      "title": "El meu perfil",
+      "subtitle": "Gestiona el teu nom, avatar i contrasenya. Aquesta informació és privada i només la veus tu.",
+      "sections": {
+        "avatar": "La teva foto",
+        "avatarDesc": "Puja una imatge quadrada que t'identifiqui. Si no en tens, es mostren les inicials del teu nom.",
+        "identity": "Les teves dades",
+        "identityDesc": "El teu nom apareix als pressupostos, factures i correus que envies en nom de l'empresa.",
+        "security": "Contrasenya",
+        "securityDesc": "Tria una contrasenya forta. Si la canvies, hauràs d'iniciar sessió de nou a la resta de dispositius."
+      },
+      "avatar": {
+        "title": "Foto de perfil",
+        "subtitle": "Arrossega una imatge o prem el botó per triar-ne una.",
+        "choose": "Tria una imatge",
+        "replace": "Canvia la imatge",
+        "remove": "Elimina",
+        "formats": "Formats: PNG, JPG, WebP, SVG. Màxim 2 MB.",
+        "success": "Foto de perfil actualitzada",
+        "removed": "Foto de perfil eliminada",
+        "failed": "No s'ha pogut pujar la foto",
+        "removeFailed": "No s'ha pogut eliminar la foto",
+        "errors": {
+          "unsupported": "Format no suportat. Prova amb PNG, JPG, WebP o SVG.",
+          "tooLarge": "El fitxer és massa gran. Màxim 2 MB.",
+          "empty": "El fitxer és buit."
+        }
+      },
+      "nameForm": {
+        "name": "Nom complet",
+        "email": "Correu electrònic",
+        "emailHint": "El correu és l'identificador del teu compte. Si el vols canviar, contacta amb el propietari de l'empresa.",
+        "save": "Desar canvis",
+        "saved": "Nom desat correctament"
+      },
+      "passwordForm": {
+        "current": "Contrasenya actual",
+        "next": "Contrasenya nova",
+        "confirm": "Repeteix la contrasenya nova",
+        "hint": "Mínim 8 caràcters. Combina majúscules, minúscules i números per reforçar-la.",
+        "save": "Canviar contrasenya",
+        "saved": "Contrasenya canviada",
+        "show": "Mostra la contrasenya",
+        "hide": "Amaga la contrasenya"
+      },
+      "errors": {
+        "load": "No s'ha pogut carregar el perfil",
+        "generic": "No s'ha pogut completar l'acció"
+      }
     }
   }
 }

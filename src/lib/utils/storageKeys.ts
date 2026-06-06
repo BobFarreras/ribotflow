@@ -249,6 +249,36 @@ export function getCompanyLogoPrefix(ctx: StorageContext): string {
 }
 
 /* ============================================================
+   USER AVATAR KEYS
+   ============================================================ */
+
+/**
+ * Build storage key for a user's avatar. Versioned by timestamp so
+ * re-uploads invalidate the old asset.
+ * Example: branding/digitalagency/avatars/8b3c-1717351234.png
+ */
+export function buildUserAvatarKey(
+  ctx: StorageContext,
+  userId: string,
+  fileExtension: string
+): string {
+  const company = getCompanyFolder(ctx);
+  const cleanExt = fileExtension.replace(/^\./, "").toLowerCase() || "png";
+  const parts = ["branding"];
+  if (company) parts.push(company);
+  parts.push("avatars", `${userId}-${Date.now()}.${cleanExt}`);
+  return parts.join("/");
+}
+
+/** Storage key prefix used to find previous avatars for a user. */
+export function getUserAvatarPrefix(ctx: StorageContext, userId: string): string {
+  const company = getCompanyFolder(ctx);
+  return company
+    ? `branding/${company}/avatars/${userId}-`
+    : `branding/avatars/${userId}-`;
+}
+
+/* ============================================================
    LEGACY API (kept for backward compat — re-exports with deprecation)
    These functions accept flat parameters and build a key WITHOUT
    client organization. Only used in legacy code paths.

@@ -71,6 +71,8 @@ export const users = pgTable(
     invitedAt: timestamp("invited_at"),
     /** Updated on every successful sign-in. Shown in the team list. */
     lastActiveAt: timestamp("last_active_at"),
+    /** URL of the user's avatar (S3/MinIO). Null = show initials. */
+    avatarUrl: text("avatar_url"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
   },

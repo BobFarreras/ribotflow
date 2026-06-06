@@ -486,6 +486,56 @@
       "errors": {
         "generic": "No se ha podido completar la acción"
       }
+    },
+    "profile": {
+      "title": "Mi perfil",
+      "subtitle": "Gestiona tu nombre, avatar y contraseña. Esta información es privada y solo la ves tú.",
+      "sections": {
+        "avatar": "Tu foto",
+        "avatarDesc": "Sube una imagen cuadrada que te identifique. Si no tienes, se muestran las iniciales de tu nombre.",
+        "identity": "Tus datos",
+        "identityDesc": "Tu nombre aparece en los presupuestos, facturas y correos que envías en nombre de la empresa.",
+        "security": "Contraseña",
+        "securityDesc": "Elige una contraseña fuerte. Si la cambias, tendrás que iniciar sesión de nuevo en el resto de dispositivos."
+      },
+      "avatar": {
+        "title": "Foto de perfil",
+        "subtitle": "Arrastra una imagen o pulsa el botón para elegir una.",
+        "choose": "Elegir imagen",
+        "replace": "Cambiar imagen",
+        "remove": "Eliminar",
+        "formats": "Formatos: PNG, JPG, WebP, SVG. Máximo 2 MB.",
+        "success": "Foto de perfil actualizada",
+        "removed": "Foto de perfil eliminada",
+        "failed": "No se ha podido subir la foto",
+        "removeFailed": "No se ha podido eliminar la foto",
+        "errors": {
+          "unsupported": "Formato no soportado. Prueba con PNG, JPG, WebP o SVG.",
+          "tooLarge": "El archivo es demasiado grande. Máximo 2 MB.",
+          "empty": "El archivo está vacío."
+        }
+      },
+      "nameForm": {
+        "name": "Nombre completo",
+        "email": "Correo electrónico",
+        "emailHint": "El correo es el identificador de tu cuenta. Si quieres cambiarlo, contacta con el propietario de la empresa.",
+        "save": "Guardar cambios",
+        "saved": "Nombre guardado correctamente"
+      },
+      "passwordForm": {
+        "current": "Contraseña actual",
+        "next": "Contraseña nueva",
+        "confirm": "Repite la contraseña nueva",
+        "hint": "Mínimo 8 caracteres. Combina mayúsculas, minúsculas y números para reforzarla.",
+        "save": "Cambiar contraseña",
+        "saved": "Contraseña cambiada",
+        "show": "Mostrar contraseña",
+        "hide": "Ocultar contraseña"
+      },
+      "errors": {
+        "load": "No se ha podido cargar el perfil",
+        "generic": "No se ha podido completar la acción"
+      }
     }
   }
 }
