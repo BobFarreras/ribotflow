@@ -206,6 +206,8 @@ export function QuoteEditor({
               address: company.address ?? "",
               phone: company.phone ?? "",
               email: company.email ?? "",
+              logoUrl: company.logoUrl,
+              website: company.website,
             }}
             client={
               form.useCustomClient

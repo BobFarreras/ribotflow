@@ -3,15 +3,14 @@
  * Path: src/components/sat/settings/CompanySettingsForm.tsx
  * Description: Orchestrator for the company settings page (/settings/company).
  *              Sectioned layout (identity, address, preferences, documents,
- *              branding) with a sticky floating save bar that only appears
- *              when the form is dirty or has just been saved.
+ *              branding) with a sticky floating save bar that stays visible
+ *              at all times (disabled when the form is clean).
  */
 
 "use client";
 
 import { useTranslations } from "next-intl";
 import { SmtpPermissionNotice } from "./SmtpPermissionNotice";
-import { SmtpStatusBadge } from "./SmtpStatusBadge";
 import { CompanyIdentitySection } from "./CompanyIdentitySection";
 import { CompanyAddressSection } from "./CompanyAddressSection";
 import { CompanyPreferencesSection } from "./CompanyPreferencesSection";
@@ -41,17 +40,18 @@ export function CompanySettingsForm({ initial, userRole }: Props) {
 
   return (
     <div className="space-y-6 pb-24">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <SmtpStatusBadge configured={!!initial.name} lastUpdated={initial.updatedAt} />
-        {!canEdit && <SmtpPermissionNotice role={userRole} />}
-      </div>
+      {!canEdit && (
+        <div className="mx-auto max-w-3xl">
+          <SmtpPermissionNotice role={userRole} />
+        </div>
+      )}
 
       <form
         onSubmit={(e) => {
           e.preventDefault();
           if (canEdit) save(t);
         }}
-        className="space-y-6"
+        className="mx-auto max-w-3xl space-y-6"
       >
         <fieldset disabled={!canEdit} className="space-y-6">
           <CompanyIdentitySection state={pickIdentity(values)} disabled={!canEdit} onChange={applyIdentityPatch} />

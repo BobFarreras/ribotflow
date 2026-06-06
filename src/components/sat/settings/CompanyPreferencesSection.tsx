@@ -29,7 +29,7 @@ export function CompanyPreferencesSection({ state, disabled, onChange }: Props) 
 
   return (
     <SectionShell step={3} title={t("sections.preferences")} description={t("sections.preferencesDescription")}>
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid gap-x-6 gap-y-4 sm:grid-cols-3">
         <FormField label={t("fields.defaultLocale")} hint={t("fields.defaultLocaleHint")}>
           <select value={state.defaultLocale} onChange={(e) => onChange({ defaultLocale: e.target.value })} disabled={disabled} className="input">
             {LOCALES.map((l) => <option key={l.code} value={l.code}>{l.name}</option>)}

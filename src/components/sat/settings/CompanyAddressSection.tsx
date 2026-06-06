@@ -33,7 +33,7 @@ export function CompanyAddressSection({ state, disabled, onChange }: Props) {
 
   return (
     <SectionShell step={2} title={t("sections.address")} description={t("sections.addressDescription")}>
-      <div className="grid gap-4 sm:grid-cols-6">
+      <div className="grid gap-x-6 gap-y-4 sm:grid-cols-6">
         <div className="sm:col-span-6">
           <FormField label={t("fields.addressStreet")} hint={t("fields.addressStreetHint")}>
             <input
@@ -48,20 +48,22 @@ export function CompanyAddressSection({ state, disabled, onChange }: Props) {
           </FormField>
         </div>
 
-        <FormField label={t("fields.addressPostalCode")}>
-          <input
-            type="text"
-            value={state.addressPostalCode}
-            onChange={(e) => onChange({ addressPostalCode: e.target.value })}
-            placeholder="08001"
-            disabled={disabled}
-            className="input"
-            autoComplete="postal-code"
-            maxLength={12}
-          />
-        </FormField>
+        <div className="sm:col-span-2">
+          <FormField label={t("fields.addressPostalCode")}>
+            <input
+              type="text"
+              value={state.addressPostalCode}
+              onChange={(e) => onChange({ addressPostalCode: e.target.value })}
+              placeholder="08001"
+              disabled={disabled}
+              className="input max-w-[7rem]"
+              autoComplete="postal-code"
+              maxLength={12}
+            />
+          </FormField>
+        </div>
 
-        <div className="sm:col-span-3">
+        <div className="sm:col-span-2">
           <FormField label={t("fields.addressCity")}>
             <input
               type="text"
@@ -69,7 +71,7 @@ export function CompanyAddressSection({ state, disabled, onChange }: Props) {
               onChange={(e) => onChange({ addressCity: e.target.value })}
               placeholder="Barcelona"
               disabled={disabled}
-              className="input"
+              className="input max-w-[12rem]"
               autoComplete="address-level2"
             />
           </FormField>
@@ -81,7 +83,7 @@ export function CompanyAddressSection({ state, disabled, onChange }: Props) {
               value={state.addressCountry}
               onChange={(e) => onChange({ addressCountry: e.target.value })}
               disabled={disabled}
-              className="input cursor-pointer"
+              className="input cursor-pointer max-w-[10rem]"
               autoComplete="country"
             >
               {COUNTRIES.map((c) => (

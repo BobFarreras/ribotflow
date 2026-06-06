@@ -385,6 +385,11 @@
         "change": "canvi pendent",
         "changes": "canvis pendents"
       },
+      "status": {
+        "active": "Actiu",
+        "inactive": "Inactiu",
+        "updatedAt": "Actualitzat el"
+      },
       "feedback": {
         "saved": "Dades de l'empresa desades correctament",
         "saveFailed": "No s'han pogut desar les dades"

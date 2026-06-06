@@ -385,6 +385,11 @@
         "change": "cambio pendiente",
         "changes": "cambios pendientes"
       },
+      "status": {
+        "active": "Activo",
+        "inactive": "Inactivo",
+        "updatedAt": "Actualizado el"
+      },
       "feedback": {
         "saved": "Datos de la empresa guardados correctamente",
         "saveFailed": "No se han podido guardar los datos"

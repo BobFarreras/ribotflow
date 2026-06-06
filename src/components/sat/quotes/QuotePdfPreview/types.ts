@@ -10,6 +10,8 @@ export interface CompanyData {
   address: string;
   phone: string;
   email: string;
+  logoUrl?: string | null;
+  website?: string | null;
 }
 
 export interface ClientData {

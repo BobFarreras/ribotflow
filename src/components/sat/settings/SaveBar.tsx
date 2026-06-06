@@ -30,8 +30,6 @@ interface Props {
 }
 
 export function SaveBar({ isDirty, isSaving, saveError, justSaved, dirtyCount, onReset, labels }: Props) {
-  if (!isDirty && !saveError && !justSaved) return null;
-
   return (
     <div className="pointer-events-none sticky bottom-4 z-30 mt-6">
       <div className="pointer-events-auto mx-auto flex max-w-3xl flex-col gap-2">

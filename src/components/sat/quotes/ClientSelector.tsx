@@ -4,7 +4,8 @@
  * Description: Company display + client selection (existing or custom).
  */
 
-import { useState } from "react";
+import Link from "next/link";
+import { ExternalLink } from "lucide-react";
 import type { Client, CompanySummary } from "./types";
 
 interface Props {
@@ -19,11 +20,12 @@ interface Props {
   onCustomChange: React.Dispatch<React.SetStateAction<{ name: string; email: string; phone: string; address: string; taxId: string }>>;
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+function Section({ title, action, children }: { title: string; action?: React.ReactNode; children: React.ReactNode }) {
   return (
     <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)]">
-      <div className="px-4 py-3">
+      <div className="flex items-center justify-between px-4 py-3">
         <h2 className="text-sm font-semibold text-[var(--text)]">{title}</h2>
+        {action}
       </div>
       <div className="px-4 pb-4">{children}</div>
     </div>
@@ -44,7 +46,19 @@ export function ClientSelector({
   return (
     <div className="grid gap-4 sm:grid-cols-2">
       {/* Company */}
-      <Section title="Empresa">
+      <Section
+        title="Empresa"
+        action={
+          <Link
+            href="/settings/company"
+            className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-[var(--module-sat)] transition-colors hover:bg-[var(--module-sat)]/10"
+            aria-label="Editar dades de l'empresa"
+          >
+            Editar
+            <ExternalLink className="h-3 w-3" aria-hidden />
+          </Link>
+        }
+      >
         <div className="space-y-2 text-sm">
           <div className="flex items-center gap-2">
             {company.logoUrl ? (
