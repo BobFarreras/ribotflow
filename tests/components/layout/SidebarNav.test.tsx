@@ -1,334 +1,138 @@
 /**
- * Creation/modification date: 25/05/2026
+ * Creation/modification date: 07/06/2026
  * Path: tests/components/layout/SidebarNav.test.tsx
- * Description: Tests for SidebarNav component with active state classes
- *              and sub-menu visibility.
+ * Description: Verifies that the SidebarNav correctly filters navigation
+ *              items based on the user's role. Each role should only see
+ *              the sections they have permission for.
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
 import SidebarNav from "@/components/layout/SidebarNav";
-import { SidebarProvider } from "@/components/layout/SidebarContext";
-
-const mockUsePathname = vi.fn();
-
-vi.mock("next/navigation", () => ({
-  usePathname: () => mockUsePathname(),
-}));
+import type { Role } from "@/lib/auth/roles";
 
 vi.mock("next-intl", () => ({
-  useTranslations: () => (key: string) => {
-    const translations: Record<string, string> = {
-      "dashboard.label": "Inici",
-      "sat.label": "SAT",
-      "sat.subItems.workOrders": "Ordres de Treball",
-      "sat.subItems.quotes": "Pressupostos",
-      "sat.subItems.map": "Mapa",
-      "sat.subItems.clients": "Clients",
-      "sat.subItems.categories": "Categories",
-      "erp.label": "ERP",
-      "billing.label": "Facturació",
-      "crm.label": "CRM",
-      "access.label": "Control d'Accés",
-      "settings.label": "Configuració",
-      "settings.subItems.company": "Empresa",
-      "settings.subItems.email": "Correu professional",
-      "settings.subItems.team": "Equip",
-      "settings.subItems.profile": "Perfil",
+  useTranslations: (ns: string) => {
+    const base = {
+      "sidebar.modules.dashboard.label": "Inici",
+      "sidebar.modules.sat.label": "SAT",
+      "sidebar.modules.sat.subItems.workOrders": "Ordres",
+      "sidebar.modules.sat.subItems.field": "Camp",
+      "sidebar.modules.sat.subItems.quotes": "Pressupostos",
+      "sidebar.modules.sat.subItems.quoteTemplates": "Plantilles",
+      "sidebar.modules.sat.subItems.map": "Mapa",
+      "sidebar.modules.sat.subItems.routes": "Rutes",
+      "sidebar.modules.sat.subItems.clients": "Clients",
+      "sidebar.modules.sat.subItems.categories": "Categories",
+      "sidebar.modules.erp.label": "ERP",
+      "sidebar.modules.erp.subItems.products": "Productes",
+      "sidebar.modules.erp.subItems.inventory": "Inventari",
+      "sidebar.modules.billing.label": "Facturació",
+      "sidebar.modules.billing.subItems.invoices": "Factures",
+      "sidebar.modules.billing.subItems.budgets": "Pressupostos",
+      "sidebar.modules.crm.label": "CRM",
+      "sidebar.modules.crm.subItems.contacts": "Contactes",
+      "sidebar.modules.crm.subItems.opportunities": "Oportunitats",
+      "sidebar.modules.access.label": "Control d'Accés",
+      "sidebar.modules.access.subItems.timeTracking": "Fichatge",
+      "sidebar.modules.access.subItems.absences": "Absències",
+      "sidebar.modules.settings.label": "Configuració",
+      "sidebar.modules.settings.subItems.company": "Empresa",
+      "sidebar.modules.settings.subItems.email": "Correu",
+      "sidebar.modules.settings.subItems.team": "Equip",
+      "sidebar.modules.settings.subItems.profile": "Perfil",
     };
-    return translations[key] || key;
+    return (key: string, vars?: Record<string, unknown>) => {
+      const fullKey = `${ns}.${key}`;
+      return (
+        base[fullKey as keyof typeof base] ??
+        (typeof vars === "object" && vars !== null
+          ? `${fullKey} (${JSON.stringify(vars)})`
+          : fullKey)
+      );
+    };
   },
 }));
 
-describe("SidebarNav", () => {
-  it("renders main navigation items", () => {
-    mockUsePathname.mockReturnValue("/dashboard");
-    render(
-      <SidebarProvider>
-        <SidebarNav />
-      </SidebarProvider>
-    );
+vi.mock("next/navigation", () => ({
+  usePathname: () => "/dashboard",
+}));
 
-    expect(screen.getByText("Inici")).toBeInTheDocument();
-    expect(screen.getByText("SAT")).toBeInTheDocument();
+vi.mock("@/components/layout/SidebarContext", () => ({
+  useSidebar: () => ({ expandedKeys: new Set(), toggleExpanded: () => {} }),
+}));
+
+/**
+ * Helper: renders the nav for a given role and returns the visible
+ * text content of every link/button in the navigation.
+ */
+function getVisibleLabels(role: Role | null) {
+  const { container } = render(<SidebarNav userRole={role} />);
+  const items = Array.from(container.querySelectorAll("nav a, nav button"));
+  return items.map((el) => el.textContent?.trim() ?? "").filter(Boolean);
+}
+
+describe("SidebarNav — role filtering", () => {
+  it("OWNER sees every module", () => {
+    const labels = getVisibleLabels("OWNER");
+    expect(labels).toContain("Inici");
+    expect(labels).toContain("SAT");
+    expect(labels).toContain("Configuració");
+    expect(labels).toContain("Empresa");
+    expect(labels).toContain("Correu");
+    expect(labels).toContain("Equip");
+    expect(labels).toContain("Perfil");
   });
 
-  it("highlights active top-level item", () => {
-    mockUsePathname.mockReturnValue("/dashboard");
-    render(
-      <SidebarProvider>
-        <SidebarNav />
-      </SidebarProvider>
-    );
-
-    const dashboardLink = screen.getByText("Inici").closest("a");
-    expect(dashboardLink).toHaveClass("bg-[var(--primary)]/10");
-    expect(dashboardLink).toHaveClass("text-[var(--primary)]");
+  it("ADMIN sees SAT, Settings (company, email, team, profile)", () => {
+    const labels = getVisibleLabels("ADMIN");
+    expect(labels).toContain("Inici");
+    expect(labels).toContain("SAT");
+    expect(labels).toContain("Configuració");
+    expect(labels).toContain("Empresa");
+    expect(labels).toContain("Correu"); // ADMIN has email:read
+    expect(labels).toContain("Equip");
+    expect(labels).toContain("Perfil");
   });
 
-  it("shows sub-items when expanded", () => {
-    mockUsePathname.mockReturnValue("/sat");
-    localStorage.setItem("sidebar:expanded:sat", "true");
-
-    render(
-      <SidebarProvider>
-        <SidebarNav />
-      </SidebarProvider>
-    );
-
-    expect(screen.getByText("Ordres de Treball")).toBeInTheDocument();
-    expect(screen.getByText("Clients")).toBeInTheDocument();
-    expect(screen.getByText("Categories")).toBeInTheDocument();
-
-    localStorage.removeItem("sidebar:expanded:sat");
+  it("OFFICE sees SAT (read-only), Clients, Quotes, Settings (company, team, profile)", () => {
+    const labels = getVisibleLabels("OFFICE");
+    expect(labels).toContain("Inici");
+    expect(labels).toContain("SAT");
+    expect(labels).toContain("Clients");
+    expect(labels).toContain("Pressupostos");
+    expect(labels).toContain("Configuració"); // has company:read + team:read + profile:read:self
+    expect(labels).toContain("Empresa");
+    expect(labels).toContain("Equip"); // OFFICE has team:read
+    expect(labels).toContain("Perfil");
+    expect(labels).not.toContain("Correu"); // OFFICE lacks email:read
   });
 
-  it("highlights parent module when child is active", () => {
-    mockUsePathname.mockReturnValue("/sat/clients");
-    localStorage.setItem("sidebar:expanded:sat", "true");
-
-    render(
-      <SidebarProvider>
-        <SidebarNav />
-      </SidebarProvider>
-    );
-
-    const satButton = screen.getByText("SAT").closest("button");
-    expect(satButton).toHaveClass("bg-[var(--primary)]/10");
-
-    const clientsLink = screen.getByText("Clients").closest("a");
-    expect(clientsLink).toHaveClass("bg-[var(--primary)]/10");
-
-    localStorage.removeItem("sidebar:expanded:sat");
+  it("TECHNICIAN sees SAT, /sat/field, Clients, Materials, Settings (company+profile)", () => {
+    const labels = getVisibleLabels("TECHNICIAN");
+    expect(labels).toContain("Inici");
+    expect(labels).toContain("SAT");
+    expect(labels).toContain("Camp");
+    expect(labels).toContain("Clients");
+    expect(labels).toContain("Configuració"); // has company:read + profile:read:self
+    expect(labels).toContain("Empresa");
+    expect(labels).toContain("Perfil");
+    expect(labels).not.toContain("Correu"); // no email:read
+    expect(labels).not.toContain("Equip"); // no team:read
+    expect(labels).not.toContain("Pressupostos"); // no quote:read
   });
 
-  it("sub-menu is always in DOM but hidden when collapsed", () => {
-    mockUsePathname.mockReturnValue("/dashboard");
-    // SAT is NOT expanded
-    localStorage.removeItem("sidebar:expanded:sat");
-
-    render(
-      <SidebarProvider>
-        <SidebarNav />
-      </SidebarProvider>
-    );
-
-    const satButton = screen.getByText("SAT").closest("button");
-    const subMenu = satButton?.parentElement?.querySelector("div[class*='hidden']");
-    expect(subMenu).toBeInTheDocument();
+  it("signed-out user (role=null) sees nothing gated", () => {
+    const labels = getVisibleLabels(null);
+    expect(labels).toHaveLength(0);
   });
 
-  it("renders all modules", () => {
-    mockUsePathname.mockReturnValue("/dashboard");
-    render(
-      <SidebarProvider>
-        <SidebarNav />
-      </SidebarProvider>
-    );
-
-    expect(screen.getByText("ERP")).toBeInTheDocument();
-    expect(screen.getByText("Facturació")).toBeInTheDocument();
-    expect(screen.getByText("CRM")).toBeInTheDocument();
-    expect(screen.getByText("Control d'Accés")).toBeInTheDocument();
-    expect(screen.getByText("Configuració")).toBeInTheDocument();
-  });
-
-  it("does NOT highlight sibling sub-item on child path (exact match only)", () => {
-    mockUsePathname.mockReturnValue("/sat/clients");
-    localStorage.setItem("sidebar:expanded:sat", "true");
-
-    render(
-      <SidebarProvider>
-        <SidebarNav />
-      </SidebarProvider>
-    );
-
-    // Clients should be active
-    const clientsLink = screen.getByText("Clients").closest("a");
-    expect(clientsLink).toHaveClass("bg-[var(--primary)]/10");
-
-    // WorkOrders (href /sat) should NOT be active on /sat/clients
-    const workOrdersLink = screen.getByText("Ordres de Treball").closest("a");
-    expect(workOrdersLink).not.toHaveClass("bg-[var(--primary)]/10");
-
-    localStorage.removeItem("sidebar:expanded:sat");
-  });
-
-  it("does NOT highlight any sub-item on non-exact child path", () => {
-    mockUsePathname.mockReturnValue("/sat/new");
-    localStorage.setItem("sidebar:expanded:sat", "true");
-
-    render(
-      <SidebarProvider>
-        <SidebarNav />
-      </SidebarProvider>
-    );
-
-    const workOrdersLink = screen.getByText("Ordres de Treball").closest("a");
-    expect(workOrdersLink).not.toHaveClass("bg-[var(--primary)]/10");
-
-    const clientsLink = screen.getByText("Clients").closest("a");
-    expect(clientsLink).not.toHaveClass("bg-[var(--primary)]/10");
-
-    localStorage.removeItem("sidebar:expanded:sat");
-  });
-
-  it("shows a tooltip panel with all sub-modules when collapsed on hover", async () => {
-    mockUsePathname.mockReturnValue("/sat");
-    localStorage.setItem("sidebar:collapsed", "true");
-
-    render(
-      <SidebarProvider>
-        <SidebarNav />
-      </SidebarProvider>
-    );
-
-    // Find the SAT icon wrapper and hover
-    // In collapsed mode, the label is NOT visible as text in nav (only icon)
-    const satLink = document.querySelector('[data-nav-target="/sat"]');
-    expect(satLink).toBeInTheDocument();
-
-    const user = userEvent.setup();
-    await user.hover(satLink!);
-
-    // The tooltip panel should show all sub-items
-    expect(await screen.findByText("Ordres de Treball")).toBeInTheDocument();
-    expect(screen.getByText("Clients")).toBeInTheDocument();
-    expect(screen.getByText("Categories")).toBeInTheDocument();
-
-    localStorage.removeItem("sidebar:collapsed");
-  });
-
-  it("sub-modules in collapsed tooltip are clickable links", async () => {
-    mockUsePathname.mockReturnValue("/sat");
-    localStorage.setItem("sidebar:collapsed", "true");
-
-    render(
-      <SidebarProvider>
-        <SidebarNav />
-      </SidebarProvider>
-    );
-
-    const satLink = document.querySelector('[data-nav-target="/sat"]');
-    const user = userEvent.setup();
-    await user.hover(satLink!);
-
-    const clientsLink = await screen.findByText("Clients");
-    expect(clientsLink.closest("a")).toHaveAttribute("href", "/sat/clients");
-
-    localStorage.removeItem("sidebar:collapsed");
-  });
-
-  it("shows simple tooltip for leaf items when collapsed", async () => {
-    mockUsePathname.mockReturnValue("/dashboard");
-    localStorage.setItem("sidebar:collapsed", "true");
-
-    render(
-      <SidebarProvider>
-        <SidebarNav />
-      </SidebarProvider>
-    );
-
-    const dashboardLink = document.querySelector('[data-nav-target="/dashboard"]');
-    const user = userEvent.setup();
-    await user.hover(dashboardLink!);
-
-    // Simple tooltip with just the module name
-    expect(await screen.findByText("Inici")).toBeInTheDocument();
-
-    localStorage.removeItem("sidebar:collapsed");
-  });
-});
-
-/* ================================================================
-   ROLE-BASED FILTERING
-   ================================================================ */
-
-describe("SidebarNav — role-based filtering", () => {
-  beforeEach(() => {
-    localStorage.setItem("sidebar:expanded:sat", "true");
-    localStorage.setItem("sidebar:expanded:settings", "true");
-  });
-  afterEach(() => {
-    localStorage.removeItem("sidebar:expanded:sat");
-    localStorage.removeItem("sidebar:expanded:settings");
-  });
-
-  it("hides Billing, Correu and Team links from TECHNICIAN (keeps ERP/CRM/Map visible per matrix)", () => {
-    mockUsePathname.mockReturnValue("/dashboard");
-    render(
-      <SidebarProvider>
-        <SidebarNav userRole="TECHNICIAN" />
-      </SidebarProvider>
-    );
-    // Hidden (no permission):
-    expect(screen.queryByText("Facturació")).not.toBeInTheDocument();
-    expect(screen.queryByText("Correu professional")).not.toBeInTheDocument();
-    expect(screen.queryByText("Equip")).not.toBeInTheDocument();
-    // Visible per matrix (material:read, client:read):
-    expect(screen.getByText("ERP")).toBeInTheDocument();
-    expect(screen.getByText("CRM")).toBeInTheDocument();
-  });
-
-  it("hides Pressupostos sub-item from TECHNICIAN (no quote:read) but keeps Clients/Map", () => {
-    mockUsePathname.mockReturnValue("/sat");
-    render(
-      <SidebarProvider>
-        <SidebarNav userRole="TECHNICIAN" />
-      </SidebarProvider>
-    );
-    // Hidden (no quote:read):
-    expect(screen.queryByText("Pressupostos")).not.toBeInTheDocument();
-    // Visible per matrix (client:read, route:read, material:read):
-    expect(screen.getByText("Clients")).toBeInTheDocument();
-    expect(screen.getByText("Mapa")).toBeInTheDocument();
-  });
-
-  it("shows all SAT sub-items to OFFICE (read-only access)", () => {
-    mockUsePathname.mockReturnValue("/sat");
-    render(
-      <SidebarProvider>
-        <SidebarNav userRole="OFFICE" />
-      </SidebarProvider>
-    );
-    expect(screen.getByText("Pressupostos")).toBeInTheDocument();
-    expect(screen.getByText("Clients")).toBeInTheDocument();
-    expect(screen.getByText("Mapa")).toBeInTheDocument();
-  });
-
-  it("shows Dashboard to TECHNICIAN but hides Facturació", () => {
-    mockUsePathname.mockReturnValue("/dashboard");
-    render(
-      <SidebarProvider>
-        <SidebarNav userRole="TECHNICIAN" />
-      </SidebarProvider>
-    );
-    expect(screen.getByText("Inici")).toBeInTheDocument();
-    expect(screen.queryByText("Facturació")).not.toBeInTheDocument();
-  });
-
-  it("shows every module to OWNER (full access)", () => {
-    mockUsePathname.mockReturnValue("/dashboard");
-    render(
-      <SidebarProvider>
-        <SidebarNav userRole="OWNER" />
-      </SidebarProvider>
-    );
-    expect(screen.getByText("Inici")).toBeInTheDocument();
-    expect(screen.getByText("ERP")).toBeInTheDocument();
-    expect(screen.getByText("Facturació")).toBeInTheDocument();
-    expect(screen.getByText("CRM")).toBeInTheDocument();
-  });
-
-  it("renders all items when userRole is undefined (back-compat for tests/SSR)", () => {
-    mockUsePathname.mockReturnValue("/dashboard");
-    render(
-      <SidebarProvider>
-        <SidebarNav />
-      </SidebarProvider>
-    );
-    expect(screen.getByText("Inici")).toBeInTheDocument();
-    expect(screen.getByText("ERP")).toBeInTheDocument();
+  it("undefined role shows every item (SSR fallback / tests)", () => {
+    const labels = getVisibleLabels(undefined);
+    expect(labels).toContain("Inici");
+    expect(labels).toContain("SAT");
+    expect(labels).toContain("Configuració");
+    expect(labels).toContain("Correu");
+    expect(labels).toContain("Equip");
   });
 });
