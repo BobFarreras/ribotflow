@@ -1,25 +1,25 @@
 /**
  * Creation/modification date: 06/06/2026
  * Path: src/lib/auth/index.ts
- * Description: Central Auth.js v5 configuration. We use the
- *              `database` session strategy so that the user can list and
- *              revoke their own active sessions from /settings/profile.
- *              The session callback enriches the user object with
- *              companyId, role, and travel rate; the events callback
- *              captures best-effort user agent and IP at sign-in.
+ * Description: Central Auth.js v5 configuration. Uses JWT session strategy
+ *              so that CredentialsProvider (email/password login) works.
+ *              We manually insert a row into the `sessions` table on
+ *              every sign-in so that the "Active Sessions" UI still
+ *              has data to display. The session callback enriches the
+ *              JWT token with companyId, role, and travel rate.
  */
 
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
-import { DrizzleAdapter } from "@auth/drizzle-adapter";
 import { db } from "@/db";
 import { users, companies, sessions } from "@/db/schema/auth";
 import { eq } from "drizzle-orm";
 import { verifyPassword } from "@/lib/utils/crypto";
 import type { Role } from "@/types";
+import { randomUUID } from "crypto";
+import { headers } from "next/headers";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  adapter: DrizzleAdapter(db),
   providers: [
     Credentials({
       credentials: {
@@ -65,67 +65,76 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
   session: {
-    strategy: "database",
+    strategy: "jwt",
     maxAge: 8 * 60 * 60, // 8 hours
   },
   callbacks: {
-    async session({ session, user }) {
-      // `user` is hydrated by the database adapter; we map DB columns to
-      // the session.user shape the rest of the app expects.
-      if (session.user && user) {
-        session.user.id = (user as { id: string }).id;
-        // Pull companyId + role + lastActiveAt from the user row
-        const [u] = await db
-          .select({
-            companyId: users.companyId,
-            role: users.role,
-          })
-          .from(users)
-          .where(eq(users.id, session.user.id))
-          .limit(1);
-        if (u) {
-          session.user.companyId = u.companyId;
-          session.user.role = u.role as Role;
+    async jwt({ token, user, trigger }) {
+      if (trigger === "signIn" && user) {
+        token.sub = user.id;
+        token.role = user.role;
+        token.companyId = user.companyId;
+        token.name = user.name;
+        token.email = user.email;
 
-          try {
-            const [company] = await db
-              .select({ travelRatePerKm: companies.travelRatePerKm })
-              .from(companies)
-              .where(eq(companies.id, u.companyId))
-              .limit(1);
-            if (company) {
-              session.user.travelRatePerKm = company.travelRatePerKm;
-            }
-          } catch {
-            // Ignore, travel rate is optional
+        // Pull travelRatePerKm once and persist it in the token
+        // so the session callback never needs to hit the DB.
+        try {
+          const [company] = await db
+            .select({ travelRatePerKm: companies.travelRatePerKm })
+            .from(companies)
+            .where(eq(companies.id, user.companyId as string))
+            .limit(1);
+          if (company) {
+            token.travelRatePerKm = company.travelRatePerKm;
           }
+        } catch {
+          // ignore
+        }
+
+        // Bump lastActiveAt
+        try {
+          await db
+            .update(users)
+            .set({ lastActiveAt: new Date() })
+            .where(eq(users.id, user.id as string));
+        } catch {
+          // best-effort
+        }
+
+        // Create a session row manually so the Active Sessions UI has data.
+        // Auth.js does NOT manage this table when strategy === "jwt".
+        try {
+          const h = await headers();
+          const userAgent = h.get("user-agent") ?? null;
+          const ipAddress =
+            h.get("x-forwarded-for") ?? h.get("x-real-ip") ?? null;
+          await db.insert(sessions).values({
+            sessionToken: randomUUID(),
+            userId: user.id as string,
+            expires: new Date(Date.now() + 8 * 60 * 60 * 1000),
+            userAgent,
+            ipAddress,
+            createdAt: new Date(),
+            lastUsedAt: new Date(),
+          });
+        } catch {
+          // best-effort
         }
       }
-      return session;
+      return token;
     },
-  },
-  events: {
-    /**
-     * Auth.js fires this AFTER a database session has been created.
-     * We use it to capture the user agent and IP for the active
-     * session list, and to bump `users.lastActiveAt`.
-     */
-    async signIn({ user }) {
-      try {
-        await db
-          .update(users)
-          .set({ lastActiveAt: new Date() })
-          .where(eq(users.id, user.id as string));
-      } catch {
-        // best-effort
+    async session({ session, token }) {
+      if (session.user && token.sub) {
+        session.user.id = token.sub;
+        session.user.role = token.role as Role;
+        session.user.companyId = token.companyId as string;
+        session.user.name = token.name as string;
+        session.user.email = token.email as string;
+        session.user.travelRatePerKm =
+          token.travelRatePerKm != null ? String(token.travelRatePerKm) : null;
       }
-    },
-    async session({ session }) {
-      // No-op hook (kept as a no-op extension point). The actual
-      // lastUsedAt bookkeeping lives in the service that needs it.
-      // Leaving the hook here documents the lifecycle for future
-      // maintainers.
-      void session;
+      return session;
     },
   },
   pages: {

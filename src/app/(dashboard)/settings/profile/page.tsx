@@ -57,7 +57,7 @@ export default async function ProfileSettingsPage() {
   const sessions =
     sessionsResult.success && sessionsResult.data
       ? sessionsResult.data
-      : { sessions: [], currentSessionId: null };
+      : { sessions: [], currentFingerprint: { userAgent: null, ipAddress: null } };
 
   return (
     <div className="container mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
@@ -132,7 +132,7 @@ export default async function ProfileSettingsPage() {
         >
           <ActiveSessionsList
             sessions={sessions.sessions}
-            currentSessionId={sessions.currentSessionId}
+            currentFingerprint={sessions.currentFingerprint}
           />
         </SectionShell>
       </div>

@@ -1,42 +1,29 @@
 /**
  * Creation/modification date: 06/06/2026
  * Path: src/lib/auth/currentSession.ts
- * Description: Returns the PK (uuid) of the session row matching the
- *              Auth.js cookie. Used by the active-sessions Server Actions
- *              to identify "this device" so the user can never
- *              accidentally revoke their own browser.
- *
- *              The cookie name differs by environment: in dev we use
- *              `authjs.session-token`, in prod behind https we use
- *              `__Secure-authjs.session-token`.
+ * Description: Returns the user-agent and IP of the current HTTP
+ *              request. Used by the active-sessions UI to identify
+ *              "this device" when the JWT strategy is enabled (Auth.js
+ *              does not expose a stable session-token cookie in that
+ *              mode).
  */
 
-import { cookies } from "next/headers";
-import { db } from "@/db";
-import { sessions } from "@/db/schema/auth";
-import { eq } from "drizzle-orm";
+import { headers } from "next/headers";
 
-const DEV_COOKIE = "authjs.session-token";
-const SECURE_COOKIE = "__Secure-authjs.session-token";
-
-async function readSessionToken(): Promise<string | null> {
-  const store = await cookies();
-  return store.get(SECURE_COOKIE)?.value ?? store.get(DEV_COOKIE)?.value ?? null;
+export interface SessionFingerprint {
+  userAgent: string | null;
+  ipAddress: string | null;
 }
 
 /**
- * Resolves the PK of the current Auth.js database session. Returns
- * `null` if the cookie is missing, malformed, or the session row no
- * longer exists.
+ * Best-effort fingerprint of the current request. Two sessions from
+ * the same browser on the same network will share the same fingerprint,
+ * which is acceptable for the "current device" badge.
  */
-export async function getCurrentSessionId(): Promise<string | null> {
-  const token = await readSessionToken();
-  if (!token) return null;
-
-  const [row] = await db
-    .select({ id: sessions.id })
-    .from(sessions)
-    .where(eq(sessions.sessionToken, token))
-    .limit(1);
-  return row?.id ?? null;
+export async function getCurrentSessionFingerprint(): Promise<SessionFingerprint> {
+  const h = await headers();
+  return {
+    userAgent: h.get("user-agent") ?? null,
+    ipAddress: h.get("x-forwarded-for") ?? h.get("x-real-ip") ?? null,
+  };
 }

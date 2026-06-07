@@ -3,14 +3,16 @@
  * Path: src/actions/sat/profile/listActiveSessions.ts
  * Description: Server Action that returns the active (non-expired)
  *              sessions for the signed-in user, sorted by most recently
- *              used. The current session is marked with `isCurrent`.
+ *              used. The current device is identified by a best-effort
+ *              fingerprint (user-agent + IP) because Auth.js JWT strategy
+ *              does not expose a stable session-token cookie.
  */
 
 "use server";
 
 import { auth } from "@/lib/auth";
 import { sessionsService } from "@/services/sat/sessions";
-import { getCurrentSessionId } from "@/lib/auth/currentSession";
+import { getCurrentSessionFingerprint } from "@/lib/auth/currentSession";
 
 export async function listActiveSessionsAction() {
   try {
@@ -18,15 +20,15 @@ export async function listActiveSessionsAction() {
     if (!session?.user?.id) {
       return { success: false as const, error: "Unauthorized" };
     }
-    const [rows, currentSessionId] = await Promise.all([
+    const [rows, currentFingerprint] = await Promise.all([
       sessionsService.listActiveSessions(session.user.id),
-      getCurrentSessionId(),
+      getCurrentSessionFingerprint(),
     ]);
     return {
       success: true as const,
       data: {
         sessions: rows,
-        currentSessionId,
+        currentFingerprint,
       },
     };
   } catch (err) {

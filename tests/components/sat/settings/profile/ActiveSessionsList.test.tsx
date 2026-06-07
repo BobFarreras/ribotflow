@@ -3,8 +3,8 @@
  * Path: tests/components/sat/settings/profile/ActiveSessionsList.test.tsx
  * Description: Smoke tests for the ActiveSessionsList. Mocks the
  *              underlying Server Actions so we exercise the empty
- *              state, the "current" badge, and the per-row revoke
- *              interaction.
+ *              state, the "current" badge (matched by UA/IP), and
+ *              the per-row revoke interaction.
  */
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
@@ -12,19 +12,21 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { ActiveSessionsList } from "@/components/sat/settings/profile/ActiveSessionsList";
 
-const { revokeSessionActionMock, revokeAllOtherSessionsActionMock, refreshMock } = vi.hoisted(() => ({
-  revokeSessionActionMock: vi.fn(),
-  revokeAllOtherSessionsActionMock: vi.fn(),
-  refreshMock: vi.fn(),
-}));
+const { revokeSessionActionMock, revokeAllOtherSessionsActionMock, refreshMock } = vi.hoisted(
+  () => ({
+    revokeSessionActionMock: vi.fn(),
+    revokeAllOtherSessionsActionMock: vi.fn(),
+    refreshMock: vi.fn(),
+  })
+);
 
 vi.mock("next-intl", () => ({
   useTranslations: () => (key: string, vars?: Record<string, unknown>) => {
     const map: Record<string, string> = {
-      "empty": "Cap sessió activa",
-      "current": "Aquest dispositiu",
-      "revoke": "Tanca",
-      "revokeAllOthers": "Tanca totes les altres",
+      empty: "Cap sessió activa",
+      current: "Aquest dispositiu",
+      revoke: "Tanca",
+      revokeAllOthers: "Tanca totes les altres",
       "feedback.revoked": "Tancada",
       "feedback.revokedMany": `Tancades ${vars?.count ?? 0}`,
       "feedback.revokedNone": "Cap",
@@ -53,9 +55,11 @@ beforeEach(() => {
   refreshMock.mockReset();
 });
 
+const CURRENT_FP = { userAgent: "Chrome on macOS", ipAddress: "127.0.0.1" };
+
 describe("ActiveSessionsList", () => {
   it("shows the empty state when there are no sessions", () => {
-    render(<ActiveSessionsList sessions={[]} currentSessionId={null} />);
+    render(<ActiveSessionsList sessions={[]} currentFingerprint={CURRENT_FP} />);
     expect(screen.getByText("Cap sessió activa")).toBeInTheDocument();
   });
 
@@ -70,7 +74,7 @@ describe("ActiveSessionsList", () => {
         ipAddress: "127.0.0.1",
       },
     ];
-    render(<ActiveSessionsList sessions={sessions} currentSessionId="s-current" />);
+    render(<ActiveSessionsList sessions={sessions} currentFingerprint={CURRENT_FP} />);
     expect(screen.getByText("Aquest dispositiu")).toBeInTheDocument();
     // No revoke button for the current session
     expect(screen.queryByRole("button", { name: "Tanca" })).not.toBeInTheDocument();
@@ -87,7 +91,7 @@ describe("ActiveSessionsList", () => {
         ipAddress: "10.0.0.1",
       },
     ];
-    render(<ActiveSessionsList sessions={sessions} currentSessionId="s-current" />);
+    render(<ActiveSessionsList sessions={sessions} currentFingerprint={CURRENT_FP} />);
     const buttons = screen.getAllByRole("button", { name: "Tanca" });
     expect(buttons).toHaveLength(1);
   });
@@ -105,7 +109,7 @@ describe("ActiveSessionsList", () => {
       },
     ];
     const user = userEvent.setup();
-    render(<ActiveSessionsList sessions={sessions} currentSessionId="s-current" />);
+    render(<ActiveSessionsList sessions={sessions} currentFingerprint={CURRENT_FP} />);
     await user.click(screen.getByRole("button", { name: "Tanca" }));
     expect(revokeSessionActionMock).toHaveBeenCalledWith({ sessionId: "s-other" });
     expect(refreshMock).toHaveBeenCalled();
@@ -124,7 +128,7 @@ describe("ActiveSessionsList", () => {
       },
     ];
     const user = userEvent.setup();
-    render(<ActiveSessionsList sessions={sessions} currentSessionId="s-current" />);
+    render(<ActiveSessionsList sessions={sessions} currentFingerprint={CURRENT_FP} />);
     await user.click(screen.getByRole("button", { name: "Tanca" }));
     expect(await screen.findByText("Error")).toBeInTheDocument();
   });
@@ -150,7 +154,7 @@ describe("ActiveSessionsList", () => {
       },
     ];
     const user = userEvent.setup();
-    render(<ActiveSessionsList sessions={sessions} currentSessionId="s-current" />);
+    render(<ActiveSessionsList sessions={sessions} currentFingerprint={CURRENT_FP} />);
     await user.click(screen.getByRole("button", { name: "Tanca totes les altres" }));
     expect(revokeAllOtherSessionsActionMock).toHaveBeenCalled();
   });

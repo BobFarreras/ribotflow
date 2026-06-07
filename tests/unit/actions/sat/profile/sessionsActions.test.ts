@@ -2,22 +2,23 @@
  * Creation/modification date: 06/06/2026
  * Path: tests/unit/actions/sat/profile/sessionsActions.test.ts
  * Description: Server Action tests for the active-sessions feature.
- *              Mocks auth(), the sessions service, and getCurrentSessionId
- *              so no real DB connection is used.
+ *              Mocks auth(), the sessions service, and
+ *              getCurrentSessionFingerprint so no real DB connection is used.
  */
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-const { authMock, sessionsServiceMock, getCurrentSessionIdMock, revalidatePathMock } = vi.hoisted(() => ({
-  authMock: vi.fn(),
-  sessionsServiceMock: {
-    listActiveSessions: vi.fn(),
-    revokeSession: vi.fn(),
-    revokeAllOtherSessions: vi.fn(),
-  },
-  getCurrentSessionIdMock: vi.fn(),
-  revalidatePathMock: vi.fn(),
-}));
+const { authMock, sessionsServiceMock, getCurrentSessionFingerprintMock, revalidatePathMock } =
+  vi.hoisted(() => ({
+    authMock: vi.fn(),
+    sessionsServiceMock: {
+      listActiveSessions: vi.fn(),
+      revokeSession: vi.fn(),
+      revokeAllOtherSessions: vi.fn(),
+    },
+    getCurrentSessionFingerprintMock: vi.fn(),
+    revalidatePathMock: vi.fn(),
+  }));
 
 vi.mock("@/lib/auth", () => ({ auth: authMock }));
 vi.mock("@/services/sat/sessions", () => ({
@@ -30,7 +31,7 @@ vi.mock("@/services/sat/sessions", () => ({
   },
 }));
 vi.mock("@/lib/auth/currentSession", () => ({
-  getCurrentSessionId: getCurrentSessionIdMock,
+  getCurrentSessionFingerprint: getCurrentSessionFingerprintMock,
 }));
 vi.mock("next/cache", () => ({ revalidatePath: revalidatePathMock }));
 
@@ -42,12 +43,14 @@ function session() {
   return { user: { id: "u-1", companyId: "c-1", role: "OWNER" } };
 }
 
+const FP = { userAgent: "Mozilla/5.0", ipAddress: "127.0.0.1" };
+
 beforeEach(() => {
   authMock.mockReset();
   sessionsServiceMock.listActiveSessions.mockReset();
   sessionsServiceMock.revokeSession.mockReset();
   sessionsServiceMock.revokeAllOtherSessions.mockReset();
-  getCurrentSessionIdMock.mockReset();
+  getCurrentSessionFingerprintMock.mockReset();
   revalidatePathMock.mockReset();
 });
 
@@ -62,7 +65,7 @@ describe("listActiveSessionsAction", () => {
     expect(r.success).toBe(false);
   });
 
-  it("returns the sessions and the current session id", async () => {
+  it("returns the sessions and the current fingerprint", async () => {
     authMock.mockResolvedValue(session());
     sessionsServiceMock.listActiveSessions.mockResolvedValue([
       {
@@ -74,12 +77,12 @@ describe("listActiveSessionsAction", () => {
         ipAddress: "127.0.0.1",
       },
     ]);
-    getCurrentSessionIdMock.mockResolvedValue("s-1");
+    getCurrentSessionFingerprintMock.mockResolvedValue(FP);
     const r = await listActiveSessionsAction();
     expect(r.success).toBe(true);
     if (r.success) {
       expect(r.data.sessions).toHaveLength(1);
-      expect(r.data.currentSessionId).toBe("s-1");
+      expect(r.data.currentFingerprint).toEqual(FP);
     }
   });
 });
@@ -101,23 +104,18 @@ describe("revokeSessionAction", () => {
     expect(r.success).toBe(false);
   });
 
-  it("rejects when no current session is detected", async () => {
-    authMock.mockResolvedValue(session());
-    getCurrentSessionIdMock.mockResolvedValue(null);
-    const r = await revokeSessionAction({ sessionId: "11111111-1111-1111-1111-111111111111" });
-    expect(r.success).toBe(false);
-  });
-
   it("forwards to the service and revalidates on success", async () => {
     authMock.mockResolvedValue(session());
-    getCurrentSessionIdMock.mockResolvedValue("22222222-2222-2222-2222-222222222222");
+    getCurrentSessionFingerprintMock.mockResolvedValue(FP);
     sessionsServiceMock.revokeSession.mockResolvedValue(undefined);
-    const r = await revokeSessionAction({ sessionId: "11111111-1111-1111-1111-111111111111" });
+    const r = await revokeSessionAction({
+      sessionId: "11111111-1111-1111-1111-111111111111",
+    });
     expect(r.success).toBe(true);
     expect(sessionsServiceMock.revokeSession).toHaveBeenCalledWith(
       "u-1",
       "11111111-1111-1111-1111-111111111111",
-      "22222222-2222-2222-2222-222222222222"
+      FP
     );
     expect(revalidatePathMock).toHaveBeenCalledWith("/settings/profile");
   });
@@ -136,7 +134,7 @@ describe("revokeAllOtherSessionsAction", () => {
 
   it("returns the number of sessions revoked", async () => {
     authMock.mockResolvedValue(session());
-    getCurrentSessionIdMock.mockResolvedValue("22222222-2222-2222-2222-222222222222");
+    getCurrentSessionFingerprintMock.mockResolvedValue(FP);
     sessionsServiceMock.revokeAllOtherSessions.mockResolvedValue(3);
     const r = await revokeAllOtherSessionsAction();
     expect(r.success).toBe(true);

@@ -16,12 +16,14 @@ const dbMock = vi.hoisted(() => {
     orderBy: vi.fn(),
     delete: vi.fn(),
     returning: vi.fn(),
+    limit: vi.fn(),
   };
   chain.select.mockReturnValue(chain);
   chain.from.mockReturnValue(chain);
   chain.where.mockReturnValue(chain);
   chain.orderBy.mockReturnValue(chain);
   chain.delete.mockReturnValue(chain);
+  chain.limit.mockReturnValue(chain);
   return chain;
 });
 
@@ -38,6 +40,7 @@ const { listActiveSessions, revokeSession, revokeAllOtherSessions } = sessionsSe
 const USER = "u-1";
 const CURRENT = "s-current";
 const OTHER = "s-other";
+const FP = { userAgent: "Mozilla/5.0", ipAddress: "127.0.0.1" };
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -46,6 +49,7 @@ beforeEach(() => {
   dbMock.where.mockReturnValue(dbMock);
   dbMock.orderBy.mockReturnValue(dbMock);
   dbMock.delete.mockReturnValue(dbMock);
+  dbMock.limit.mockReturnValue(dbMock);
 });
 
 /* ================================================================
@@ -83,21 +87,24 @@ describe("listActiveSessions", () => {
 
 describe("revokeSession", () => {
   it("deletes the matching row", async () => {
+    dbMock.limit.mockResolvedValueOnce([]); // no current match
     dbMock.returning.mockResolvedValueOnce([{ id: OTHER }]);
-    await expect(revokeSession(USER, OTHER, CURRENT)).resolves.toBeUndefined();
+    await expect(revokeSession(USER, OTHER, FP)).resolves.toBeUndefined();
     expect(dbMock.delete).toHaveBeenCalled();
   });
 
   it("refuses to revoke the current session", async () => {
-    await expect(revokeSession(USER, CURRENT, CURRENT)).rejects.toBeInstanceOf(
+    dbMock.limit.mockResolvedValueOnce([{ id: CURRENT }]);
+    await expect(revokeSession(USER, CURRENT, FP)).rejects.toBeInstanceOf(
       CannotRevokeCurrentSessionError
     );
     expect(dbMock.delete).not.toHaveBeenCalled();
   });
 
   it("raises SessionNotFoundError when the row does not exist", async () => {
+    dbMock.limit.mockResolvedValueOnce([]); // no current match
     dbMock.returning.mockResolvedValueOnce([]);
-    await expect(revokeSession(USER, OTHER, CURRENT)).rejects.toBeInstanceOf(
+    await expect(revokeSession(USER, OTHER, FP)).rejects.toBeInstanceOf(
       SessionNotFoundError
     );
   });
@@ -109,15 +116,24 @@ describe("revokeSession", () => {
 
 describe("revokeAllOtherSessions", () => {
   it("returns the number of sessions deleted", async () => {
+    dbMock.limit.mockResolvedValueOnce([{ id: CURRENT }]);
     dbMock.returning.mockResolvedValueOnce([{ id: "a" }, { id: "b" }, { id: "c" }]);
-    const n = await revokeAllOtherSessions(USER, CURRENT);
+    const n = await revokeAllOtherSessions(USER, FP);
     expect(n).toBe(3);
     expect(dbMock.delete).toHaveBeenCalled();
   });
 
   it("returns 0 when there are no other sessions", async () => {
+    dbMock.limit.mockResolvedValueOnce([{ id: CURRENT }]);
     dbMock.returning.mockResolvedValueOnce([]);
-    const n = await revokeAllOtherSessions(USER, CURRENT);
+    const n = await revokeAllOtherSessions(USER, FP);
     expect(n).toBe(0);
+  });
+
+  it("deletes all sessions when fingerprint is not found", async () => {
+    dbMock.limit.mockResolvedValueOnce([]);
+    dbMock.returning.mockResolvedValueOnce([{ id: "a" }, { id: "b" }]);
+    const n = await revokeAllOtherSessions(USER, FP);
+    expect(n).toBe(2);
   });
 });

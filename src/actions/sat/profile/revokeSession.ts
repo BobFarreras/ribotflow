@@ -3,7 +3,7 @@
  * Path: src/actions/sat/profile/revokeSession.ts
  * Description: Server Action that revokes a single session for the
  *              signed-in user. Refuses to revoke the current session
- *              (use the logout action for that).
+ *              (identified by user-agent + IP fingerprint).
  */
 
 "use server";
@@ -16,7 +16,7 @@ import {
   SessionNotFoundError,
 } from "@/services/sat/sessions";
 import { sessionIdSchema } from "@/lib/validators/sat/sessionsSchema";
-import { getCurrentSessionId } from "@/lib/auth/currentSession";
+import { getCurrentSessionFingerprint } from "@/lib/auth/currentSession";
 import { getTranslations } from "next-intl/server";
 
 export async function revokeSessionAction(input: unknown) {
@@ -29,16 +29,20 @@ export async function revokeSessionAction(input: unknown) {
     if (!parsed.success) {
       return { success: false as const, error: "Invalid input" };
     }
-    const currentSessionId = await getCurrentSessionId();
-    if (!currentSessionId) {
-      return { success: false as const, error: "No active session" };
-    }
+    const fingerprint = await getCurrentSessionFingerprint();
     try {
-      await sessionsService.revokeSession(session.user.id, parsed.data.sessionId, currentSessionId);
+      await sessionsService.revokeSession(
+        session.user.id,
+        parsed.data.sessionId,
+        fingerprint
+      );
     } catch (err) {
       if (err instanceof CannotRevokeCurrentSessionError) {
         const t = await getTranslations("sat.settings.profile.sessions");
-        return { success: false as const, error: t("errors.cannotRevokeCurrent") };
+        return {
+          success: false as const,
+          error: t("errors.cannotRevokeCurrent"),
+        };
       }
       if (err instanceof SessionNotFoundError) {
         return { success: false as const, error: "Session not found" };

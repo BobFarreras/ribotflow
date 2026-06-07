@@ -3,9 +3,9 @@
  * Path: src/components/sat/settings/profile/ActiveSessionsList.tsx
  * Description: Client component that lists the user's active sessions
  *              and lets them revoke individual rows or all others at
- *              once. Each row is identified by a stable `id` (PK of the
- *              `sessions` table) so the user can never accidentally
- *              revoke their own browser.
+ *              once. The current device is identified by a best-effort
+ *              fingerprint (user-agent + IP) because Auth.js JWT strategy
+ *              does not expose a stable session-token cookie.
  */
 
 "use client";
@@ -18,12 +18,17 @@ import { revokeSessionAction } from "@/actions/sat/profile/revokeSession";
 import { revokeAllOtherSessionsAction } from "@/actions/sat/profile/revokeAllOtherSessions";
 import type { ActiveSessionDto } from "@/services/sat/sessions/types";
 
-interface Props {
-  sessions: ActiveSessionDto[];
-  currentSessionId: string | null;
+interface SessionFingerprint {
+  userAgent: string | null;
+  ipAddress: string | null;
 }
 
-export function ActiveSessionsList({ sessions: rows, currentSessionId }: Props) {
+interface Props {
+  sessions: ActiveSessionDto[];
+  currentFingerprint: SessionFingerprint;
+}
+
+export function ActiveSessionsList({ sessions: rows, currentFingerprint }: Props) {
   const t = useTranslations("sat.settings.profile.sessions");
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -64,7 +69,11 @@ export function ActiveSessionsList({ sessions: rows, currentSessionId }: Props) 
     });
   };
 
-  const hasOthers = rows.some((s) => s.id !== currentSessionId);
+  const isCurrentSession = (s: ActiveSessionDto) =>
+    s.userAgent === currentFingerprint.userAgent &&
+    s.ipAddress === currentFingerprint.ipAddress;
+
+  const hasOthers = rows.some((s) => !isCurrentSession(s));
 
   return (
     <div className="space-y-4">
@@ -86,7 +95,7 @@ export function ActiveSessionsList({ sessions: rows, currentSessionId }: Props) 
       ) : (
         <ul className="divide-y divide-[color:var(--border)] rounded-md border border-[color:var(--border)]">
           {rows.map((s) => {
-            const isCurrent = s.id === currentSessionId;
+            const current = isCurrentSession(s);
             const deviceLabel = humanizeDevice(s.userAgent);
             return (
               <li key={s.id} className="flex items-start gap-3 px-3 py-3">
@@ -96,7 +105,7 @@ export function ActiveSessionsList({ sessions: rows, currentSessionId }: Props) 
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-medium text-[color:var(--text)]">
                     {deviceLabel}
-                    {isCurrent && (
+                    {current && (
                       <span className="ml-2 inline-flex items-center gap-1 rounded-full bg-[color:var(--primary)]/10 px-2 py-0.5 text-[10px] font-medium text-[color:var(--primary)]">
                         <Check className="h-3 w-3" aria-hidden />
                         {t("current")}
@@ -108,7 +117,7 @@ export function ActiveSessionsList({ sessions: rows, currentSessionId }: Props) 
                     {s.ipAddress && ` · ${s.ipAddress}`}
                   </p>
                 </div>
-                {!isCurrent && (
+                {!current && (
                   <button
                     type="button"
                     onClick={() => onRevokeOne(s.id)}
