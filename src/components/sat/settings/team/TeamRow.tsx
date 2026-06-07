@@ -127,27 +127,41 @@ export function TeamRow({ member, canManage }: Props) {
                 {/* Change role */}
                 {!isPendingInvite && editable && (
                   <div className="px-3 py-2">
-                    <div className="mb-1.5 text-[10px] font-semibold uppercase tracking-wide text-[color:var(--text-muted)]">
+                    <label
+                      htmlFor={`role-select-${member.id}`}
+                      className="mb-1.5 block text-[10px] font-semibold uppercase tracking-wide text-[color:var(--text-muted)]"
+                    >
                       {t("changeRole")}
-                    </div>
-                    <div className="grid grid-cols-1 gap-1">
-                      {ASSIGNABLE_ROLES.map((r) => (
-                        <button
-                          key={r}
-                          type="button"
-                          disabled={member.role === r || isPending}
-                          onClick={() =>
-                            run(() => changeUserRoleAction({ userId: member.id, role: r }))
+                    </label>
+                    <select
+                      id={`role-select-${member.id}`}
+                      value={member.role}
+                      disabled={isPending}
+                      onChange={(e) => {
+                        const newRole = e.target.value as Exclude<TeamRole, "OWNER">;
+                        if (newRole === member.role) return;
+                        run(async () => {
+                          const r = await changeUserRoleAction({
+                            userId: member.id,
+                            role: newRole,
+                          });
+                          if (r.success) {
+                            setFeedback(`${t("roleChanged")} · ${t("reloginRequired")}`);
                           }
-                          className="flex items-center justify-between rounded px-2 py-1.5 text-left text-xs text-[color:var(--text)] transition-colors hover:bg-[color:var(--surface-2)] disabled:opacity-50"
-                        >
-                          <span>{tList(`roles.${r}.label`)}</span>
-                          {member.role === r && (
-                            <span className="text-[10px] text-[color:var(--text-muted)]">✓</span>
-                          )}
-                        </button>
+                          return r;
+                        });
+                      }}
+                      className="w-full rounded-md border border-[color:var(--border)] bg-[color:var(--bg)] px-2 py-1.5 text-xs text-[color:var(--text)] outline-none focus:border-[color:var(--primary)] disabled:opacity-50"
+                    >
+                      <option value="" disabled>
+                        {t("selectRole")}
+                      </option>
+                      {ASSIGNABLE_ROLES.map((r) => (
+                        <option key={r} value={r}>
+                          {tList(`roles.${r}.label`)}
+                        </option>
                       ))}
-                    </div>
+                    </select>
                   </div>
                 )}
 

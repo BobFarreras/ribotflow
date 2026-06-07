@@ -7,7 +7,7 @@
  */
 
 import { db } from "@/db";
-import { users } from "@/db/schema/auth";
+import { users, sessions } from "@/db/schema/auth";
 import { and, eq } from "drizzle-orm";
 import { generateInvitationToken, invitationExpiry } from "./utils/invitations";
 import type { TeamMember, TeamRole } from "./types";
@@ -179,6 +179,14 @@ export async function changeUserRole(
     .set({ role: newRole, updatedAt: new Date() })
     .where(and(eq(users.companyId, companyId), eq(users.id, userId)))
     .returning();
+
+  // Invalidate all active sessions for the affected user so the JWT
+  // stale-role check forces them to re-login.
+  try {
+    await db.delete(sessions).where(eq(sessions.userId, userId));
+  } catch {
+    // best-effort
+  }
 
   return rowToDto(row);
 }

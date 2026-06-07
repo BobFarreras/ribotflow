@@ -126,6 +126,25 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     },
     async session({ session, token }) {
       if (session.user && token.sub) {
+        // Security: verify the role stored in the token still matches the
+        // database. If an OWNER changed this user's role, the token is stale
+        // and must be rejected (forces a re-login).
+        try {
+          const [u] = await db
+            .select({ role: users.role, status: users.status })
+            .from(users)
+            .where(eq(users.id, token.sub))
+            .limit(1);
+
+          if (!u || u.status !== "active" || u.role !== token.role) {
+            // Return a stripped session so the client treats it as logged-out
+            return { expires: new Date(0).toISOString() } as typeof session;
+          }
+        } catch {
+          // On DB error, still allow the session (fail-open) so the user
+          // is not locked out during a transient DB outage.
+        }
+
         session.user.id = token.sub;
         session.user.role = token.role as Role;
         session.user.companyId = token.companyId as string;
