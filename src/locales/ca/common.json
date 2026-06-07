@@ -54,6 +54,7 @@
         "subItems": {
           "company": "Empresa",
           "email": "Correu",
+          "team": "Equip",
           "users": "Usuaris",
           "profile": "Perfil"
         }
