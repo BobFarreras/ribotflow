@@ -39,11 +39,7 @@ export interface InvitationEmailData {
 
 export function invitationTemplate(data: InvitationEmailData, companyName: string): string {
   const roleLabel =
-    data.role === "ADMIN"
-      ? "Administrador"
-      : data.role === "TECHNICIAN"
-        ? "Tècnic"
-        : "Oficina";
+    data.role === "ADMIN" ? "Administrador" : data.role === "TECHNICIAN" ? "Tècnic" : "Oficina";
   return wrap(
     "Et conviden a unir-te",
     `<h2 style="color: #0d9488;">Et conviden a unir-te a ${companyName}</h2>

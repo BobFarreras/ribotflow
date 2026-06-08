@@ -31,11 +31,7 @@ export async function revokeSessionAction(input: unknown) {
     }
     const fingerprint = await getCurrentSessionFingerprint();
     try {
-      await sessionsService.revokeSession(
-        session.user.id,
-        parsed.data.sessionId,
-        fingerprint
-      );
+      await sessionsService.revokeSession(session.user.id, parsed.data.sessionId, fingerprint);
     } catch (err) {
       if (err instanceof CannotRevokeCurrentSessionError) {
         const t = await getTranslations("sat.settings.profile.sessions");
