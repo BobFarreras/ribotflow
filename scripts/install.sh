@@ -53,11 +53,12 @@ echo ""
 echo -e "${BLUE}━━━ Step 2: Reverse Proxy ━━━${NC}"
 echo ""
 echo "Select your reverse proxy setup:"
-echo "  1) None (Caddy will handle HTTPS automatically)"
+echo "  1) Caddy (auto HTTPS — Caddy runs inside Docker)"
 echo "  2) Traefik (I already have Traefik running)"
 echo "  3) Nginx (I already have Nginx running)"
+echo "  4) None / External (expose port 3000 only — you bring your own proxy)"
 echo ""
-read -p "Enter choice [1-3]: " PROXY_CHOICE
+read -p "Enter choice [1-4]: " PROXY_CHOICE
 
 case $PROXY_CHOICE in
     1)
@@ -75,6 +76,11 @@ case $PROXY_CHOICE in
     3)
         PROXY="nginx"
         echo -e "${GREEN}✓ Using Nginx${NC}"
+        ;;
+    4)
+        PROXY="none"
+        echo -e "${GREEN}✓ No built-in reverse proxy. App exposed on port 3000.${NC}"
+        echo "  Configure your own proxy to forward to http://localhost:3000"
         ;;
     *)
         echo -e "${RED}Invalid choice${NC}"
@@ -94,10 +100,12 @@ AUTH_SECRET=$(openssl rand -base64 32)
 POSTGRES_PASSWORD=$(openssl rand -base64 24)
 MINIO_USER=$(openssl rand -base64 16 | tr -dc 'a-zA-Z0-9' | head -c 20)
 MINIO_PASSWORD=$(openssl rand -base64 16 | tr -dc 'a-zA-Z0-9' | head -c 20)
+ENCRYPTION_KEY=$(openssl rand -base64 32)
 
 echo -e "${GREEN}✓ AUTH_SECRET generated${NC}"
 echo -e "${GREEN}✓ POSTGRES_PASSWORD generated${NC}"
 echo -e "${GREEN}✓ MINIO credentials generated${NC}"
+echo -e "${GREEN}✓ ENCRYPTION_KEY generated (for SMTP password encryption)${NC}"
 echo ""
 
 # ==========================================
@@ -198,10 +206,18 @@ NODE_ENV=production
 # MinIO
 MINIO_ROOT_USER=$MINIO_USER
 MINIO_ROOT_PASSWORD=$MINIO_PASSWORD
+MINIO_ACCESS_KEY=$MINIO_USER
+MINIO_SECRET_KEY=$MINIO_PASSWORD
 MINIO_ENDPOINT=minio
 MINIO_PORT=9000
 MINIO_BUCKET=ribotflow-uploads
 MINIO_USE_SSL=false
+
+# Storage
+STORAGE_PROVIDER=minio
+
+# Encryption (AES-256-GCM for SMTP passwords at rest)
+ENCRYPTION_KEY=$ENCRYPTION_KEY
 $SMTP_ENV
 EOF
 
@@ -217,6 +233,19 @@ if [ "$PROXY" = "traefik" ]; then
     echo -e "${GREEN}✓ Traefik network updated to: $TRAEFIK_NETWORK${NC}"
     echo ""
 fi
+
+# Save compose profile for manage.sh
+case $PROXY in
+    caddy)
+        echo "COMPOSE_FILES='-f docker-compose.prod.yml -f docker-compose.caddy.yml'" > .compose-profile
+        ;;
+    traefik)
+        echo "COMPOSE_FILES='-f docker-compose.prod.yml -f docker-compose.traefik.yml'" > .compose-profile
+        ;;
+    nginx|none)
+        echo "COMPOSE_FILES='-f docker-compose.prod.yml'" > .compose-profile
+        ;;
+esac
 
 # ==========================================
 # 7. CREATE DIRECTORIES
@@ -234,7 +263,7 @@ echo ""
 case $PROXY in
     caddy)
         echo "Starting with Caddy..."
-        docker compose -f docker-compose.prod.yml up -d --build
+        docker compose -f docker-compose.prod.yml -f docker-compose.caddy.yml up -d --build
         ;;
     traefik)
         echo "Starting with Traefik..."
@@ -243,6 +272,13 @@ case $PROXY in
     nginx)
         echo "Starting (configure Nginx separately)..."
         docker compose -f docker-compose.prod.yml up -d --build
+        ;;
+    none)
+        echo "Starting (no built-in reverse proxy)..."
+        docker compose -f docker-compose.prod.yml up -d --build
+        echo ""
+        echo "App is exposed on port 3000."
+        echo "Configure your reverse proxy to forward to http://<server-ip>:3000"
         ;;
 esac
 
@@ -275,13 +311,18 @@ echo "╔═══════════════════════�
 echo "║                 Installation Complete!                     ║"
 echo "╠════════════════════════════════════════════════════════════╣"
 echo "║"
-echo "║  🌐 URL:        https://$DOMAIN"
+if [ "$PROXY" = "none" ]; then
+    echo "║  🌐 URL:        http://$DOMAIN:3000"
+else
+    echo "║  🌐 URL:        https://$DOMAIN"
+fi
 echo "║  🔐 Login:      dais@test.com"
 echo "║  🔑 Password:   12345678"
 echo "║"
 echo "║  📧 SMTP:       ${SMTP_HOST:-Not configured}"
 echo "║  💾 Database:   PostgreSQL 16"
 echo "║  📁 Storage:    MinIO"
+echo "║  🔒 Encryption: ${ENCRYPTION_KEY:0:8}..."
 echo "║"
 echo "║  📋 Useful commands:"
 echo "║     docker compose -f docker-compose.prod.yml logs -f app"

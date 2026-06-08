@@ -69,3 +69,26 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+      - name: Create deployment bundle
+        run: |
+          mkdir -p deploy-bundle
+          cp docker-compose.prod.yml deploy-bundle/
+          cp docker-compose.caddy.yml deploy-bundle/
+          cp docker-compose.traefik.yml deploy-bundle/
+          cp scripts/install.sh deploy-bundle/
+          cp scripts/manage.sh deploy-bundle/
+          cp -r docker/caddy deploy-bundle/docker/
+          cp -r docker/postgres deploy-bundle/docker/
+          cp .env.production deploy-bundle/.env.production
+          cp INSTALL.md deploy-bundle/
+          cd deploy-bundle
+          tar -czf ../ribotflow-deploy.tar.gz .
+          cd ..
+
+      - name: Upload deployment bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: ribotflow-deploy
+          path: ribotflow-deploy.tar.gz
+          retention-days: 30

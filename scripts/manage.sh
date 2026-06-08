@@ -13,7 +13,12 @@ BLUE='\033[0;34m'
 NC='\033[0m'
 
 # Detect which compose files to use
-if [ -f "docker-compose.traefik.yml" ] && grep -q "traefik" docker-compose.traefik.yml 2>/dev/null; then
+if [ -f ".compose-profile" ]; then
+    source .compose-profile
+    COMPOSE="docker compose $COMPOSE_FILES"
+elif [ -f "docker-compose.caddy.yml" ] && grep -q "caddy" docker-compose.caddy.yml 2>/dev/null; then
+    COMPOSE="docker compose -f docker-compose.prod.yml -f docker-compose.caddy.yml"
+elif [ -f "docker-compose.traefik.yml" ] && grep -q "traefik" docker-compose.traefik.yml 2>/dev/null; then
     COMPOSE="docker compose -f docker-compose.prod.yml -f docker-compose.traefik.yml"
 else
     COMPOSE="docker compose -f docker-compose.prod.yml"

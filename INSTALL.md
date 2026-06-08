@@ -7,27 +7,28 @@
 ssh root@your-server-ip
 ```
 
-### 2. Clone the repository
+### 2. Run the remote installer
 ```bash
-git clone -b features/Fxboix https://github.com/BobFarreras/ribotflow.git /opt/ribotflow
-cd /opt/ribotflow
+curl -fsSL https://raw.githubusercontent.com/BobFarreras/ribotflow/features/Fxboix/scripts/install-remote.sh | bash
 ```
 
-### 3. Run the installer
+Or, if you prefer to download the bundle manually:
 ```bash
-chmod +x scripts/install.sh
+mkdir -p /opt/ribotflow && cd /opt/ribotflow
+wget https://github.com/BobFarreras/ribotflow/releases/latest/download/ribotflow-deploy.tar.gz
+tar -xzf ribotflow-deploy.tar.gz
 ./scripts/install.sh
 ```
 
 The installer will:
 - Ask for your domain name
-- Detect your reverse proxy (Caddy/Traefik/Nginx)
-- Generate secure secrets automatically
+- Detect your reverse proxy preference (Caddy, Traefik, Nginx, or none)
+- Generate secure secrets automatically (Auth, DB, MinIO, Encryption)
 - Configure SMTP (optional)
 - Start all services
 
-### 4. Access the application
-- **URL:** https://yourdomain.com
+### 3. Access the application
+- **URL:** https://yourdomain.com (or http://yourdomain.com:3000 if no proxy)
 - **Login:** dais@test.com
 - **Password:** 12345678
 
@@ -44,14 +45,16 @@ The installer will:
 │  └─ Enter your domain (e.g., ribotflow.yourdomain.com)      │
 │                                                             │
 │  Step 2: Reverse Proxy Selection                            │
-│  ├─ 1) None (Caddy - auto HTTPS)                           │
+│  ├─ 1) Caddy (auto HTTPS — runs inside Docker)             │
 │  ├─ 2) Traefik (existing setup)                            │
-│  └─ 3) Nginx (existing setup)                              │
+│  ├─ 3) Nginx (existing setup)                              │
+│  └─ 4) None / External (port 3000 only — BYO proxy)        │
 │                                                             │
 │  Step 3: Generate Secrets (automatic)                       │
 │  ├─ AUTH_SECRET (JWT token)                                │
 │  ├─ POSTGRES_PASSWORD (database)                           │
-│  └─ MINIO_USER/PASSWORD (file storage)                     │
+│  ├─ MINIO_USER/PASSWORD (file storage)                     │
+│  └─ ENCRYPTION_KEY (AES-256-GCM for SMTP passwords)      │
 │                                                             │
 │  Step 4: SMTP Configuration (optional)                      │
 │  ├─ Gmail / Brevo / Mailgun / Custom                       │
@@ -68,26 +71,21 @@ The installer will:
 
 ---
 
-## Management Commands
+## Architecture
 
-After installation, use the management script:
-
-```bash
-chmod +x scripts/manage.sh
+```
+Internet → Reverse Proxy (optional) → Next.js App (port 3000) → PostgreSQL + MinIO
 ```
 
-| Command | Description |
-|---------|-------------|
-| `./manage.sh start` | Start all services |
-| `./manage.sh stop` | Stop all services |
-| `./manage.sh restart` | Restart all services |
-| `./manage.sh logs` | View application logs |
-| `./manage.sh status` | Show service status |
-| `./manage.sh update` | Pull latest and rebuild |
-| `./manage.sh backup` | Create manual backup |
-| `./manage.sh restore` | Restore from backup |
-| `./manage.sh shell` | Open app shell |
-| `./manage.sh db` | Open database shell |
+The base `docker-compose.prod.yml` is **agnostic** — it only contains the application and its dependencies. It exposes port `3000` so you can place any reverse proxy in front of it.
+
+| Service | File | Purpose |
+|---------|------|---------|
+| app | `docker-compose.prod.yml` | Next.js application (port 3000) |
+| db | `docker-compose.prod.yml` | PostgreSQL database |
+| minio | `docker-compose.prod.yml` | Object storage |
+| backup | `docker-compose.prod.yml` | Daily backups |
+| caddy | `docker-compose.caddy.yml` | Reverse proxy + auto HTTPS (optional) |
 
 ---
 
@@ -100,14 +98,15 @@ chmod +x scripts/manage.sh
 ```bash
 # Installer handles everything
 ./scripts/install.sh
-# Select "1) None" when asked about reverse proxy
+# Select "1) Caddy"
 ```
 
-**Features:**
+**What happens:**
+- `docker-compose.prod.yml` (app + db + minio)
+- `docker-compose.caddy.yml` (Caddy + ports 80/443)
 - Automatic HTTPS via Let's Encrypt
 - Rate limiting on login
 - Security headers
-- No additional configuration needed
 
 ---
 
@@ -120,6 +119,10 @@ chmod +x scripts/manage.sh
 ./scripts/install.sh
 # Select "2) Traefik" and enter network name (usually traefik-public)
 ```
+
+**What happens:**
+- `docker-compose.prod.yml` (app + db + minio)
+- `docker-compose.traefik.yml` (Traefik labels)
 
 **Requirements:**
 - Traefik running on ports 80/443
@@ -172,6 +175,47 @@ nginx -t && systemctl reload nginx
 
 ---
 
+### Option D: No Reverse Proxy / External Proxy
+
+**Best for:** You already have a reverse proxy outside Docker (e.g., Apache, Cloudflare Tunnel, or a load balancer).
+
+```bash
+./scripts/install.sh
+# Select "4) None / External"
+```
+
+**What happens:**
+- Only `docker-compose.prod.yml` runs (app + db + minio)
+- App is exposed on port `3000`
+- You configure your external proxy to forward to `http://<server-ip>:3000`
+
+---
+
+## Management Commands
+
+After installation, use the management script:
+
+```bash
+chmod +x scripts/manage.sh
+```
+
+| Command | Description |
+|---------|-------------|
+| `./manage.sh start` | Start all services |
+| `./manage.sh stop` | Stop all services |
+| `./manage.sh restart` | Restart all services |
+| `./manage.sh logs` | View application logs |
+| `./manage.sh status` | Show service status |
+| `./manage.sh update` | Pull latest and rebuild |
+| `./manage.sh backup` | Create manual backup |
+| `./manage.sh restore` | Restore from backup |
+| `./manage.sh shell` | Open app shell |
+| `./manage.sh db` | Open database shell |
+
+The script automatically detects which Docker Compose files you used during installation.
+
+---
+
 ## DNS Configuration
 
 ### For your domain registrar (e.g., Hostinger)
@@ -212,7 +256,7 @@ exit
 ## Backup Management
 
 ### Automated Backups
-Backups run automatically every 24 hours.
+Backups run automatically every 24 hours inside the `backup` container.
 
 ### Manual Backup
 ```bash
@@ -258,10 +302,10 @@ systemctl status docker
 
 ### Common issues
 
-**HTTPS not working:**
+**HTTPS not working (Caddy):**
 1. Check DNS: `nslookup yourdomain.com`
 2. Check ports: `ufw status` or `iptables -L`
-3. Check Traefik/Caddy logs
+3. Check Caddy logs: `docker compose -f docker-compose.prod.yml -f docker-compose.caddy.yml logs caddy`
 
 **Database connection error:**
 ```bash
@@ -274,23 +318,28 @@ systemctl status docker
 docker compose -f docker-compose.prod.yml logs
 ```
 
+**App not reachable (Option D — no proxy):**
+1. Verify port 3000 is open in your firewall: `ufw allow 3000`
+2. Check the app is listening: `curl http://localhost:3000/api/health`
+
 ---
 
-## Architecture
+## Environment Variables
 
-```
-Internet → Reverse Proxy (Caddy/Traefik/Nginx) → Next.js App → PostgreSQL + MinIO
-```
+Generated automatically by `install.sh`. Key variables:
 
-### Services
-
-| Service | Image | Purpose |
-|---------|-------|---------|
-| app | Custom build | Next.js application |
-| db | postgres:16-alpine | PostgreSQL database |
-| minio | minio/minio:latest | Object storage |
-| caddy | caddy:2-alpine | Reverse proxy (Option A) |
-| backup | postgres:16-alpine | Daily backups |
+| Variable | Purpose | Generated? |
+|----------|---------|------------|
+| `AUTH_SECRET` | JWT signing | Yes (auto) |
+| `POSTGRES_PASSWORD` | DB password | Yes (auto) |
+| `MINIO_ROOT_USER` | S3 access key | Yes (auto) |
+| `MINIO_ROOT_PASSWORD` | S3 secret key | Yes (auto) |
+| `ENCRYPTION_KEY` | AES-256-GCM for SMTP passwords | Yes (auto) |
+| `DATABASE_URL` | PostgreSQL connection | Yes (auto) |
+| `DOMAIN` | Your domain | Manual |
+| `NEXT_PUBLIC_APP_URL` | Public URL | Yes (from domain) |
+| `STORAGE_PROVIDER` | Must be `minio` | Yes (auto) |
+| `SMTP_*` | Email configuration | Optional |
 
 ---
 
@@ -300,7 +349,7 @@ Internet → Reverse Proxy (Caddy/Traefik/Nginx) → Next.js App → PostgreSQL 
 cd /opt/ribotflow
 
 # Stop and remove containers
-docker compose -f docker-compose.prod.yml down -v
+./manage.sh stop
 
 # Remove files
 cd /

@@ -206,7 +206,22 @@ pnpm test:coverage
 
 ## Production Deployment
 
-For deployment instructions, see [INSTALL.md](INSTALL.md)
+### One-Liner Install (Recommended)
+```bash
+curl -fsSL https://raw.githubusercontent.com/BobFarreras/ribotflow/features/Fxboix/scripts/install-remote.sh | bash
+```
+
+This downloads the latest deployment bundle and runs the interactive wizard.
+
+### Manual Install
+```bash
+wget https://github.com/BobFarreras/ribotflow/releases/latest/download/ribotflow-deploy.tar.gz
+tar -xzf ribotflow-deploy.tar.gz
+cd ribotflow
+./scripts/install.sh
+```
+
+For full instructions, see [INSTALL.md](INSTALL.md)
 
 ---
 

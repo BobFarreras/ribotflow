@@ -2,15 +2,10 @@
 # RIBOTFLOW - Docker Compose (Traefik Override)
 # Use with: docker compose -f docker-compose.prod.yml -f docker-compose.traefik.yml up -d
 # ==========================================
-# This file removes Caddy and adds Traefik labels
-# Prerequisites: Traefik already running, network "traefik" exists
+# This adds Traefik labels to the app and MinIO console.
+# Prerequisites: Traefik already running, network "traefik" exists.
 
 services:
-  # --- Remove Caddy (Traefik handles HTTPS) ---
-  caddy:
-    profiles:
-      - disabled
-
   # --- App: Add Traefik labels ---
   app:
     labels:
@@ -36,7 +31,7 @@ services:
       - traefik
 
 # --- External Traefik Network ---
-# NOTE: Your Traefik uses "traefik-public". Change this if your network has a different name.
+# NOTE: Your Traefik might use "traefik-public". Change this if needed.
 networks:
   traefik:
     external: true
