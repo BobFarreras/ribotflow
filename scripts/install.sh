@@ -263,19 +263,19 @@ echo ""
 case $PROXY in
     caddy)
         echo "Starting with Caddy..."
-        docker compose -f docker-compose.prod.yml -f docker-compose.caddy.yml up -d --build
+        docker compose -f docker-compose.prod.yml -f docker-compose.caddy.yml --env-file .env.local up -d
         ;;
     traefik)
         echo "Starting with Traefik..."
-        docker compose -f docker-compose.prod.yml -f docker-compose.traefik.yml up -d --build
+        docker compose -f docker-compose.prod.yml -f docker-compose.traefik.yml --env-file .env.local up -d
         ;;
     nginx)
         echo "Starting (configure Nginx separately)..."
-        docker compose -f docker-compose.prod.yml up -d --build
+        docker compose -f docker-compose.prod.yml --env-file .env.local up -d
         ;;
     none)
         echo "Starting (no built-in reverse proxy)..."
-        docker compose -f docker-compose.prod.yml up -d --build
+        docker compose -f docker-compose.prod.yml --env-file .env.local up -d
         echo ""
         echo "App is exposed on port 3000."
         echo "Configure your reverse proxy to forward to http://<server-ip>:3000"

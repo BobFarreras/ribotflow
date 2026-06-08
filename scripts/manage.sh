@@ -15,13 +15,13 @@ NC='\033[0m'
 # Detect which compose files to use
 if [ -f ".compose-profile" ]; then
     source .compose-profile
-    COMPOSE="docker compose $COMPOSE_FILES"
+    COMPOSE="docker compose $COMPOSE_FILES --env-file .env.local"
 elif [ -f "docker-compose.caddy.yml" ] && grep -q "caddy" docker-compose.caddy.yml 2>/dev/null; then
-    COMPOSE="docker compose -f docker-compose.prod.yml -f docker-compose.caddy.yml"
+    COMPOSE="docker compose -f docker-compose.prod.yml -f docker-compose.caddy.yml --env-file .env.local"
 elif [ -f "docker-compose.traefik.yml" ] && grep -q "traefik" docker-compose.traefik.yml 2>/dev/null; then
-    COMPOSE="docker compose -f docker-compose.prod.yml -f docker-compose.traefik.yml"
+    COMPOSE="docker compose -f docker-compose.prod.yml -f docker-compose.traefik.yml --env-file .env.local"
 else
-    COMPOSE="docker compose -f docker-compose.prod.yml"
+    COMPOSE="docker compose -f docker-compose.prod.yml --env-file .env.local"
 fi
 
 show_help() {
@@ -76,13 +76,13 @@ update() {
     echo -e "${BLUE}Updating RIBOTFLOW...${NC}"
     echo ""
     
-    # Pull latest code
-    echo "Pulling latest code..."
-    git pull origin main
+    # Pull latest image
+    echo "Pulling latest image..."
+    $COMPOSE pull
     
-    # Rebuild and restart
-    echo "Rebuilding containers..."
-    $COMPOSE up -d --build
+    # Restart with new image
+    echo "Restarting containers..."
+    $COMPOSE up -d
     
     echo ""
     echo -e "${GREEN}✓ Update complete!${NC}"
