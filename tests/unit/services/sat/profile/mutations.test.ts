@@ -228,16 +228,16 @@ describe("removeAvatar", () => {
 
   it("deletes only the most recent previous avatar object (best-effort cleanup)", async () => {
     storageMock.listObjects.mockResolvedValueOnce([
-      "branding/avatars/u-1-001.png",
-      "branding/avatars/u-1-002.png",
-      "branding/avatars/u-1-003.png",
+      "branding/acme/avatars/u-1-001.png",
+      "branding/acme/avatars/u-1-002.png",
+      "branding/acme/avatars/u-1-003.png",
     ]);
     await removeAvatar({ companyId: COMPANY, userId: USER, tenantSlug: "acme" });
-    expect(storageMock.listObjects).toHaveBeenCalledWith(`branding/avatars/${USER}-`);
+    expect(storageMock.listObjects).toHaveBeenCalledWith(`branding/acme/avatars/${USER}-`);
     // Implementation deletes ONLY the newest key (sorted alphabetically) to
     // keep the test deterministic and the side-effect minimal.
     expect(storageMock.delete).toHaveBeenCalledTimes(1);
-    expect(storageMock.delete).toHaveBeenCalledWith("branding/avatars/u-1-003.png");
+    expect(storageMock.delete).toHaveBeenCalledWith("branding/acme/avatars/u-1-003.png");
   });
 
   it("swallows storage errors silently (best-effort)", async () => {
