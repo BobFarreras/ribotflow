@@ -1,0 +1,133 @@
+# ==========================================
+# RIBOTFLOW - Docker Compose (Production)
+# Services: App + PostgreSQL + MinIO + Caddy
+# ==========================================
+
+services:
+  # --- Next.js Application ---
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ribotflow-app
+    env_file: .env.local
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD}@db:5432/ribotflow
+      - NEXT_PUBLIC_APP_URL=https://${DOMAIN}
+    depends_on:
+      db:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    volumes:
+      - app_uploads:/app/uploads
+    restart: unless-stopped
+    networks:
+      - internal
+
+  # --- PostgreSQL Database ---
+  db:
+    image: postgres:16-alpine
+    container_name: ribotflow-db
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=ribotflow
+    volumes:
+      - db_data:/var/lib/postgresql/data
+      - ./docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d ribotflow"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+    networks:
+      - internal
+
+  # --- MinIO (Object Storage) ---
+  minio:
+    image: minio/minio:latest
+    container_name: ribotflow-minio
+    command: server /data --console-address ":9001"
+    environment:
+      - MINIO_ROOT_USER=${MINIO_ROOT_USER}
+      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+    networks:
+      - internal
+
+  # --- Caddy (Reverse Proxy + HTTPS) ---
+  caddy:
+    image: caddy:2-alpine
+    container_name: ribotflow-caddy
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./docker/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+      - caddy_logs:/var/log/caddy
+    depends_on:
+      - app
+    restart: unless-stopped
+    networks:
+      - internal
+
+  # --- Database Backup (daily) ---
+  backup:
+    image: postgres:16-alpine
+    container_name: ribotflow-backup
+    entrypoint: /bin/sh
+    command: >
+      -c "while true; do
+        echo '[$(date)] Starting backup...';
+        PGPASSWORD=${POSTGRES_PASSWORD} pg_dump -h db -U postgres ribotflow | gzip > /backups/ribotflow_$(date +%Y%m%d_%H%M%S).sql.gz;
+        echo '[$(date)] Backup completed';
+        # Keep only last 7 backups
+        ls -t /backups/ribotflow_*.sql.gz | tail -n +8 | xargs -r rm;
+        echo '[$(date)] Old backups cleaned';
+        sleep 86400;
+      done"
+    volumes:
+      - backup_data:/backups
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - internal
+
+# --- Volumes ---
+volumes:
+  db_data:
+    driver: local
+  minio_data:
+    driver: local
+  app_uploads:
+    driver: local
+  caddy_data:
+    driver: local
+  caddy_config:
+    driver: local
+  caddy_logs:
+    driver: local
+  backup_data:
+    driver: local
+
+# --- Network ---
+networks:
+  internal:
+    driver: bridge

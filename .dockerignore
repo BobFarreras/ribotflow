@@ -1,3 +1,7 @@
+# ==========================================
+# RIBOTFLOW - Docker Ignore
+# ==========================================
+
 # Dependencies
 node_modules/
 .pnpm-store/
@@ -6,50 +10,63 @@ node_modules/
 .next/
 out/
 dist/
-
-# Production
 build/
 
-# Misc
-.DS_Store
-*.pem
-thumbs.db
-
-# Debug
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-# Local env files
+# Local environment files (SECURITY!)
 .env*.local
 .env
+.env.production
 
-# Vercel
-.vercel
-
-# TypeScript
-*.tsbuildinfo
-next-env.d.ts
+# Version control
+.git/
+.gitignore
 
 # IDE
 .vscode/
 .idea/
 *.swp
 *.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Debug logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
 
 # Testing
 coverage/
+tests/
 
-# Sentry
-.sentryclirc
+# Documentation
+*.md
+!README.md
 
-# Docker data
+# Docker
 docker/data/
+docker-compose*.yml
+Dockerfile
+.dockerignore
 
 # Engram
 .engram/
 
-# OS
-Thumbs.db
-ehthumbs.db
-Desktop.ini
+# Sentry
+.sentryclirc
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
+
+# Scripts (not needed in container)
+scripts/
+
+# Backup files
+*.sql.gz
+*.bak
