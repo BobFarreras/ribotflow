@@ -300,6 +300,9 @@ case $PROXY in
     traefik)
         echo "Starting with Traefik..."
         docker compose -f docker-compose.prod.yml -f docker-compose.traefik.yml up -d
+        echo ""
+        echo -e "${YELLOW}⚠ Restarting Traefik to pick up new labels...${NC}"
+        docker restart traefik 2>/dev/null || true
         ;;
     nginx)
         echo "Starting (configure Nginx separately)..."
@@ -332,6 +335,21 @@ if docker compose -f docker-compose.prod.yml ps app | grep -q "Up"; then
 else
     echo -e "${YELLOW}⚠ Application might still be starting. Check logs with:${NC}"
     echo "  docker compose -f docker-compose.prod.yml logs -f app"
+fi
+
+# If Traefik, verify HTTPS
+if [ "$PROXY" = "traefik" ]; then
+    echo ""
+    echo -e "${BLUE}━━━ Verifying HTTPS access... ━━━${NC}"
+    echo ""
+    sleep 5
+    if curl -sk -L "https://$DOMAIN" 2>/dev/null | head -1 | grep -q "html"; then
+        echo -e "${GREEN}✓ HTTPS access working! https://$DOMAIN${NC}"
+    else
+        echo -e "${YELLOW}⚠ HTTPS not yet available. Traefik may need a moment to obtain SSL certificate.${NC}"
+        echo "  Try: curl -sk -L https://$DOMAIN | head -5"
+        echo "  Or check Traefik logs: docker logs traefik --tail 20"
+    fi
 fi
 
 echo ""
