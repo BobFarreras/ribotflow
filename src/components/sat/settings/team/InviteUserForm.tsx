@@ -12,6 +12,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { toast } from "sonner";
 import { Mail, Copy, Check, X } from "lucide-react";
 import { inviteUserAction } from "@/actions/sat/team/inviteUser";
 
@@ -22,6 +23,7 @@ interface Props {
 export function InviteUserForm({ onClose }: Props) {
   const router = useRouter();
   const t = useTranslations("sat.settings.team.invite");
+  const tRoles = useTranslations("sat.settings.team.roles");
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [invitationUrl, setInvitationUrl] = useState<string | null>(null);
@@ -40,8 +42,13 @@ export function InviteUserForm({ onClose }: Props) {
         setError(result.error ?? t("errors.generic"));
         return;
       }
-      setInvitationUrl(result.invitationUrl ?? null);
       router.refresh();
+      if (result.invitationUrl) {
+        setInvitationUrl(result.invitationUrl);
+      } else {
+        toast.success(t("successToast"));
+        onClose();
+      }
     });
   };
 
@@ -183,10 +190,10 @@ export function InviteUserForm({ onClose }: Props) {
                       className="sr-only"
                     />
                     <span className="font-medium text-[color:var(--text)]">
-                      {t(`roles.${r}.label`)}
+                      {tRoles(`${r}.label`)}
                     </span>
                     <span className="text-xs text-[color:var(--text-muted)]">
-                      {t(`roles.${r}.hint`)}
+                      {tRoles(`${r}.hint`)}
                     </span>
                   </label>
                 ))}

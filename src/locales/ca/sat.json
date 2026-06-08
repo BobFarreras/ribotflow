@@ -470,6 +470,7 @@
         "invitationUrl": "Enllaç d'invitació",
         "copy": "Copia",
         "copied": "Copiat",
+        "successToast": "Invitació enviada correctament!",
         "errors": {
           "generic": "No s'ha pogut crear la invitació"
         }

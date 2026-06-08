@@ -153,26 +153,24 @@ describe("uploadCompanyLogoAction — company:write gate", () => {
 });
 
 describe("SMTP actions — email:read / email:write gate", () => {
-  it("getSmtpConfigAction allows OWNER and ADMIN, blocks OFFICE and TECHNICIAN", async () => {
-    for (const role of ["OWNER", "ADMIN"] as const) {
-      authMock.mockResolvedValue(session(role));
-      const res = await getSmtpConfigAction();
-      expect(res.success, `${role} should pass read gate`).toBe(true);
-    }
-    for (const role of ["OFFICE", "TECHNICIAN"] as const) {
+  it("getSmtpConfigAction allows only OWNER, blocks ADMIN/OFFICE/TECHNICIAN", async () => {
+    authMock.mockResolvedValue(session("OWNER"));
+    const res = await getSmtpConfigAction();
+    expect(res.success, "OWNER should pass read gate").toBe(true);
+
+    for (const role of ["ADMIN", "OFFICE", "TECHNICIAN"] as const) {
       authMock.mockResolvedValue(session(role));
       const res = await getSmtpConfigAction();
       expect(res.success, `${role} should be blocked`).toBe(false);
     }
   });
 
-  it("testSmtpConnectionAction allows OWNER and ADMIN, blocks OFFICE and TECHNICIAN", async () => {
-    for (const role of ["OWNER", "ADMIN"] as const) {
-      authMock.mockResolvedValue(session(role));
-      const res = await testSmtpConnectionAction();
-      expect(res.success, `${role} should pass read gate`).toBe(true);
-    }
-    for (const role of ["OFFICE", "TECHNICIAN"] as const) {
+  it("testSmtpConnectionAction allows only OWNER, blocks ADMIN/OFFICE/TECHNICIAN", async () => {
+    authMock.mockResolvedValue(session("OWNER"));
+    const res = await testSmtpConnectionAction();
+    expect(res.success, "OWNER should pass read gate").toBe(true);
+
+    for (const role of ["ADMIN", "OFFICE", "TECHNICIAN"] as const) {
       authMock.mockResolvedValue(session(role));
       const res = await testSmtpConnectionAction();
       expect(res.success, `${role} should be blocked`).toBe(false);

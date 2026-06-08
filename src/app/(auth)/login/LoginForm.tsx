@@ -27,30 +27,31 @@ export function LoginForm() {
     setIsPending(true);
     setError(null);
 
-    // Step 1: validate credentials server-side (no password in response)
-    const validation = await loginAction({ email, password });
+    try {
+      const validation = await loginAction({ email, password });
 
-    if (!validation.success) {
-      setError(validation.error ?? "Invalid email or password");
+      if (!validation.success) {
+        setError(validation.error ?? "Invalid email or password");
+        return;
+      }
+
+      const result = await signIn("credentials", {
+        email,
+        password,
+        redirect: false,
+        callbackUrl: "/dashboard",
+      });
+
+      if (result?.error) {
+        setError("Invalid email or password");
+      } else if (result?.ok || result?.url) {
+        router.push("/dashboard");
+        router.refresh();
+      }
+    } catch (err) {
+      setError("An unexpected error occurred. Please try again.");
+    } finally {
       setIsPending(false);
-      return;
-    }
-
-    // Step 2: client-side signIn establishes the session cookie
-    const result = await signIn("credentials", {
-      email,
-      password,
-      redirect: false,
-      callbackUrl: "/dashboard",
-    });
-
-    setIsPending(false);
-
-    if (result?.error) {
-      setError("Invalid email or password");
-    } else if (result?.ok) {
-      router.push("/dashboard");
-      router.refresh();
     }
   }
 
