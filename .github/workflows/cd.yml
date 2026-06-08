@@ -17,7 +17,7 @@ jobs:
   build-and-push:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
       packages: write
 
     steps:
@@ -95,3 +95,13 @@ jobs:
           name: ribotflow-deploy
           path: ribotflow-deploy.tar.gz
           retention-days: 30
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/heads/main')
+        with:
+          tag_name: deploy-${{ github.sha }}
+          name: Deploy ${{ github.sha }}
+          files: ribotflow-deploy.tar.gz
+          make_latest: true
+          generate_release_notes: true
