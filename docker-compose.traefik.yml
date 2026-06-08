@@ -36,6 +36,8 @@ services:
       - traefik
 
 # --- External Traefik Network ---
+# NOTE: Your Traefik uses "traefik-public". Change this if your network has a different name.
 networks:
   traefik:
     external: true
+    name: traefik-public
