@@ -1,20 +1,5 @@
 # INSTALL.md - RIBOTFLOW Installation & Deployment
 
-## Prerequisites
-
-### System Requirements
-- **OS:** Linux (Ubuntu 22.04+ recommended), macOS, or Windows with WSL2
-- **RAM:** 2GB minimum, 4GB recommended
-- **Storage:** 10GB minimum
-- **CPU:** 2 cores minimum
-
-### Required Software
-- Docker 24+ and Docker Compose v2
-- Git
-- Node.js 22+ (for local development only)
-
----
-
 ## Quick Install (5 minutes)
 
 ### 1. SSH into your server
@@ -28,57 +13,81 @@ git clone -b features/Fxboix https://github.com/BobFarreras/ribotflow.git /opt/r
 cd /opt/ribotflow
 ```
 
-### 3. Create environment file
+### 3. Run the installer
 ```bash
-# Generate secrets
-AUTH_SECRET=$(openssl rand -base64 32)
-POSTGRES_PASSWORD=$(openssl rand -base64 24)
-MINIO_USER=$(openssl rand -base64 16)
-MINIO_PASSWORD=$(openssl rand -base64 16)
-
-# Create .env.local
-cat > .env.local << EOF
-AUTH_SECRET=$AUTH_SECRET
-POSTGRES_PASSWORD=$POSTGRES_PASSWORD
-DATABASE_URL=postgresql://postgres:$POSTGRES_PASSWORD@db:5432/ribotflow
-DOMAIN=yourdomain.com
-NEXT_PUBLIC_APP_URL=https://yourdomain.com
-NEXT_PUBLIC_APP_MODE=self-hosted
-NODE_ENV=production
-MINIO_ROOT_USER=$MINIO_USER
-MINIO_ROOT_PASSWORD=$MINIO_PASSWORD
-MINIO_ENDPOINT=minio
-MINIO_PORT=9000
-MINIO_BUCKET=ribotflow-uploads
-MINIO_USE_SSL=false
-EOF
+chmod +x scripts/install.sh
+./scripts/install.sh
 ```
 
-### 4. Create uploads directory
-```bash
-mkdir -p uploads
-```
+The installer will:
+- Ask for your domain name
+- Detect your reverse proxy (Caddy/Traefik/Nginx)
+- Generate secure secrets automatically
+- Configure SMTP (optional)
+- Start all services
 
-### 5. Start the application
-```bash
-docker compose -f docker-compose.prod.yml up -d --build
-```
-
-### 6. Verify installation
-```bash
-# Check containers
-docker compose -f docker-compose.prod.yml ps
-
-# Check logs
-docker compose -f docker-compose.prod.yml logs -f app
-
-# Test access
-curl -I https://yourdomain.com
-```
-
-### 7. Access the application
+### 4. Access the application
 - **URL:** https://yourdomain.com
-- **Login:** dais@test.com / 12345678
+- **Login:** dais@test.com
+- **Password:** 12345678
+
+---
+
+## What the Installer Does
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    INSTALLATION WIZARD                       │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  Step 1: Domain Configuration                               │
+│  └─ Enter your domain (e.g., ribotflow.yourdomain.com)      │
+│                                                             │
+│  Step 2: Reverse Proxy Selection                            │
+│  ├─ 1) None (Caddy - auto HTTPS)                           │
+│  ├─ 2) Traefik (existing setup)                            │
+│  └─ 3) Nginx (existing setup)                              │
+│                                                             │
+│  Step 3: Generate Secrets (automatic)                       │
+│  ├─ AUTH_SECRET (JWT token)                                │
+│  ├─ POSTGRES_PASSWORD (database)                           │
+│  └─ MINIO_USER/PASSWORD (file storage)                     │
+│                                                             │
+│  Step 4: SMTP Configuration (optional)                      │
+│  ├─ Gmail / Brevo / Mailgun / Custom                       │
+│  └─ Username & password                                    │
+│                                                             │
+│  Step 5: Create .env.local                                  │
+│  └─ All configuration saved securely                       │
+│                                                             │
+│  Step 6: Start Services                                     │
+│  └─ Docker containers running                              │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## Management Commands
+
+After installation, use the management script:
+
+```bash
+chmod +x scripts/manage.sh
+```
+
+| Command | Description |
+|---------|-------------|
+| `./manage.sh start` | Start all services |
+| `./manage.sh stop` | Stop all services |
+| `./manage.sh restart` | Restart all services |
+| `./manage.sh logs` | View application logs |
+| `./manage.sh status` | Show service status |
+| `./manage.sh update` | Pull latest and rebuild |
+| `./manage.sh backup` | Create manual backup |
+| `./manage.sh restore` | Restore from backup |
+| `./manage.sh shell` | Open app shell |
+| `./manage.sh db` | Open database shell |
 
 ---
 
@@ -89,8 +98,9 @@ curl -I https://yourdomain.com
 **Best for:** New servers, no existing reverse proxy.
 
 ```bash
-# Caddy is included in docker-compose.prod.yml
-docker compose -f docker-compose.prod.yml up -d
+# Installer handles everything
+./scripts/install.sh
+# Select "1) None" when asked about reverse proxy
 ```
 
 **Features:**
@@ -106,25 +116,15 @@ docker compose -f docker-compose.prod.yml up -d
 **Best for:** Servers already running Traefik (e.g., with n8n, Portainer).
 
 ```bash
-# Ensure Traefik network exists
-docker network ls | grep traefik || docker network create traefik
-
-# Start with Traefik override
-docker compose -f docker-compose.prod.yml -f docker-compose.traefik.yml up -d
+# Installer handles everything
+./scripts/install.sh
+# Select "2) Traefik" and enter network name (usually traefik-public)
 ```
 
 **Requirements:**
 - Traefik running on ports 80/443
-- Network `traefik` exists
+- Network `traefik-public` exists
 - Certresolver `letsencrypt` configured
-
-**Traefik Labels:**
-The app automatically registers with Traefik using labels:
-```yaml
-- "traefik.http.routers.ribotflow.rule=Host(`yourdomain.com`)"
-- "traefik.http.routers.ribotflow.entrypoints=websecure"
-- "traefik.http.routers.ribotflow.tls.certresolver=letsencrypt"
-```
 
 ---
 
@@ -132,17 +132,12 @@ The app automatically registers with Traefik using labels:
 
 **Best for:** Servers already running Nginx.
 
-#### 1. Deploy without Caddy (internal only)
 ```bash
-# Start services without Caddy
-docker compose -f docker-compose.prod.yml up -d
+# Installer handles Docker setup
+./scripts/install.sh
+# Select "3) Nginx"
 
-# Map Caddy to internal port
-# (modify docker-compose.prod.yml to expose app directly)
-```
-
-#### 2. Configure Nginx
-```bash
+# Then configure Nginx manually:
 cat > /etc/nginx/sites-available/ribotflow << 'EOF'
 server {
     listen 80;
@@ -171,7 +166,6 @@ server {
 }
 EOF
 
-# Enable site
 ln -s /etc/nginx/sites-available/ribotflow /etc/nginx/sites-enabled/
 nginx -t && systemctl reload nginx
 ```
@@ -184,54 +178,33 @@ nginx -t && systemctl reload nginx
 
 | Type | Name | Value | TTL |
 |------|------|-------|-----|
-| A | @ | 95.111.224.230 | 14400 |
-| CNAME | ssribotflow | vps.digitaistudios.com | 14400 |
-
-**Result:**
-- `ssribotflow.digitaistudios.com` → `vps.digitaistudios.com` → `95.111.224.230`
+| A | @ | YOUR_SERVER_IP | 14400 |
+| CNAME | ribotflow | vps.yourdomain.com | 14400 |
 
 ---
 
 ## Post-Installation
 
-### 1. Configure Email (SMTP)
+### Configure Email (if skipped during install)
 
-Edit `.env.local` and add your SMTP settings:
-
-```bash
-# Gmail
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=465
-SMTP_SECURE=true
-SMTP_USER=your-email@gmail.com
-SMTP_PASSWORD=your-app-password
-SMTP_FROM=noreply@yourdomain.com
-
-# Or professional email (Brevo, Mailgun, etc.)
-SMTP_HOST=smtp.brevo.com
-SMTP_PORT=587
-SMTP_SECURE=false
-SMTP_USER=your-email@yourdomain.com
-SMTP_PASSWORD=your-password
-SMTP_FROM=noreply@yourdomain.com
-```
-
-Restart after changes:
-```bash
-docker compose -f docker-compose.prod.yml restart app
-```
-
-### 2. Run Database Migrations
+1. Go to **Settings > Email** in the application
+2. Enter your SMTP details
+3. Or edit `.env.local` directly:
 
 ```bash
-docker compose -f docker-compose.prod.yml exec app npx drizzle-kit push
+# Edit configuration
+nano .env.local
+
+# Restart after changes
+./manage.sh restart
 ```
 
-### 3. Create Admin User
+### Run Database Migrations
 
-Access the app and register through the UI, or use the setup page:
-```
-https://yourdomain.com/setup
+```bash
+./manage.sh shell
+npx drizzle-kit push
+exit
 ```
 
 ---
@@ -243,18 +216,12 @@ Backups run automatically every 24 hours.
 
 ### Manual Backup
 ```bash
-docker compose -f docker-compose.prod.yml exec backup /bin/sh -c \
-  "PGPASSWORD=your-password pg_dump -h db -U postgres ribotflow | gzip > /backups/manual_$(date +%Y%m%d_%H%M%S).sql.gz"
+./manage.sh backup
 ```
 
 ### Restore from Backup
 ```bash
-# List backups
-docker compose -f docker-compose.prod.yml exec backup ls -la /backups/
-
-# Restore
-docker compose -f docker-compose.prod.yml exec backup /bin/sh -c \
-  "gunzip < /backups/ribotflow_YYYYMMDD_HHMMSS.sql.gz | psql -h db -U postgres ribotflow"
+./manage.sh restore
 ```
 
 ---
@@ -262,119 +229,88 @@ docker compose -f docker-compose.prod.yml exec backup /bin/sh -c \
 ## Updating
 
 ```bash
-cd /opt/ribotflow
-git pull origin features/Fxboix
-docker compose -f docker-compose.prod.yml up -d --build
-```
-
----
-
-## Rollback
-
-```bash
-cd /opt/ribotflow
-git log --oneline -5
-git checkout <commit-hash>
-docker compose -f docker-compose.prod.yml up -d --build
+./manage.sh update
 ```
 
 ---
 
 ## Troubleshooting
 
-### App not accessible
+### Check service status
 ```bash
-# Check containers
-docker compose -f docker-compose.prod.yml ps
-
-# Check app logs
-docker compose -f docker-compose.prod.yml logs app
-
-# Check Caddy logs
-docker compose -f docker-compose.prod.yml logs caddy
+./manage.sh status
 ```
 
-### Database connection error
+### View logs
 ```bash
-# Check PostgreSQL
-docker compose -f docker-compose.prod.yml ps db
-docker compose -f docker-compose.prod.yml exec db pg_isready -U postgres
+./manage.sh logs
 ```
 
-### HTTPS not working
-1. **DNS:** Verify `nslookup yourdomain.com` points to your VPS
-2. **Ports:** Ensure 80/443 are open in firewall
-3. **Firewall:** Check `ufw status` or `iptables -L`
-
-### Traefik specific
+### Restart services
 ```bash
-# Check network
-docker network ls | grep traefik
-
-# Check labels
-docker inspect ribotflow-app | grep -A 20 "Labels"
-
-# Check Traefik logs
-docker logs traefik | grep ribotflow
+./manage.sh restart
 ```
 
-### Container won't start
+### Check Docker daemon
 ```bash
-# Check logs
-docker compose -f docker-compose.prod.yml logs
-
-# Check disk space
-df -h
-
-# Check Docker daemon
 systemctl status docker
 ```
 
+### Common issues
+
+**HTTPS not working:**
+1. Check DNS: `nslookup yourdomain.com`
+2. Check ports: `ufw status` or `iptables -L`
+3. Check Traefik/Caddy logs
+
+**Database connection error:**
+```bash
+./manage.sh db
+# If connects, database is OK
+```
+
+**Container won't start:**
+```bash
+docker compose -f docker-compose.prod.yml logs
+```
+
 ---
 
-## Architecture Details
+## Architecture
+
+```
+Internet → Reverse Proxy (Caddy/Traefik/Nginx) → Next.js App → PostgreSQL + MinIO
+```
 
 ### Services
 
-| Service | Image | Port | Purpose |
-|---------|-------|------|---------|
-| app | Custom build | 3000 | Next.js application |
-| db | postgres:16-alpine | 5432 | PostgreSQL database |
-| minio | minio/minio:latest | 9000/9001 | Object storage |
-| caddy | caddy:2-alpine | 80/443 | Reverse proxy (Option A) |
-| backup | postgres:16-alpine | - | Daily backups |
-
-### Volumes
-
-| Volume | Purpose |
-|--------|---------|
-| db_data | PostgreSQL data |
-| minio_data | MinIO files |
-| app_uploads | User uploads |
-| caddy_data | SSL certificates |
-| caddy_config | Caddy config |
-
-### Networks
-
-| Network | Purpose |
-|---------|---------|
-| internal | Inter-service communication |
-| traefik | External Traefik network (Option B only) |
+| Service | Image | Purpose |
+|---------|-------|---------|
+| app | Custom build | Next.js application |
+| db | postgres:16-alpine | PostgreSQL database |
+| minio | minio/minio:latest | Object storage |
+| caddy | caddy:2-alpine | Reverse proxy (Option A) |
+| backup | postgres:16-alpine | Daily backups |
 
 ---
 
-## Security Notes
+## Uninstall
 
-- Never commit `.env.local` to git
-- Use strong, unique secrets (generate with `openssl rand -base64 32`)
-- Keep Docker and system packages updated
-- Monitor logs for suspicious activity
-- Use firewall to restrict access to necessary ports only
+```bash
+cd /opt/ribotflow
+
+# Stop and remove containers
+docker compose -f docker-compose.prod.yml down -v
+
+# Remove files
+cd /
+rm -rf /opt/ribotflow
+```
 
 ---
 
 ## Support
 
 - **Issues:** GitHub Issues
-- **Documentation:** See `docs/` folder
+- **Documentation:** See README.md
 - **Email:** support@digitaistudios.com
