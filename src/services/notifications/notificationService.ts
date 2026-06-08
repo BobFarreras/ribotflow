@@ -9,7 +9,8 @@ import { db } from "@/db";
 import { users, companies } from "@/db/schema/auth";
 import { eq, and } from "drizzle-orm";
 import { isCertError, certErrorHelp } from "@/lib/utils/smtpErrors";
-import { checkInTemplate, completionTemplate } from "./emailTemplates";
+import { checkInTemplate, completionTemplate, invitationTemplate } from "./emailTemplates";
+import type { InvitationEmailData } from "./emailTemplates";
 
 export interface NotificationPayload {
   to: string;
@@ -285,6 +286,33 @@ export const notificationService = {
         },
         companyId
       );
+    }
+  },
+
+  async sendInvitationEmail(
+    companyId: string,
+    data: InvitationEmailData
+  ): Promise<{ success: boolean; error?: string }> {
+    try {
+      const { companyName } = await loadCompanyAndAdmins(companyId);
+      const html = invitationTemplate(data, companyName);
+      const result = await sendEmailWithAttachment(
+        {
+          to: data.inviteeEmail,
+          subject: `[${companyName}] Et conviden a unir-te a l'equip`,
+          html,
+          from: "RIBOTFLOW",
+        },
+        companyId
+      );
+      if (!result.success) {
+        return { success: false, error: result.error };
+      }
+      return { success: true };
+    } catch (err) {
+      const errMsg = err instanceof Error ? err.message : String(err);
+      console.error("[Notification] Failed to send invitation email:", err);
+      return { success: false, error: errMsg };
     }
   },
 

@@ -57,8 +57,8 @@ beforeEach(() => {
   dbMock.update.mockReturnValue(dbMock);
   dbMock.set.mockReturnValue(dbMock);
   storageMock.upload.mockResolvedValue({
-    storageKey: "branding/acme/avatars/u-1-123.png",
-    publicUrl: "https://cdn/acme/avatars/u-1-123.png",
+    storageKey: "branding/avatars/u-1-123.png",
+    publicUrl: "https://cdn/avatars/u-1-123.png",
   });
 });
 

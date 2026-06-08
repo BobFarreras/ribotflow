@@ -18,12 +18,15 @@ import { teamService } from "@/services/sat/team";
 import { inviteUserSchema } from "@/lib/validators/sat/teamSchema";
 import { TeamError } from "@/lib/errors/team";
 import { revalidatePath } from "next/cache";
+import { notificationService } from "@/services/notifications/notificationService";
 
 export interface InviteUserResult {
   success: boolean;
   error?: string;
   /** Only populated in dev mode. In cloud mode the email is sent instead. */
   invitationUrl?: string;
+  /** In cloud mode, whether the invitation email was sent successfully. */
+  emailSent?: boolean;
 }
 
 export async function inviteUserAction(
@@ -58,15 +61,23 @@ export async function inviteUserAction(
 
     revalidatePath("/settings/team");
 
+    const base = appBaseUrl ?? process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+    const invitationUrl = `${base}/accept-invitation?token=${result.invitationToken}`;
+
     if (process.env.NEXT_PUBLIC_APP_MODE === "cloud") {
-      // TODO PR-future: send invitation email via notificationService
-      return { success: true };
+      const emailResult = await notificationService.sendInvitationEmail(session.user.companyId, {
+        inviteeName: parsed.data.name,
+        inviteeEmail: parsed.data.email,
+        invitedByName: session.user.name ?? session.user.email ?? "Admin",
+        invitationUrl,
+        role: parsed.data.role,
+      });
+      return { success: true, emailSent: emailResult.success, error: emailResult.error };
     }
 
-    const base = appBaseUrl ?? process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
     return {
       success: true,
-      invitationUrl: `${base}/accept-invitation?token=${result.invitationToken}`,
+      invitationUrl,
     };
   } catch (err) {
     if (err instanceof TeamError) {

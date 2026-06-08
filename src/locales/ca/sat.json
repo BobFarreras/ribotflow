@@ -470,6 +470,7 @@
         "invitationUrl": "Enllaç d'invitació",
         "copy": "Copia",
         "copied": "Copiat",
+        "successToast": "Invitació enviada correctament!",
         "errors": {
           "generic": "No s'ha pogut crear la invitació"
         }
@@ -578,51 +579,51 @@
         "load": "No s'ha pogut carregar el perfil",
         "generic": "No s'ha pogut completar l'acció"
       }
+    }
+  },
+  "acceptInvitation": {
+    "title": "Accepta la invitació",
+    "subtitle": "Tria una contrasenya per activar el teu compte. Un cop ho facis, iniciaràs sessió automàticament.",
+    "invitedAs": "T'han convidat com a {name} ({email}).",
+    "fields": {
+      "password": "Contrasenya nova",
+      "confirm": "Repeteix la contrasenya",
+      "hint": "Mínim 8 caràcters."
     },
-    "acceptInvitation": {
-      "title": "Accepta la invitació",
-      "subtitle": "Tria una contrasenya per activar el teu compte. Un cop ho facis, iniciaràs sessió automàticament.",
-      "invitedAs": "T'han convidat com a {name} ({email}).",
-      "fields": {
-        "password": "Contrasenya nova",
-        "confirm": "Repeteix la contrasenya",
-        "hint": "Mínim 8 caràcters."
-      },
-      "show": "Mostra la contrasenya",
-      "hide": "Amaga la contrasenya",
-      "submit": "Activar compte i accedir",
-      "success": {
-        "signInPending": "Compte activat. Inicia sessió manualment per continuar."
-      },
+    "show": "Mostra la contrasenya",
+    "hide": "Amaga la contrasenya",
+    "submit": "Activar compte i accedir",
+    "success": {
+      "signInPending": "Compte activat. Inicia sessió manualment per continuar."
+    },
+    "errors": {
+      "missingToken": "Falta el token d'invitació a l'URL.",
+      "invalidToken": "Aquesta invitació no és vàlida o ha caducat. Demana al propietari de l'empresa que te la reenviï.",
+      "alreadyAccepted": "Aquesta invitació ja s'ha acceptat. Inicia sessió amb les teves credencials.",
+      "passwordTooShort": "La contrasenya ha de tenir com a mínim 8 caràcters.",
+      "generic": "No s'ha pogut activar el compte. Torna-ho a provar."
+    }
+  },
+  "field": {
+    "title": "El meu dia",
+    "subtitle": "{count, plural, =0 {No tens cap ordre assignada.} one {1 ordre assignada.} other {{count} ordres assignades.}}",
+    "empty": {
+      "title": "Tot al dia",
+      "body": "Quan el despatx us assigni una ordre de treball, apareixerà aquí."
+    },
+    "card": {
+      "openDetailsHint": "Obre els detalls de l'ordre"
+    },
+    "actions": {
+      "in_progress": "Començar",
+      "paused": "Pausar",
+      "completed": "Finalitzar",
+      "closed": "Aquesta ordre ja està tancada.",
+      "success": "Estat actualitzat",
       "errors": {
-        "missingToken": "Falta el token d'invitació a l'URL.",
-        "invalidToken": "Aquesta invitació no és vàlida o ha caducat. Demana al propietari de l'empresa que te la reenviï.",
-        "alreadyAccepted": "Aquesta invitació ja s'ha acceptat. Inicia sessió amb les teves credencials.",
-        "passwordTooShort": "La contrasenya ha de tenir com a mínim 8 caràcters.",
-        "generic": "No s'ha pogut activar el compte. Torna-ho a provar."
-      }
-    },
-    "field": {
-      "title": "El meu dia",
-      "subtitle": "{count, plural, =0 {No tens cap ordre assignada.} one {1 ordre assignada.} other {{count} ordres assignades.}}",
-      "empty": {
-        "title": "Tot al dia",
-        "body": "Quan el despatx us assigni una ordre de treball, apareixerà aquí."
-      },
-      "card": {
-        "openDetailsHint": "Obre els detalls de l'ordre"
-      },
-      "actions": {
-        "in_progress": "Començar",
-        "paused": "Pausar",
-        "completed": "Finalitzar",
-        "closed": "Aquesta ordre ja està tancada.",
-        "success": "Estat actualitzat",
-        "errors": {
-          "generic": "No s'ha pogut actualitzar l'estat",
-          "notAssigned": "Aquesta ordre no està assignada a tu.",
-          "notFound": "L'ordre ja no existeix."
-        }
+        "generic": "No s'ha pogut actualitzar l'estat",
+        "notAssigned": "Aquesta ordre no està assignada a tu.",
+        "notFound": "L'ordre ja no existeix."
       }
     }
   }

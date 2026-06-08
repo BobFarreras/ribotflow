@@ -6,7 +6,7 @@
  *              the sections they have permission for.
  */
 
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import SidebarNav from "@/components/layout/SidebarNav";
 import type { Role } from "@/lib/auth/roles";
@@ -66,7 +66,7 @@ vi.mock("@/components/layout/SidebarContext", () => ({
  * Helper: renders the nav for a given role and returns the visible
  * text content of every link/button in the navigation.
  */
-function getVisibleLabels(role: Role | null) {
+function getVisibleLabels(role: Role | null | undefined) {
   const { container } = render(<SidebarNav userRole={role} />);
   const items = Array.from(container.querySelectorAll("nav a, nav button"));
   return items.map((el) => el.textContent?.trim() ?? "").filter(Boolean);
@@ -84,13 +84,13 @@ describe("SidebarNav — role filtering", () => {
     expect(labels).toContain("Perfil");
   });
 
-  it("ADMIN sees SAT, Settings (company, email, team, profile)", () => {
+  it("ADMIN sees SAT, Settings (company, team, profile) — NO Email (SMTP)", () => {
     const labels = getVisibleLabels("ADMIN");
     expect(labels).toContain("Inici");
     expect(labels).toContain("SAT");
     expect(labels).toContain("Configuració");
     expect(labels).toContain("Empresa");
-    expect(labels).toContain("Correu"); // ADMIN has email:read
+    expect(labels).not.toContain("Correu"); // ADMIN no longer has email:read
     expect(labels).toContain("Equip");
     expect(labels).toContain("Perfil");
   });

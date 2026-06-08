@@ -40,6 +40,10 @@ This document contains all critical context from previous development sessions i
 - Page components should NOT call `redirect('/login')` - they should just use session data
 - Removed `authorized` callback from NextAuth config (conflicts with proxy wrapper)
 - Removed custom cookie config (uses Next-Auth defaults now)
+- **Session strategy MUST be JWT** — database strategy causes `UnsupportedStrategy` error with CredentialsProvider
+- **Session callback validates role from DB** on every request — if role changed, session is invalidated (forces re-login)
+- **Manual sessions table row** inserted in jwt callback on signIn (for Active Sessions UI), since JWT strategy doesn't auto-create DB sessions
+- **LoginForm uses two-step auth:** `loginAction` validates credentials server-side, then client-side `signIn("credentials")` establishes the session cookie
 
 ### 2. Multi-tenancy via `company_id`
 - EVERY database query for business data MUST include `company_id` filter
@@ -184,7 +188,7 @@ This document contains all critical context from previous development sessions i
 - **Run tests:** `pnpm test`
 - **Full CI check:** `pnpm ci:check` (typecheck + lint + format + test + build)
 
-**Current Test Count:** 116 tests passing across 16 test files
+**Current Test Count:** 393 tests passing across 47 test files
 
 > **IMPORTANT:** Si els tests fallen amb `column "tax_id" of relation "companies" does not exist`, vol dir que la BD no té les migracions 0008-0009. Executa: `pnpm db:migrate`.
 
@@ -205,6 +209,9 @@ This document contains all critical context from previous development sessions i
 | `DashboardShell.test.tsx` | 3 | Layout rendering |
 | `SidebarContext.test.tsx` | 9 | Sidebar state management |
 | `SidebarNav.test.tsx` | 11 | Navigation rendering + active states |
+| `ActiveSessionsList.test.tsx` | Tests for profile sessions UI |
+| `sessionsActions.test.ts` | Tests for session server actions |
+| `sessions.test.ts` | Tests for session service |
 
 **Test cleanup (2026-06-02):** Each integration test file uses a **unique company slug + email** (`test-empresa-{workorder,material,signature,location,attachment}`) and calls `cleanupTestDatabase()` in `afterAll` to drop the company + cascading FKs. The dev DB stays clean — only `DigitAIStudios` should remain after `pnpm test`.
 
@@ -220,6 +227,10 @@ This document contains all critical context from previous development sessions i
 ### Issue: Login redirects after successful signIn
 **Root Cause:** `auth()` without request context cannot read browser cookies. Must use `auth((req) => { ... })` wrapper.
 **Solution Applied:** See proxy.ts pattern above.
+
+### Issue: LoginForm silent failure (no error shown)
+**Root Cause:** `signIn()` from next-auth/react can throw or return unexpected results in NextAuth v5 beta. The original LoginForm had no try/catch and only checked `result?.ok`, missing cases where `result?.url` indicates success.
+**Solution Applied:** LoginForm now wraps signIn in try/catch/finally and checks both `result?.ok` and `result?.url`. Error feedback always shown to user.
 
 ### Issue: 404 when navigating to /dashboard/sat
 **Root Cause:** Route group `(dashboard)` doesn't add `/dashboard` prefix.
@@ -429,8 +440,12 @@ services/notifications/   # Notifications
     supabaseStorage.ts      # Supabase Storage implementation
     index.ts                # Re-exports
   lib/utils/storageKeys.ts  # Human-readable storage key builders
-  lib/auth/index.ts         # NextAuth config (NO authorized callback!)
-  proxy.ts                  # Auth proxy (SINGLE source of truth)
+lib/auth/index.ts         # NextAuth config (JWT strategy, MUST NOT use database strategy)
+   lib/auth/roles.ts          # Role hierarchy and type (OWNER > ADMIN > OFFICE/TECHNICIAN)
+   lib/auth/permissions.ts     # Permission matrix + can() + canAll() + canAny()
+   lib/auth/canSeePath.ts     # URL → Permission mapping (proxy + sidebar use this)
+   lib/auth/currentSession.ts # User-agent + IP fingerprint for active sessions UI
+   proxy.ts                  # Auth proxy (SINGLE source of truth for auth + RBAC)
   db/schema/sat.ts          # Database schema (13 tables)
   locales/ca/*.json         # Catalan translations (common + sat)
   locales/es/*.json         # Spanish translations (common + sat)
@@ -665,6 +680,15 @@ quotes/Empresa_Test/PRES-2026-0001-signature.png
 | 01/06/2026 | Self-signed SMTP cert a casa | A xarxes domèstiques amb proxy/AV interceptant TLS, l'SMTP falla amb `self-signed certificate in certificate chain`. Solucions DEV ONLY: (A) `SMTP_TLS_REJECT_UNAUTHORIZED=false` a `.env.local` (recomanada, scoped); (B) `NODE_TLS_REJECT_UNAUTHORIZED=0` (Node-level, global). Cal REINICIAR el dev server. El codi (`notificationService`) té log diagnòstic de la config SMTP per identificar si la var s'està llegint. Refs: `3396448`, sessió debug SMTP. |
 | 01/06/2026 | **Principi Zero-Fricció per a l'empresa final** | L'usuari prioritza que les empreses configurin el **menys possible**. Cada variable/env var extra és una porta a errors. Direcció: modelar l'empresa com a entitat de primer nivell amb configuració via UI, no pas env vars globals. **Self-hosted**: admin configura 1 cop a la UI. **Cloud**: cada tenant la seva config. Això ja era la direcció correcta pel multi-tenancy, però ara és també un principi d'UX. |
 | 01/06/2026 | **Direcció Empresa-com-a-Entitat (SMTP config per company)** | Cada empresa tindrà la seva config de correu (no env vars globals). **MVP aquesta sessió**: schema ampliat (`companies.email`, `address_*`, `default_tax_rate`, `quote_prefix`) + taula `smtp_configs` (1:1) amb `password_encrypted` (AES-256-GCM) + encryption utility + `smtpConfigService` + `notificationService` llegeix per `companyId` amb fallback a env + UI `/settings/email` amb botó "Test connection" i checkbox "Accept self-signed". **Fase 2**: `/settings/general`, `/settings/branding`, `/settings/numbering`, IMAP, plantilles PDF per empresa. |
+| 08/06/2026 | **NotificationService: sendInvitationEmail added** | Nova funció `sendInvitationEmail()` que utilitza `invitationTemplate` (HTML amb botó "Acceptar invitació"). Resol SMTP de l'empresa via `resolveSmtpConfig(companyId)`. cridada per `inviteUserAction` en mode cloud. |
+| 08/06/2026 | **Auth.js v5: JWT strategy obrigatori per a Credentials** | La strategy "database" provoca `UnsupportedStrategy` amb CredentialsProvider. Canvi a JWT (commit 4a8b029). Session callback valida role des de DB a cada petició — si canvia, invalida sessió. Inserció manual de fila a `sessions` al jwt callback per la UI de sessions actives. |
+| 08/06/2026 | **LoginForm: try/catch + result?.url fallback** | NextAuth v5 beta pot retornar `result.url` sense `result.ok=true`. Afegit try/catch/finally i check de `result?.url` com a fallback. Si signIn llença error, l'usuari veu feedback en lloc de quedar-se "pending". |
+| 08/06/2026 | **RBAC complet: roles, permissions, can(), proxy, PermissionGuard** | Matriu de permisos centralitzada (src/lib/auth/permissions.ts). `can(role, permission)` substitueix comparacions directes de role. Proxy (proxy.ts) filtra rutes amb `canSeePath()`. SidebarNav oculta mòduls segons permissions. PermissionGuard per pàgines. Camp: TECHNICIAN veu `/sat/field`, ADMIN no. |
+| 08/06/2026 | **Invitation email system complet** | Template HTML d'invitació (`emailTemplates.ts`), `sendInvitationEmail()` a `notificationService`, `inviteUserAction` envia email en mode cloud. En mode dev mostra l'URL directament. Toast + auto-close al formulari. |
+| 08/06/2026 | **ADMIN loses email:read** | L'E2E guide diu que ADMIN NO hauria de veure Email/SMTP (és OWNER-only). Corregit a `permissions.ts` i actualitzats 3 fitxers de test. |
+| 08/06/2026 | **canSeePath: workorder:read:all implies own** | `/sat` i `/access` accepten `workorder:read:all` com a `workorder:read:own`, però `/sat/field` i `/sat/work-orders` segueixen sent només per TECHNICIAN. |
+| 08/06/2026 | **acceptInvitation i18n: must be top-level in sat.json** | Les claus `acceptInvitation` i `field` estaven nidificades dins de `settings` al JSON, però els components busquen `sat.acceptInvitation.*` (nivell superior). Causava `MISSING_MESSAGE` error. Corregit a ca/es. |
+| 08/06/2026 | **Team dropdown z-index + overflow** | El dropdown dels 3 punts (TeamRow) tenia `z-10` i era tallat per `overflow-hidden` del contenidor (TeamTable). Canviat a `z-50` i `overflow-visible`. |
 
 ---
 
@@ -699,18 +723,22 @@ Multiple agents (including this one) investigated the wrong causes:
 
 ---
 
-## Session Handoff — Last Update: 02/06/2026
+## Session Handoff — Last Update: 08/06/2026
 
-### What Was Done (This Session)
-1. **Redisseny SMTP settings page** — 8 subcomponents amb CSS vars del projecte (no Tailwind semàntic)
-2. **ProviderPresets** — Botons ràpids Gmail/Outlook/Yahoo/Hostinger/IONOS/Custom amb icones SVG
-3. **i18n complet** — Tots els strings en ca i es. Corregit `{{var}}` → `{var}` (format ICU de next-intl)
-4. **SMTP config cache** — `resolveSmtpConfig()` cacheja per company (5min TTL), `clearSmtpCache()` als server actions
-5. **ENCRYPTION_KEY** afegida al `.env.local` per AES-256-GCM
-6. **Inputs visibles** — `.input` ara té `bg: var(--bg)` i `border: 1.5px solid var(--border-strong)`
-7. **Avançat desplegat** — `SmtpAdvancedSection` obert per defecte
-8. **Botons funcionen** — Desar mostra feedback inline (spinner/success/error), Test funciona després de desar
-9. **116 tests passant** (78 original + 38 nous)
+### What Was Done (Office Session 08/06)
+1. **Diagnòstic login** — He provat el flux complet CSRF → signIn → JWT → dashboard. El backend funciona correctament. El LoginForm tenia manca d'error handling.
+2. **LoginForm millorat** — Afegit try/catch/finally + check `result?.url` com a fallback per NextAuth v5 beta.
+3. **SidebarNav.test.tsx corregit** — Import `vi` afegit de vitest, tipus `undefined` corregit al helper.
+4. **Migracions BD** — Totes les 14 migracions ja aplicades, cap pendent.
+5. **393 tests passen**, tsc net, build correcte.
+
+### What Was Done (Home Session 06/06 - already merged)
+1. **RBAC complet** — Permissions matrix + can() + canSeePath() + PermissionGuard
+2. **Team page** — `/settings/team` amb invitacions i gestió d'usuaris
+3. **Profile page** — `/settings/profile` amb avatar, tema, idioma, sessions actives
+4. **Auth refactor** — JWT strategy (revert from database), role validation in session callback
+5. **Field view** — `/sat/field` per a tècnics (mobile-first)
+6. **Accept invitation** — `/accept-invitation` page pubblica
 
 ### Architecture Notes
 - **SMTP config**: BD primer → fallback a env vars → error clar. Cache 5min, invalidat a save/delete.
@@ -720,8 +748,9 @@ Multiple agents (including this one) investigated the wrong causes:
 
 ### Next Steps
 1. **Vista pública del client** — Enllaç sense login per acceptar/rebutjar pressupostos
-2. **Configuració d'empresa** — Logo, colors, text legal, tarifa desplaçament (`/settings/company`)
-3. **Refactor Fase 3 verification** — Verificar línia counts de pàgines dividides des de casa
+2. **Edició de Clients** (`/sat/clients/[id]/edit`)
+3. **PWA Offline** per a tècnics
+4. **Billing/Facturació** — Generació de factures des d'OTs completades
 
 ### Quick Commands for Next Session
 ```bash
@@ -846,6 +875,7 @@ When you start working on this project:
 9. **Run tests:** `pnpm test` (ensure 116 tests pass)
 10. **Start dev server:** `pnpm dev`
 11. **Login with:** dais@test.com / 12345678
+12. **IMPORTANT:** Auth uses JWT strategy (not database). If you see `UnsupportedStrategy`, check `src/lib/auth/index.ts` has `session: { strategy: "jwt" }`.
 
 ### Current Module Status (June 2026)
 - **SAT (Work Orders):** ✅ Complete — CRUD, 3 views (Grid/Table/Kanban), filters, pagination
@@ -857,6 +887,10 @@ When you start working on this project:
 - **Notificacions:** ✅ Complete — Email amb per-company DB config + 5min cache + fallback a env vars
 - **SMTP Settings:** ✅ Complete — `/settings/email` amb presets, test connection, AES-256-GCM, i18n ca/es
 - **Refactor Fases 1-3:** ✅ Completades — Monolits dividits, schema per entitat, serveis amb subdominis, components/pàgines dividits, SMTP settings redissenyat
-- **Company Settings:** 🔲 Pendent — Logo, colors, text legal, tarifa desplaçament
+- **RBAC:** ✅ Complet — Roles + permissions matrix + can() + canSeePath() + PermissionGuard + SidebarNav filtrat per rol
+- **Team Management:** ✅ Complet — `/settings/team` amb invitacions, canvi de rol, activar/desactivar usuaris, última activitat
+- **Profile Settings:** ✅ Complet — `/settings/profile` amb avatar, nom, password, tema, idioma, sessions actives
+- **Company Settings:** ✅ Complet — `/settings/company` amb dades fiscals, logo, preferències
+- **Auth:** ✅ Complet — JWT strategy, proxy amb RBAC, LoginForm millorat, accept-invitation page
 
 > **Tip for agents:** If you see `[Storage] Environment variables missing for provider 

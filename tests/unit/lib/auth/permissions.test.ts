@@ -100,7 +100,8 @@ describe("canAny", () => {
   it("returns true if the role has at least one of the listed permissions", () => {
     expect(canAny("OWNER", ["company:write", "billing:write"])).toBe(true);
     expect(canAny("ADMIN", ["company:write", "billing:write"])).toBe(false);
-    expect(canAny("ADMIN", ["company:write", "email:read"])).toBe(true);
+    expect(canAny("ADMIN", ["company:write", "team:read"])).toBe(true); // ADMIN has team:read
+    expect(canAny("ADMIN", ["email:read", "email:write"])).toBe(false); // ADMIN has neither
   });
 
   it("returns false for an empty list (vacuously false, not true)", () => {

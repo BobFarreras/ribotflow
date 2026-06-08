@@ -29,6 +29,34 @@ export function checkInTemplate(data: CheckInNotificationData, companyName: stri
   );
 }
 
+export interface InvitationEmailData {
+  inviteeName: string;
+  inviteeEmail: string;
+  invitedByName: string;
+  invitationUrl: string;
+  role: string;
+}
+
+export function invitationTemplate(data: InvitationEmailData, companyName: string): string {
+  const roleLabel =
+    data.role === "ADMIN"
+      ? "Administrador"
+      : data.role === "TECHNICIAN"
+        ? "Tècnic"
+        : "Oficina";
+  return wrap(
+    "Et conviden a unir-te",
+    `<h2 style="color: #0d9488;">Et conviden a unir-te a ${companyName}</h2>
+     <p><strong>${data.invitedByName}</strong> t'ha convidat a formar part de l'equip com a <strong>${roleLabel}</strong>.</p>
+     <p>Fes clic al botó següent per crear el teu compte i començar a treballar:</p>
+     <div style="text-align: center; margin: 30px 0;">
+       <a href="${data.invitationUrl}" style="display: inline-block; background-color: #0d9488; color: #ffffff; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600;">Acceptar invitació</a>
+     </div>
+     <p style="font-size: 13px; color: #6b7280;">Aquest enllaç caducarà en 7 dies. Si no has sol·licitat aquesta invitació, pots ignorar aquest missatge.</p>`,
+    companyName
+  );
+}
+
 export function completionTemplate(data: CompletionNotificationData, companyName: string): string {
   const durationText = data.durationMinutes
     ? `${Math.floor(data.durationMinutes / 60)}h ${data.durationMinutes % 60}m`

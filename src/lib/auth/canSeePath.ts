@@ -73,5 +73,14 @@ export function requiredPermissionFor(pathname: string): Permission | null {
 export function canSeePath(role: Role, pathname: string): boolean {
   const required = requiredPermissionFor(pathname);
   if (!required) return true;
+  // /sat and /access: :read:all implies :read:own (ADMIN/OFFICE/OWNER can see SAT)
+  // /sat/field and /sat/work-orders: :read:own ONLY (TECHNICIAN-only mobile views)
+  if (required === "workorder:read:own") {
+    const isFieldOrWorkOrders = /^\/sat\/(field|work-orders)/.test(pathname);
+    if (isFieldOrWorkOrders) {
+      return can(role, "workorder:read:own");
+    }
+    return can(role, "workorder:read:own") || can(role, "workorder:read:all");
+  }
   return can(role, required);
 }

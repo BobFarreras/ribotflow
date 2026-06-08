@@ -1,0 +1,32 @@
+# ==========================================
+# RIBOTFLOW - Docker Compose (Caddy Override)
+# Use with: docker compose -f docker-compose.prod.yml -f docker-compose.caddy.yml up -d
+# ==========================================
+# This adds Caddy as a reverse proxy with auto HTTPS.
+# Prerequisites: ports 80/443 must be free.
+
+services:
+  # --- Caddy (Reverse Proxy + Auto HTTPS) ---
+  caddy:
+    image: caddy:2-alpine
+    container_name: ribotflow-caddy
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./docker/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - app
+    restart: unless-stopped
+    networks:
+      - internal
+
+# --- Volumes ---
+volumes:
+  caddy_data:
+    driver: local
+  caddy_config:
+    driver: local
