@@ -1,6 +1,6 @@
 # ==========================================
 # RIBOTFLOW - Docker Compose (Production)
-# Services: App + PostgreSQL + MinIO + Caddy
+# Traefik handles HTTPS (like n8n/portainer)
 # ==========================================
 
 services:
@@ -14,7 +14,7 @@ services:
     environment:
       - NODE_ENV=production
       - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD}@db:5432/ribotflow
-      - NEXT_PUBLIC_APP_URL=https://${DOMAIN}
+      - NEXT_PUBLIC_APP_URL=https://ssribotflow.digitaistudios.com
     depends_on:
       db:
         condition: service_healthy
@@ -22,9 +22,16 @@ services:
         condition: service_healthy
     volumes:
       - app_uploads:/app/uploads
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.ribotflow.rule=Host(`ssribotflow.digitaistudios.com`)"
+      - "traefik.http.routers.ribotflow.entrypoints=websecure"
+      - "traefik.http.routers.ribotflow.tls.certresolver=letsencrypt"
+      - "traefik.http.services.ribotflow.loadbalancer.server.port=3000"
     restart: unless-stopped
     networks:
       - internal
+      - traefik
 
   # --- PostgreSQL Database ---
   db:
@@ -63,28 +70,16 @@ services:
       timeout: 5s
       retries: 5
       start_period: 10s
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.ribotflow-minio.rule=Host(`ssminio.digitaistudios.com`)"
+      - "traefik.http.routers.ribotflow-minio.entrypoints=websecure"
+      - "traefik.http.routers.ribotflow-minio.tls.certresolver=letsencrypt"
+      - "traefik.http.services.ribotflow-minio.loadbalancer.server.port=9001"
     restart: unless-stopped
     networks:
       - internal
-
-  # --- Caddy (Reverse Proxy + HTTPS) ---
-  caddy:
-    image: caddy:2-alpine
-    container_name: ribotflow-caddy
-    ports:
-      - "80:80"
-      - "443:443"
-      - "443:443/udp"
-    volumes:
-      - ./docker/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
-      - caddy_data:/data
-      - caddy_config:/config
-      - caddy_logs:/var/log/caddy
-    depends_on:
-      - app
-    restart: unless-stopped
-    networks:
-      - internal
+      - traefik
 
   # --- Database Backup (daily) ---
   backup:
@@ -118,16 +113,12 @@ volumes:
     driver: local
   app_uploads:
     driver: local
-  caddy_data:
-    driver: local
-  caddy_config:
-    driver: local
-  caddy_logs:
-    driver: local
   backup_data:
     driver: local
 
-# --- Network ---
+# --- Networks ---
 networks:
   internal:
     driver: bridge
+  traefik:
+    external: true

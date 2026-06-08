@@ -1,268 +1,205 @@
-# RIBOTFLOW - Deployment Guide
-
-## Prerequisites
-
-- **VPS** with Ubuntu 22.04+ (2GB RAM minimum, 4GB recommended)
-- **Domain** pointed to your VPS IP (A record)
-- **Docker** 24+ and **Docker Compose** v2
-- **Git** installed
-
-## Quick Start
-
-```bash
-# 1. Connect to your VPS
-ssh root@your-vps-ip
-
-# 2. Install Docker (if not installed)
-curl -fsSL https://get.docker.com | sh
-
-# 3. Clone the repository
-git clone https://github.com/BobFarreras/ribotflow.git
-cd ribotflow
-git checkout features/Fxboix
-
-# 4. Configure environment
-cp .env.production .env.local
-nano .env.local  # Edit with your values
-
-# 5. Start services
-docker compose -f docker-compose.prod.yml up -d
-
-# 6. Run database migrations
-docker compose -f docker-compose.prod.yml exec app npx drizzle-kit migrate
-
-# 7. (Optional) Seed demo data
-docker compose -f docker-compose.prod.yml exec app npx tsx scripts/seed-demo.ts
-```
-
-## Step-by-Step Configuration
-
-### 1. Generate Secrets
-
-```bash
-# Generate AUTH_SECRET
-openssl rand -base64 32
-
-# Generate ENCRYPTION_KEY
-openssl rand -base64 32
-
-# Generate MINIO passwords
-openssl rand -base64 16
-```
-
-### 2. Configure .env.local
-
-Edit `.env.local` with your values:
-
-```env
-DOMAIN=ribotflow.yourdomain.com
-AUTH_SECRET=your-generated-secret
-ENCRYPTION_KEY=your-generated-key
-POSTGRES_PASSWORD=your-strong-db-password
-MINIO_ROOT_USER=your-minio-user
-MINIO_ROOT_PASSWORD=your-minio-password
-SMTP_HOST=smtp.brevo.com
-SMTP_PORT=587
-SMTP_USER=your-email@domain.com
-SMTP_PASSWORD=your-smtp-password
-```
-
-### 3. DNS Configuration
-
-Add these DNS records:
-
-```
-Type    Name                    Value
-A       ribotflow.yourdomain.com    your-vps-ip
-AAAA    ribotflow.yourdomain.com    your-vps-ipv6 (optional)
-```
-
-### 4. Start Services
-
-```bash
-# Build and start all services
-docker compose -f docker-compose.prod.yml up -d --build
-
-# Check status
-docker compose -f docker-compose.prod.yml ps
-
-# View logs
-docker compose -f docker-compose.prod.yml logs -f app
-```
-
-### 5. Database Setup
-
-```bash
-# Run migrations
-docker compose -f docker-compose.prod.yml exec app npx drizzle-kit migrate
-
-# Verify migrations
-docker compose -f docker-compose.prod.yml exec app npx drizzle-kit check
-```
-
-## Production Checklist
-
-### Security
-
-- [ ] Strong AUTH_SECRET generated
-- [ ] Strong ENCRYPTION_KEY generated
-- [ ] Strong POSTGRES_PASSWORD set
-- [ ] MinIO credentials changed
-- [ ] SMTP credentials configured
-- [ ] Firewall configured (only ports 80, 443 open)
-- [ ] SSH key authentication enabled
-- [ ] Root login disabled
-
-### Monitoring
-
-- [ ] Health check endpoint working: `https://your-domain.com/api/health`
-- [ ] Logs accessible: `docker compose logs -f`
-- [ ] Backup cron configured (see below)
-
-### Backups
-
-```bash
-# Manual backup
-./docker/scripts/backup.sh manual
-
-# List backups
-./docker/scripts/backup.sh list
-
-# Restore from backup
-./docker/scripts/backup.sh restore /backups/ribotflow/ribotflow_20260608_120000.sql.gz
-```
-
-#### Automated Backups (Cron)
-
-```bash
-# Edit crontab
-crontab -e
-
-# Add daily backup at 2:00 AM
-0 2 * * * cd /path/to/ribotflow && ./docker/scripts/backup.sh daily >> /var/log/ribotflow-backup.log 2>&1
-```
-
-## Useful Commands
-
-| Command | Description |
-|---------|-------------|
-| `docker compose -f docker-compose.prod.yml up -d` | Start all services |
-| `docker compose -f docker-compose.prod.yml down` | Stop all services |
-| `docker compose -f docker-compose.prod.yml logs -f app` | View app logs |
-| `docker compose -f docker-compose.prod.yml exec app sh` | Open shell in app |
-| `docker compose -f docker-compose.prod.yml exec app npx drizzle-kit studio` | Open Drizzle Studio |
-| `docker compose -f docker-compose.prod.yml build --no-cache app` | Rebuild app |
-
-## Troubleshooting
-
-### App won't start
-
-```bash
-# Check logs
-docker compose -f docker-compose.prod.yml logs app
-
-# Common issues:
-# - DATABASE_URL wrong
-# - AUTH_SECRET missing
-# - Port 3000 already in use
-```
-
-### HTTPS not working
-
-```bash
-# Check Caddy logs
-docker compose -f docker-compose.prod.yml logs caddy
-
-# Common issues:
-# - Domain not pointing to VPS
-# - Ports 80/443 blocked by firewall
-# - DNS not propagated (wait 5-10 minutes)
-```
-
-### Database connection refused
-
-```bash
-# Check if PostgreSQL is running
-docker compose -f docker-compose.prod.yml ps db
-
-# Check logs
-docker compose -f docker-compose.prod.yml logs db
-
-# Restart database
-docker compose -f docker-compose.prod.yml restart db
-```
-
-### MinIO bucket not found
-
-```bash
-# Access MinIO console (internal only)
-docker compose -f docker-compose.prod.yml exec minio mc alias set local http://localhost:9000 ${MINIO_ROOT_USER} ${MINIO_ROOT_PASSWORD}
-docker compose -f docker-compose.prod.yml exec minio mc mb local/ribotflow
-docker compose -f docker-compose.prod.yml exec minio mc anonymous set public local/ribotflow
-```
+# DEPLOY.md - RIBOTFLOW Production Deployment
 
 ## Architecture
 
 ```
-Internet
-    │
-    ▼
-┌─────────┐
-│  Caddy  │ ← HTTPS auto (Let's Encrypt)
-│  :80    │
-│  :443   │
-└────┬────┘
-     │
-     ▼
-┌─────────┐
-│   App   │ ← Next.js 16 (standalone)
-│  :3000  │
-└────┬────┘
-     │
-     ├──────────┐
-     ▼          ▼
-┌─────────┐ ┌─────────┐
-│   DB    │ │  MinIO  │
-│PostgreSQL│ │  :9000  │
-│  :5432  │ │         │
-└─────────┘ └─────────┘
+Internet → ssribotflow.digitaistudios.com → Traefik (HTTPS) → ribotflow-app:3000
+                                                                    ↓
+                                                            PostgreSQL:5432
+                                                            MinIO:9000/9001
 ```
 
-## Security Features
+## Prerequisites
 
-- **HTTPS**: Auto-configured via Caddy + Let's Encrypt
-- **Rate Limiting**: 5 login attempts per minute per IP
-- **Security Headers**: HSTS, X-Frame-Options, CSP, etc.
-- **Non-root containers**: App runs as `nextjs:1001`
-- **Network isolation**: Internal network, only Caddy exposed
-- **Encrypted storage**: SMTP passwords encrypted with AES-256-GCM
-- **Database backups**: Automated daily with 7-day retention
+- VPS: Contabo (95.111.224.230)
+- Docker + Docker Compose installed
+- Traefik already running (ports 80/443)
+- DNS: `ssribotflow.digitaistudios.com` → VPS IP ✅
 
-## Updating
+## Step-by-Step Deployment
+
+### 1. SSH into VPS
+```bash
+ssh root@95.111.224.230
+```
+
+### 2. Create project directory
+```bash
+mkdir -p /opt/ribotflow
+cd /opt/ribotflow
+```
+
+### 3. Clone the repository
+```bash
+git clone -b features/Fxboix https://github.com/BobFarreras/ribotflow.git .
+```
+
+### 4. Create .env.local
+```bash
+cat > .env.local << 'EOF'
+# Auth
+AUTH_SECRET=QrvNE7eEniSOnIQzABMB0KySgl2Ozl7aPz5fWCWVJps
+
+# Database
+POSTGRES_PASSWORD=OewMjA_U0ruIJjIfROIXoTk9xDOXEebl
+DATABASE_URL=postgresql://postgres:OewMjA_U0ruIJjIfROIXoTk9xDOXEebl@db:5432/ribotflow
+
+# App
+NEXT_PUBLIC_APP_URL=https://ssribotflow.digitaistudios.com
+NEXT_PUBLIC_APP_MODE=self-hosted
+NODE_ENV=production
+
+# MinIO
+MINIO_ROOT_USER=8a8bR25hObJeghjCn5pq1Q
+MINIO_ROOT_PASSWORD=-pyzlgOy66AlpGWM3H9Q
+MINIO_ENDPOINT=minio
+MINIO_PORT=9000
+MINIO_BUCKET=ribotflow-uploads
+MINIO_USE_SSL=false
+
+# SMTP - Configure with your email provider
+# Gmail example:
+# SMTP_HOST=smtp.gmail.com
+# SMTP_PORT=465
+# SMTP_SECURE=true
+# SMTP_USER=your-email@gmail.com
+# SMTP_PASSWORD=your-app-password
+# SMTP_FROM=noreply@digitaistudios.com
+EOF
+```
+
+### 5. Create uploads directory
+```bash
+mkdir -p uploads
+```
+
+### 6. Ensure Traefik network exists
+```bash
+docker network ls | grep traefik
+# If not exists:
+docker network create traefik
+```
+
+### 7. Build and start
+```bash
+docker compose -f docker-compose.prod.yml up -d --build
+```
+
+### 8. Check status
+```bash
+docker compose -f docker-compose.prod.yml ps
+docker compose -f docker-compose.prod.yml logs -f app
+```
+
+### 9. Run database migrations
+```bash
+docker compose -f docker-compose.prod.yml exec app npx drizzle-kit push
+```
+
+### 10. Access the application
+- **URL**: https://ssribotflow.digitaistudios.com
+- **Login**: dais@test.com / 12345678
+
+## Traefik Configuration
+
+The app service includes Traefik labels for automatic HTTPS:
+
+```yaml
+labels:
+  - "traefik.enable=true"
+  - "traefik.http.routers.ribotflow.rule=Host(`ssribotflow.digitaistudios.com`)"
+  - "traefik.http.routers.ribotflow.entrypoints=websecure"
+  - "traefik.http.routers.ribotflow.tls.certresolver=letsencrypt"
+  - "traefik.http.services.ribotflow.loadbalancer.server.port=3000"
+```
+
+**Important**: Make sure your Traefik has a `letsencrypt` certresolver configured. If not, add this to your Traefik static config:
+
+```yaml
+certificatesResolvers:
+  letsencrypt:
+    acme:
+      email: your-email@digitaistudios.com
+      storage: /letsencrypt/acme.json
+      httpChallenge:
+        entryPoint: web
+```
+
+## Troubleshooting
+
+### App not accessible
+```bash
+# Check if app is running
+docker compose -f docker-compose.prod.yml ps
+
+# Check Traefik labels
+docker inspect ribotflow-app | grep -A 20 "Labels"
+
+# Check logs
+docker compose -f docker-compose.prod.yml logs app
+```
+
+### Database connection error
+```bash
+# Check PostgreSQL is running
+docker compose -f docker-compose.prod.yml ps db
+
+# Test connection
+docker compose -f docker-compose.prod.yml exec db pg_isready -U postgres
+```
+
+### HTTPS not working
+1. Check DNS: `nslookup ssribotflow.digitaistudios.com`
+2. Check Traefik logs: `docker logs traefik | grep ribotflow`
+3. Check certresolver name matches your Traefik config
+
+## Backup Management
+
+### Manual backup
+```bash
+docker compose -f docker-compose.prod.yml exec backup /bin/sh -c \
+  "PGPASSWORD=OewMjA_U0ruIJjIfROIXoTk9xDOXEebl pg_dump -h db -U postgres ribotflow | gzip > /backups/manual_$(date +%Y%m%d_%H%M%S).sql.gz"
+```
+
+### Restore from backup
+```bash
+# Find backup file
+docker compose -f docker-compose.prod.yml exec backup ls -la /backups/
+
+# Restore
+docker compose -f docker-compose.prod.yml exec backup /bin/sh -c \
+  "gunzip < /backups/ribotflow_YYYYMMDD_HHMMSS.sql.gz | PGPASSWORD=OewMjA_U0ruIJjIfROIXoTk9xDOXEebl psql -h db -U postgres ribotflow"
+```
+
+## Updating the Application
 
 ```bash
-# Pull latest changes
+cd /opt/ribotflow
 git pull origin features/Fxboix
-
-# Rebuild and restart
 docker compose -f docker-compose.prod.yml up -d --build
-
-# Run migrations (if any)
-docker compose -f docker-compose.prod.yml exec app npx drizzle-kit migrate
 ```
 
 ## Rollback
 
 ```bash
-# Stop current version
-docker compose -f docker-compose.prod.yml down
-
-# Checkout previous version
-git checkout <previous-commit-hash>
-
-# Rebuild and restart
+cd /opt/ribotflow
+git log --oneline -5  # Find previous commit
+git checkout <commit-hash>
 docker compose -f docker-compose.prod.yml up -d --build
-
-# Restore database if needed
-./docker/scripts/backup.sh restore /backups/ribotflow/ribotflow_YYYYMMDD_HHMMSS.sql.gz
 ```
+
+## Environment Variables Reference
+
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `AUTH_SECRET` | NextAuth JWT secret | `QrvNE7eEniSOnIQzABMB0KySgl2Ozl7aPz5fWCWVJps` |
+| `POSTGRES_PASSWORD` | PostgreSQL password | `OewMjA_U0ruIJjIfROIXoTk9xDOXEebl` |
+| `NEXT_PUBLIC_APP_URL` | Application URL | `https://ssribotflow.digitaistudios.com` |
+| `MINIO_ROOT_USER` | MinIO admin user | `8a8bR25hObJeghjCn5pq1Q` |
+| `MINIO_ROOT_PASSWORD` | MinIO admin password | `-pyzlgOy66AlpGWM3H9Q` |
+| `SMTP_HOST` | SMTP server hostname | `smtp.gmail.com` |
+| `SMTP_PORT` | SMTP server port | `465` or `587` |
+| `SMTP_SECURE` | Use SSL/TLS | `true` (465) or `false` (587) |
+| `SMTP_USER` | SMTP username | `your-email@gmail.com` |
+| `SMTP_PASSWORD` | SMTP password | `your-app-password` |
+| `SMTP_FROM` | Sender email address | `noreply@digitaistudios.com` |
