@@ -17,7 +17,7 @@ CYAN='\033[0;36m'
 NC='\033[0m'
 
 REPO="BobFarreras/ribotflow"
-BRANCH="features/Fxboix"
+BRANCH="main"
 BUNDLE_URL="https://github.com/${REPO}/releases/latest/download/ribotflow-deploy.tar.gz"
 RAW_URL="https://raw.githubusercontent.com/${REPO}/${BRANCH}"
 INSTALL_DIR="${INSTALL_DIR:-/opt/ribotflow}"
