@@ -15,9 +15,11 @@
 services:
   # --- Next.js Application ---
   app:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: ${DOCKER_IMAGE:-ghcr.io/bobfarreras/ribotflow:latest}
+    # Alternative: build locally with `docker compose build`
+    # build:
+    #   context: .
+    #   dockerfile: Dockerfile
     container_name: ribotflow-app
     env_file: .env.local
     environment:
