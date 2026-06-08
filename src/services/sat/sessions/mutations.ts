@@ -77,9 +77,7 @@ export async function revokeAllOtherSessions(
   const currentRows = await db
     .select({ id: sessions.id })
     .from(sessions)
-    .where(
-      and(eq(sessions.userId, userId), fingerprintWhere(currentFingerprint))
-    )
+    .where(and(eq(sessions.userId, userId), fingerprintWhere(currentFingerprint)))
     .limit(1);
 
   const currentId = currentRows[0]?.id;
