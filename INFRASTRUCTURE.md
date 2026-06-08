@@ -1,62 +1,62 @@
-# INFRASTRUCTURE.md - Matriu de Comportament per Mode d'Aplicació
+# INFRASTRUCTURE.md - Matriz de Comportamiento por Modo de Aplicación
 
-## 🌐 Variable Clau: `NEXT_PUBLIC_APP_MODE`
+## 🌐 Variable Clave: `NEXT_PUBLIC_APP_MODE`
 
-Aquesta variable determina el comportament de tot el sistema. Dos modes possibles:
+Esta variable determina el comportamiento de todo el sistema. Dos modos posibles:
 
 | Característica | `cloud` (SaaS Multi-tenant) | `self_hosted` (Docker Single-tenant) |
 |----------------|-----------------------------|--------------------------------------|
-| **Base de Dades** | PostgreSQL compartida (totes les empreses) | PostgreSQL dedicada (1 empresa) |
-| **Multi-tenancy** | Lògic via `company_id` | Lògic via `company_id` (1 sola fila) |
-| **Queue** | BullMQ + Redis | pg-boss (Postgres) o mode síncron |
-| **Sentry** | SaaS activat | Desactivat o Sentry local del client |
-| **Setup** | Registre d'empresa nou | Wizard inicial (1 empresa + 1 admin) |
-| **Billing** | Stripe integrat | No aplicable (llicència directa) |
-| **Updates** | Deploy centralitzat | Pull de imatge Docker + migrate |
+| **Base de Datos** | PostgreSQL compartida (todas las empresas) | PostgreSQL dedicada (1 empresa) |
+| **Multi-tenancy** | Lógico vía `company_id` | Lógico vía `company_id` (1 sola fila) |
+| **Queue** | BullMQ + Redis | pg-boss (Postgres) o modo síncron |
+| **Sentry** | SaaS activado | Desactivado o Sentry local del cliente |
+| **Setup** | Registro de empresa nueva | Wizard inicial (1 empresa + 1 admin) |
+| **Billing** | Stripe integrado | No aplicable (licencia directa) |
+| **Updates** | Deploy centralizado | Pull de imagen Docker + migrate |
 
-## 🏢 Flux Cloud (Multi-tenant)
-
-```
-Usuari → app.ribotflow.com/login
-         ↓
-    Auth.js valida credencials
-         ↓
-    JWT amb { companyId, role }
-         ↓
-    Cada consulta DB: WHERE company_id = session.companyId
-         ↓
-    Aïllament total entre empreses
-```
-
-## 🐋 Flux Self-Hosted (Single-tenant)
+## 🏢 Flujo Cloud (Multi-tenant)
 
 ```
-Client → docker compose up
-         ↓
-    Detecta NEXT_PUBLIC_APP_MODE=self_hosted
-         ↓
-    Si no hi ha empresa → /setup wizard
-         ↓
-    Crea 1 empresa + 1 usuari OWNER
-         ↓
-    Mateix codi, mateix filtre company_id
-         ↓
-    Només 1 empresa a la DB
+Usuario → app.ribotflow.com/login
+          ↓
+     Auth.js valida credenciales
+          ↓
+     JWT con { companyId, role }
+          ↓
+     Cada consulta DB: WHERE company_id = session.companyId
+          ↓
+     Aislamiento total entre empresas
 ```
 
-## 📊 Matriu de Decisions Tècniques
+## 🐋 Flujo Self-Hosted (Single-tenant)
 
-| Decisió | Cloud | Self-Hosted | Motiu |
-|---------|-------|-------------|-------|
-| Pool de connexions DB | PgBouncer (20 max) | Directe (5 max) | Escala vs simplicitat |
-| Sessions | Redis store | DB store | Rendiment vs autonomia |
-| File storage | S3-compatible | Volum Docker | Cost vs control |
-| Email | Resend/SendGrid | SMTP local | Volum vs privacitat |
-| Backups | Automatitzats cloud | Manual/client | Responsabilitat |
+```
+Cliente → docker compose up
+          ↓
+     Detecta NEXT_PUBLIC_APP_MODE=self_hosted
+          ↓
+     Si no hay empresa → /setup wizard
+          ↓
+     Crea 1 empresa + 1 usuario OWNER
+          ↓
+     Mismo código, mismo filtro company_id
+          ↓
+     Solo 1 empresa en la DB
+```
 
-## 🔧 Variables d'Entorn per Mode
+## 📊 Matriz de Decisiones Técnicas
 
-### Cloud (Obligatòries)
+| Decisión | Cloud | Self-Hosted | Motivo |
+|----------|-------|-------------|--------|
+| Pool de conexiones DB | PgBouncer (20 max) | Directo (5 max) | Escala vs simplicidad |
+| Sesiones | Redis store | DB store | Rendimiento vs autonomía |
+| File storage | S3-compatible | Volumen Docker | Coste vs control |
+| Email | Resend/SendGrid | SMTP local | Volumen vs privacidad |
+| Backups | Automatizados cloud | Manual/cliente | Responsabilidad |
+
+## 🔧 Variables de Entorno por Modo
+
+### Cloud (Obligatorias)
 ```env
 NEXT_PUBLIC_APP_MODE=cloud
 DATABASE_URL=postgresql://...
@@ -66,11 +66,11 @@ SENTRY_DSN=...
 STRIPE_SECRET_KEY=...
 ```
 
-### Self-Hosted (Obligatòries)
+### Self-Hosted (Obligatorias)
 ```env
 NEXT_PUBLIC_APP_MODE=self_hosted
 DATABASE_URL=postgresql://...
 AUTH_SECRET=...
-# REDIS_URL → opcional (si no existeix, usa pg-boss)
-# SENTRY_DSN → buit o Sentry local
+# REDIS_URL → opcional (si no existe, usa pg-boss)
+# SENTRY_DSN → vacío o Sentry local
 ```

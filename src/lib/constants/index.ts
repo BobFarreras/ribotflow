@@ -10,12 +10,12 @@ export const ROUTES = {
   SETUP: "/setup",
   DASHBOARD: "/dashboard",
   UNAUTHORIZED: "/dashboard/unauthorized",
-  SAT: "/dashboard/sat",
-  ERP: "/dashboard/erp",
-  BILLING: "/dashboard/billing",
-  CRM: "/dashboard/crm",
-  ACCESS: "/dashboard/access",
-  SETTINGS: "/dashboard/settings",
+  SAT: "/sat",
+  ERP: "/erp",
+  BILLING: "/billing",
+  CRM: "/crm",
+  ACCESS: "/access",
+  SETTINGS: "/settings",
   API_HEALTH: "/api/health",
 } as const;
 

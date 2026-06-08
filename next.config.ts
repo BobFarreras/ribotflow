@@ -5,16 +5,13 @@
  */
 
 import type { NextConfig } from "next";
+import createNextIntlPlugin from "next-intl/plugin";
 
 const nextConfig: NextConfig = {
-  output: "standalone",
-  experimental: {
-    serverActions: {
-      bodySizeLimit: "10mb",
-    },
-  },
+  output: process.env.NODE_ENV === "production" ? "standalone" : undefined,
   poweredByHeader: false,
   reactStrictMode: true,
 };
 
-export default nextConfig;
+const withNextIntl = createNextIntlPlugin();
+export default withNextIntl(nextConfig);

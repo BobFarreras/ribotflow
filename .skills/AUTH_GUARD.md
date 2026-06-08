@@ -1,43 +1,45 @@
 # [SKILL:AUTH_GUARD]
 
-## Context d'Activació
-Aquesta skill es desperta quan es requereix: control d'accés, autenticació, autorització RBAC, multi-tenancy, gestió de sessions, o protecció de rutes i Server Actions.
+## Contexto de Activación
+Esta skill se despierta cuando se requiere: control de acceso, autenticación, autorización RBAC, multi-tenancy, gestión de sesiones, o protección de rutas y Server Actions.
 
-## 🔐 Stack d'Autenticació
-- **Framework:** Auth.js v5 (NextAuth successor)
-- **Sessió:** JWT encriptat (cookie-based, httpOnly, secure)
+## 🔐 Stack de Autenticación
+- **Framework:** Auth.js v5 (sucesor de NextAuth)
+- **Sesión:** JWT encriptado (cookie-based, httpOnly, secure)
 - **Provider:** Credentials (email + password hash bcrypt/argon2)
-- **Extensible:** OAuth (Google, Microsoft) per a integracions futures
+- **Extensible:** OAuth (Google, Microsoft) para integraciones futuras
 
 ## 🏢 Arquitectura Multi-Tenancy
 ### Cloud (Multi-tenant)
-- Totes les empreses comparteixen la mateixa base de dades
-- Separació lògica via `company_id` en cada consulta
-- Login: email + password → Auth.js valida → injecta `companyId` + `role` al JWT
-- Cada Server Action aplica filtre invisible: `where(eq(table.companyId, session.user.companyId))`
+- Todas las empresas comparten la misma base de datos
+- Separación lógica vía `company_id` en cada consulta
+- Login: email + password → Auth.js valida → inyecta `companyId` + `role` al JWT
+- Cada Server Action aplica filtro invisible: `where(eq(table.companyId, session.user.companyId))`
 
 ### Self-Hosted (Single-tenant)
 - Variable: `NEXT_PUBLIC_APP_MODE=self_hosted`
-- Primera execució: Setup wizard crea 1 empresa + 1 usuari OWNER
-- Mateix codi, mateix filtre `company_id`, però només hi ha 1 empresa a la DB
-- La lògica no canvia, només el context de dades
+- Primera ejecución: Setup wizard crea 1 empresa + 1 usuario OWNER
+- Mismo código, mismo filtro `company_id`, pero solo hay 1 empresa en la DB
+- La lógica no cambia, solo el contexto de datos
 
-## 👥 Matriu de Rols (RBAC)
+## 👥 Matriz de Roles (RBAC)
 | Rol | Permisos |
 |-----|----------|
-| **OWNER** | Accés absolut. Facturació, llicències, configuració, agents IA, esborrar empresa |
-| **ADMIN** | Clients, ERP, CRM, Veri*factu, Calendari Command Center. No pot canviar subscripció ni esborrar empresa |
-| **TECHNICIAN** | Només mòdul SAT (ordres assignades) + Control d'Accés (fitxar). No veu facturació, CRM, ni estoc aliè |
-| **OFFICE** | Administratiu: facturació bàsica, clients, calendari. No accés a configuració avançada ni SAT de camp |
+| **OWNER** | Acceso absoluto. Facturación, licencias, configuración, agentes IA, borrar empresa |
+| **ADMIN** | Clientes, ERP, CRM, Veri*factu, Calendario Command Center. No puede cambiar suscripción ni borrar empresa |
+| **TECHNICIAN** | Solo módulo SAT (órdenes asignadas) + Control de Acceso (fichar). No ve facturación, CRM, ni stock ajeno |
+| **OFFICE** | Administrativo: facturación básica, clientes, calendario. No acceso a configuración avanzada ni SAT de campo |
 
-## 🛡️ Protecció de Rutes (Middleware)
-- **`/src/middleware.ts`:** Intercepta totes les rutes protegides
-- **Flux:** Cookie → JWT → session → verifica rol → permet/bloqueja/redirigeix
-- **Rutes públiques:** `/login`, `/register`, `/setup` (self-hosted), `/api/health`
-- **Rutes protegides:** `/dashboard/**`, `/api/**` (excepte health)
+## 🛡️ Protección de Rutas (Proxy)
+- **`/src/proxy.ts`:** Intercepta todas las rutas protegidas
+- **Flujo:** Cookie → JWT → session → verifica rol → permite/bloquea/redirige
+- **Rutas públicas:** `/login`, `/register`, `/setup` (self-hosted), `/api/health`
+- **Rutas protegidas:** `/dashboard/**`, `/api/**` (excepto health)
 
-## 🔒 Protecció de Server Actions
-- Cada Server Action verifica sessió abans d'executar
+> **Nota:** Next.js 16 ha deprecado `middleware.ts` y lo ha renombrado a `proxy.ts`. La función exportada también cambia de `middleware()` a `proxy()`.
+
+## 🔒 Protección de Server Actions
+- Cada Server Action verifica sesión antes de ejecutar
 - Pattern:
   ```typescript
   export async function createInvoice(data: InvoiceInput) {
@@ -45,25 +47,25 @@ Aquesta skill es desperta quan es requereix: control d'accés, autenticació, au
     if (!session || !hasRole(session, ['OWNER', 'ADMIN'])) {
       throw new UnauthorizedError();
     }
-    // Lògica de negoci amb filtre company_id
+    // Lógica de negocio con filtro company_id
   }
   ```
 
-## 📐 Implementació de Permisos
-- **UI:** Components condicionals segons rol (`<IfRole roles={['OWNER']}><AdminPanel /></IfRole>`)
-- **API:** Middleware de ruta verifica rol abans de processar
-- **DB:** Server Actions apliquen filtre `company_id` automàticament
-- **Immutabilitat:** JWT signat, mai modificable des del client
+## 📐 Implementación de Permisos
+- **UI:** Componentes condicionales según rol (`<IfRole roles={['OWNER']}><AdminPanel /></IfRole>`)
+- **API:** Middleware de ruta verifica rol antes de procesar
+- **DB:** Server Actions aplican filtro `company_id` automáticamente
+- **Inmutabilidad:** JWT firmado, nunca modificable desde el cliente
 
-## ⚠️ Regles Crítiques
-1. **Mai** confiar en dades del client per a autorització → sempre verificar al servidor
-2. **Mai** executar consultes DB sense `company_id` de la sessió
-3. **Sempre** usar `httpOnly` + `secure` cookies per al JWT
-4. **Sempre** redirigir a `/unauthorized` quan el rol no té permís
-5. **Sempre** logar intents d'accés no autoritzat (Sentry + audit log)
+## ⚠️ Reglas Críticas
+1. **Nunca** confiar en datos del cliente para autorización → siempre verificar en el servidor
+2. **Nunca** ejecutar consultas DB sin `company_id` de la sesión
+3. **Siempre** usar cookies `httpOnly` + `secure` para el JWT
+4. **Siempre** redirigir a `/unauthorized` cuando el rol no tiene permiso
+5. **Siempre** logar intentos de acceso no autorizado (Sentry + audit log)
 
 ## 🔧 Setup Wizard (Self-Hosted)
 - Detecta `NEXT_PUBLIC_APP_MODE=self_hosted`
-- Si no hi ha cap empresa a la DB → redirigeix a `/setup`
-- Formulari: nom empresa + email admin + password
-- Crea empresa + usuari OWNER → redirigeix a `/dashboard`
+- Si no hay ninguna empresa en la DB → redirige a `/setup`
+- Formulario: nombre empresa + email admin + password
+- Crea empresa + usuario OWNER → redirige a `/dashboard`

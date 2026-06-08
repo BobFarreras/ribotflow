@@ -1,0 +1,630 @@
+{
+  "title": "SAT - Servicio de Asistencia Técnica",
+  "workOrder": {
+    "list": {
+      "title": "Órdenes de Trabajo",
+      "searchPlaceholder": "Buscar por número, título o cliente...",
+      "newButton": "Nueva Orden",
+      "status": {
+        "all": "Todos los estados",
+        "pending": "Pendiente",
+        "assigned": "Asignada",
+        "scheduled": "Programada",
+        "in_progress": "En curso",
+        "paused": "Pausada",
+        "completed": "Completada",
+        "closed": "Cerrada",
+        "cancelled": "Cancelada",
+        "waiting_parts": "Esperando piezas",
+        "waiting_client": "Esperando cliente"
+      },
+      "columns": {
+        "number": "Número",
+        "title": "Título",
+        "client": "Cliente",
+        "status": "Estado",
+        "priority": "Prioridad",
+        "category": "Categoría",
+        "scheduledDate": "Fecha prevista",
+        "actions": "Acciones"
+      },
+      "priority": {
+        "low": "Baja",
+        "medium": "Media",
+        "high": "Alta",
+        "urgent": "Urgente"
+      },
+      "emptyState": "No hay órdenes de trabajo. ¡Crea la primera!",
+      "noResults": "No hay órdenes que coincidan con los filtros seleccionados.",
+      "viewDetails": "Ver detalle"
+    },
+    "detail": {
+      "backToList": "Volver al listado",
+      "edit": "Editar",
+      "statusHistory": "Historial de estados",
+      "materials": "Materiales",
+      "attachments": "Adjuntos",
+      "signature": "Firma",
+      "location": "Ubicación",
+      "locationHistory": "Historial de ubicaciones",
+      "actionsTitle": "Acciones",
+      "assignTitle": "Asignar técnico",
+      "unassigned": "Sin asignar",
+      "unassign": "Desasignar",
+      "actions": {
+        "start": "Iniciar",
+        "pause": "Pausar",
+        "resume": "Reanudar",
+        "complete": "Completar",
+        "close": "Cerrar",
+        "reopen": "Reabrir",
+        "restore": "Restaurar",
+        "invoice": "Facturar",
+        "cancel": "Cancelar",
+        "delete": "Eliminar"
+      },
+      "confirmDelete": "¿Estás seguro de que quieres eliminar esta orden?"
+    },
+    "create": {
+      "title": "Nueva Orden de Trabajo",
+      "clientLabel": "Cliente",
+      "categoryLabel": "Categoría",
+      "titleLabel": "Título",
+      "descriptionLabel": "Descripción",
+      "priorityLabel": "Prioridad",
+      "scheduledDateLabel": "Fecha programada",
+      "estimatedDurationLabel": "Duración estimada (minutos)",
+      "notesLabel": "Notas internas",
+      "submit": "Crear Orden",
+      "cancel": "Cancelar",
+      "success": "Orden de trabajo creada correctamente",
+      "error": "Error al crear la orden de trabajo"
+    },
+    "pdf": {
+      "title": "Informe PDF",
+      "generate": "Generar PDF",
+      "generating": "Generando...",
+      "regenerate": "Regenerar PDF",
+      "download": "Descargar PDF",
+      "delete": "Eliminar PDF",
+      "deleteConfirm": "¿Estás seguro de que quieres eliminar este PDF?",
+      "error": "Error al generar el PDF"
+    }
+  },
+  "materials": {
+    "title": "Materiales",
+    "addButton": "Añadir",
+    "selectProduct": "Selecciona un producto del catálogo...",
+    "freeMaterial": "+ Material libre (no en catálogo)",
+    "namePlaceholder": "Nombre del material",
+    "quantityPlaceholder": "Cantidad",
+    "unitPricePlaceholder": "Precio (€)",
+    "unitCostPlaceholder": "Coste (€)",
+    "submit": "Añadir",
+    "cancel": "Cancelar",
+    "empty": "No hay materiales",
+    "total": "Total"
+  },
+  "attachments": {
+    "title": "Adjuntos",
+    "uploadButton": "Subir foto",
+    "beforeLabel": "Antes",
+    "afterLabel": "Después",
+    "captionPlaceholder": "Descripción (opcional)",
+    "empty": "No hay adjuntos",
+    "previewAlt": "Vista previa",
+    "deleteConfirm": "¿Eliminar este adjunto?",
+    "fileTooLarge": "Archivo demasiado grande (máx 10MB)",
+    "invalidType": "Tipo de archivo no permitido"
+  },
+  "signature": {
+    "title": "Firma del cliente",
+    "signerNameLabel": "Nombre de quien firma",
+    "signerNamePlaceholder": "Nombre del cliente...",
+    "clearButton": "Borrar",
+    "confirmButton": "Confirmar firma",
+    "saving": "Guardando...",
+    "drawHint": "Dibuja tu firma en el canvas",
+    "saved": "Firma guardada correctamente",
+    "statusRequired": "Solo se puede firmar cuando la orden está completada o cerrada",
+    "alreadySigned": "Esta orden ya tiene firma"
+  },
+  "map": {
+    "title": "Mapa de Órdenes",
+    "subtitle": "{count} órdenes con ubicación",
+    "noLocations": "Ningún cliente tiene ubicación registrada. Añade coordenadas a los clientes para verlos en el mapa.",
+    "legend": {
+      "pending": "Pendiente",
+      "in_progress": "En curso",
+      "completed": "Completada"
+    }
+  },
+  "location": {
+    "checkInButton": "Hacer check-in",
+    "gettingLocation": "Obteniendo ubicación...",
+    "checkInError": "Error al hacer check-in",
+    "geoPermissionDenied": "Permiso de geolocalización denegado. Activa la ubicación en el navegador.",
+    "geoPositionUnavailable": "No se ha podido obtener la ubicación.",
+    "geoTimeout": "Tiempo de espera agotado para obtener la ubicación.",
+    "geoUnknownError": "Error desconocido al obtener la ubicación.",
+    "lastCheckIn": "Último check-in",
+    "clientHasLocation": "El cliente tiene ubicación registrada",
+    "withinRange": "Dentro del rango ({distance}m del cliente)",
+    "outOfRange": "Fuera de rango ({distance}m del cliente — máximo 100m)"
+  },
+  "routes": {
+    "title": "Planificación de Rutas",
+    "subtitle": "Optimiza el orden de visitas del día",
+    "selectOrders": "Selecciona órdenes para la ruta",
+    "noOrders": "No hay órdenes asignadas para este día.",
+    "noLocation": "Sin ubicación",
+    "optimizeRoute": "Optimizar Ruta",
+    "optimizedRoute": "Ruta Optimizada",
+    "selectAndOptimize": "Selecciona órdenes y presiona 'Optimizar Ruta' para ver la ruta recomendada.",
+    "stops": "Paradas",
+    "totalDistance": "Distancia Total",
+    "totalTime": "Tiempo Total"
+  },
+  "clients": {
+    "title": "Clientes SAT",
+    "newButton": "Nuevo Cliente",
+    "emptyState": "No hay clientes registrados. Crea el primer cliente para empezar."
+  },
+  "categories": {
+    "title": "Categorías de Órdenes",
+    "newButton": "Nueva Categoría",
+    "emptyState": "No hay categorías definidas. Crea la primera categoría."
+  },
+  "quotes": {
+    "title": "Presupuestos",
+    "newButton": "Nuevo Presupuesto",
+    "list": {
+      "title": "Listado de Presupuestos",
+      "noResults": "No hay presupuestos",
+      "searchPlaceholder": "Buscar por número o título..."
+    },
+    "status": {
+      "draft": "Borrador",
+      "sent": "Enviado",
+      "accepted": "Aceptado",
+      "rejected": "Rechazado",
+      "expired": "Caducado",
+      "cancelled": "Cancelado"
+    },
+    "detail": {
+      "title": "Detalle del Presupuesto",
+      "client": "Cliente",
+      "workOrder": "Orden de Trabajo",
+      "validUntil": "Válido hasta",
+      "subtotal": "Base imponible",
+      "tax": "IVA",
+      "total": "Total",
+      "sendByEmail": "Enviar por email",
+      "downloadPdf": "Descargar PDF",
+      "accept": "Aceptar",
+      "reject": "Rechazar"
+    },
+    "create": {
+      "title": "Nuevo Presupuesto",
+      "fromTemplate": "Desde plantilla",
+      "blank": "En blanco",
+      "selectTemplate": "Seleccionar plantilla"
+    },
+    "items": {
+      "title": "Líneas del Presupuesto",
+      "addItem": "Añadir línea",
+      "description": "Descripción",
+      "quantity": "Cantidad",
+      "unitPrice": "Precio unitario",
+      "discount": "Descuento",
+      "subtotal": "Subtotal",
+      "category": "Categoría",
+      "material": "Material",
+      "labor": "Mano de obra",
+      "travel": "Desplazamiento",
+      "other": "Otros"
+    },
+    "email": {
+      "title": "Enviar Presupuesto",
+      "to": "Destinatario",
+      "subject": "Asunto",
+      "message": "Mensaje",
+      "send": "Enviar",
+      "sending": "Enviando..."
+    },
+    "templates": {
+      "title": "Plantillas de Presupuesto",
+      "newButton": "Nueva Plantilla",
+      "emptyState": "No hay plantillas creadas",
+      "usageCount": "Uso: {count} veces"
+    }
+  },
+  "settings": {
+    "email": {
+      "title": "Correo profesional",
+      "subtitle": "Envía tus presupuestos y notificaciones desde el correo de tu empresa. Si no configuras nada, se usan los datos por defecto del servidor.",
+      "providers": {
+        "title": "Empezamos rápido",
+        "subtitle": "Toca tu proveedor de correo para rellenar los datos automáticamente.",
+        "gmail": "Gmail",
+        "outlook": "Outlook",
+        "yahoo": "Yahoo",
+        "hostinger": "Hostinger",
+        "ionos": "Ionos / 1&1",
+        "custom": "Otro correo",
+        "presetNote": "Selecciona tu proveedor para autocompletar. Después podrás ajustar la configuración."
+      },
+      "sections": {
+        "server": "Datos del servidor",
+        "credentials": "Credenciales de tu correo",
+        "sender": "Cómo aparece el remitente (opcional)",
+        "senderHint": "El nombre y correo que verá el cliente cuando reciba un presupuesto.",
+        "advanced": "Opciones avanzadas"
+      },
+      "fields": {
+        "host": "Servidor de correo saliente",
+        "hostHint": "La dirección del servidor que envía los correos (te la da tu proveedor).",
+        "hostPlaceholder": "smtp.tuproveedor.com",
+        "port": "Puerto",
+        "portHint": "Normalmente es 465 (seguro) o 587 (recomendado). Si no lo sabes, deja 587.",
+        "user": "Tu correo",
+        "userHint": "La dirección desde la que quieres enviar, p. ej. info@tu-empresa.com",
+        "password": "Contraseña del correo",
+        "passwordHint": "Para Gmail y Outlook necesitarás una \"contraseña de aplicación\", no tu contraseña habitual.",
+        "secure": "Conexión segura (recomendado)",
+        "secureHint": "Actívalo siempre que tu proveedor lo permita. No lo apagues si no sabes qué es.",
+        "acceptSelfSigned": "El servidor tiene un certificado propio",
+        "acceptSelfSignedHint": "Marca solo si tu servidor es un correo interno o de pruebas. No lo uses con Gmail, Outlook o similares.",
+        "fromName": "Nombre del remitente",
+        "fromNameHint": "El nombre que verá el cliente cuando reciba el correo, p. ej. \"Reparaciones Ribot\".",
+        "fromNamePlaceholder": "Reparaciones Ribot",
+        "fromEmail": "Otro correo de remitente (opcional)",
+        "fromEmailHint": "Por defecto se usa el correo de inicio de sesión. Cámbialo solo si quieres que aparezca otro.",
+        "fromEmailPlaceholder": "no-responder@tu-empresa.com",
+        "userPlaceholder": "correo@ejemplo.com",
+        "passwordPlaceholder": "Contraseña de aplicación",
+        "showPassword": "Mostrar la contraseña",
+        "hidePassword": "Ocultar la contraseña"
+      },
+      "actions": {
+        "save": "Guardar",
+        "saving": "Guardando...",
+        "test": "Probar conexión",
+        "testing": "Probando...",
+        "delete": "Eliminar",
+        "deleteTitle": "Eliminar la configuración",
+        "confirmDelete": "Si eliminas la configuración, los correos se enviarán con los datos por defecto del servidor. ¿Continuar?"
+      },
+      "status": {
+        "configured": "Activo",
+        "configuredDetail": "El correo se envía con tu configuración.",
+        "notConfigured": "Sin configurar",
+        "notConfiguredDetail": "Los correos salen con la configuración por defecto del servidor. Configúralo para personalizar.",
+        "lastUpdated": "Actualizado el {date}",
+        "fromFallback": "Si no hay nada configurado aquí, usamos el servidor por defecto del sistema."
+      },
+      "feedback": {
+        "saved": "Configuración guardada correctamente",
+        "saving": "Guardando...",
+        "saveError": "No se ha podido guardar la configuración",
+        "deleted": "Configuración eliminada",
+        "testSuccess": "Conexión correcta",
+        "testSuccessHint": "Todo funciona. Tus correos saldrán correctamente.",
+        "testFailed": "No se ha podido conectar",
+        "testFailedHint": "Revisa los datos y vuelve a probar.",
+        "testCertHelp": "El servidor tiene un certificado no reconocido. Activa la opción \"El servidor tiene un certificado propio\" y vuelve a probar."
+      },
+      "permissions": {
+        "ownerOnly": "Solo el OWNER puede modificar la configuración del correo.",
+        "adminCanTest": "Puedes probar la conexión y ver la configuración, pero no modificarla."
+      },
+      "errors": {
+        "load": "No se ha podido cargar la configuración",
+        "save": "No se ha podido guardar la configuración",
+        "test": "No se ha podido probar la conexión"
+      }
+    },
+    "company": {
+      "title": "Datos de la empresa",
+      "subtitle": "Configura la información que aparecerá en los presupuestos, facturas y correos. Por favor, no compartas información sensible en esta sección.",
+      "sections": {
+        "identity": "Datos básicos",
+        "identityDescription": "El nombre fiscal, NIF y datos de contacto que verán tus clientes en los documentos y correos.",
+        "address": "Dirección fiscal",
+        "addressDescription": "Esta dirección aparecerá en la cabecera de todos los documentos generados (presupuestos, facturas).",
+        "preferences": "Preferencias",
+        "preferencesDescription": "Idioma, zona horaria y moneda por defecto de los nuevos documentos.",
+        "documents": "Documentos",
+        "documentsDescription": "Prefijos y valores por defecto para la generación de presupuestos y facturas.",
+        "branding": "Marca y texto legal",
+        "brandingDescription": "Texto al pie de los documentos y logo de la empresa.",
+        "brandingWhyTitle": "¿Para qué sirve?",
+        "brandingWhyBody": "Este texto saldrá al pie de todos los presupuestos, facturas y correos automáticos. Es el lugar ideal para información legal obligatoria (registro mercantil, protección de datos, condiciones generales)."
+      },
+      "fields": {
+        "name": "Nombre de la empresa",
+        "nameHint": "El nombre oficial con el que te conocen los clientes.",
+        "taxId": "NIF / CIF",
+        "taxIdHint": "Tu identificador fiscal. Aparecerá en todas las facturas.",
+        "phone": "Teléfono",
+        "phoneHint": "Teléfono de contacto para los clientes.",
+        "email": "Correo",
+        "emailHint": "Correo de contacto general (puede ser distinto del que envía los correos).",
+        "website": "Sitio web",
+        "websiteHint": "Opcional. Debe empezar con http:// o https://.",
+        "addressStreet": "Calle y número",
+        "addressStreetHint": "Calle, número, piso y puerta. Tal y como debe aparecer en las facturas.",
+        "addressCity": "Ciudad",
+        "addressPostalCode": "Código postal",
+        "addressCountry": "País",
+        "addressCountryHint": "Selecciona el país donde está registrada tu empresa.",
+        "defaultLocale": "Idioma por defecto",
+        "defaultLocaleHint": "Idioma en el que se generarán los nuevos documentos.",
+        "timezone": "Zona horaria",
+        "timezoneHint": "Hora local de tu empresa.",
+        "defaultCurrency": "Moneda por defecto",
+        "defaultCurrencyHint": "Moneda utilizada en presupuestos y facturas.",
+        "quotePrefix": "Prefijo de los presupuestos",
+        "quotePrefixHint": "Código delante del número. Ejemplo: PRE → PRE-2026-0001.",
+        "invoicePrefix": "Prefijo de las facturas",
+        "invoicePrefixHint": "Código delante del número. Ejemplo: FAC → FAC-2026-0001.",
+        "defaultTaxRate": "IVA por defecto (%)",
+        "defaultTaxRateHint": "Porcentaje de IVA aplicado por defecto a los nuevos documentos.",
+        "travelRatePerKm": "Precio por kilómetro",
+        "travelRatePerKmHint": "Opcional. Tarifa por defecto en desplazamientos (€/km).",
+        "legalText": "Texto legal al pie",
+        "legalTextHint": "Texto que aparecerá al pie de todos los documentos generados (condiciones, registro mercantil, etc.).",
+        "legalTextPlaceholder": "Ejemplo: \"Reparaciones Ribot, SL — CIF B12345678 — Inscrita en el Registro Mercantil de Barcelona\""
+      },
+      "actions": {
+        "save": "Guardar cambios",
+        "saving": "Guardando...",
+        "unsaved": "Tienes cambios sin guardar",
+        "justSaved": "Cambios guardados",
+        "reset": "Deshacer",
+        "change": "cambio pendiente",
+        "changes": "cambios pendientes"
+      },
+      "status": {
+        "active": "Activo",
+        "inactive": "Inactivo",
+        "updatedAt": "Actualizado el"
+      },
+      "feedback": {
+        "saved": "Datos de la empresa guardados correctamente",
+        "saveFailed": "No se han podido guardar los datos"
+      },
+      "logoUpload": {
+        "title": "Logo de la empresa",
+        "subtitle": "Aparecerá en la cabecera de los presupuestos, facturas y correos.",
+        "choose": "Elige una imagen",
+        "replace": "Cambia la imagen",
+        "remove": "Eliminar",
+        "dragHint": "Arrastra y suelta un archivo aquí, o pulsa el botón para elegir uno.",
+        "formats": "Formatos: PNG, JPG, WebP, SVG. Máximo 2 MB.",
+        "success": "Logo subido correctamente",
+        "removed": "Logo eliminado",
+        "failed": "No se ha podido subir el logo",
+        "removeFailed": "No se ha podido eliminar el logo",
+        "errors": {
+          "unsupported": "Formato no soportado. Prueba con PNG, JPG, WebP o SVG.",
+          "tooLarge": "El archivo es demasiado grande. Máximo 2 MB.",
+          "empty": "El archivo está vacío."
+        }
+      },
+      "errors": {
+        "load": "No se han podido cargar los datos de la empresa"
+      }
+    },
+    "team": {
+      "title": "Equipo",
+      "subtitle": "Invita a nuevos usuarios, gestiona sus roles y revisa quién está activo o pendiente de aceptar la invitación.",
+      "header": {
+        "activeCount": "{count, plural, =0 {Ningún usuario activo} =1 {1 activo} other {{count} activos}}",
+        "noActive": "Ningún usuario activo",
+        "pendingCount": "{count, plural, =1 {1 invitación pendiente} other {{count} invitaciones pendientes}}"
+      },
+      "membersTitle": "{count, plural, =0 {Sin miembros} =1 {1 miembro} other {{count} miembros}}",
+      "membersSubtitle": "Lista de todas las personas con acceso a tu cuenta de Ribotflow.",
+      "empty": "Todavía no hay ningún miembro en el equipo.",
+      "columns": {
+        "user": "Persona",
+        "role": "Rol",
+        "status": "Estado",
+        "actions": "Acciones"
+      },
+      "status": {
+        "active": "Activo",
+        "inactive": "Inactivo",
+        "pending": "Pendiente",
+        "invitedDaysAgo": "{days, plural, =0 {Hoy} =1 {Ayer} other {Hace {days} días}}",
+        "expired": "Caducada"
+      },
+      "roles": {
+        "ADMIN": {
+          "label": "Administrador",
+          "hint": "Casi todo, menos la gestión del equipo y la facturación."
+        },
+        "TECHNICIAN": {
+          "label": "Técnico",
+          "hint": "Solo sus órdenes y el catálogo de materiales."
+        },
+        "OFFICE": {
+          "label": "Oficina",
+          "hint": "Presupuestos, facturas y clientes en modo lectura/escritura."
+        }
+      },
+      "invite": {
+        "button": "Invitar persona",
+        "title": "Invitar a una persona",
+        "subtitle": "Le enviaremos un enlace para definir la contraseña y aceptar la invitación.",
+        "name": "Nombre completo",
+        "email": "Correo electrónico",
+        "role": "Rol",
+        "cancel": "Cancelar",
+        "submit": "Enviar invitación",
+        "submitting": "Enviando...",
+        "close": "Cerrar",
+        "done": "Hecho",
+        "successDev": "Invitación creada. En modo desarrollo puedes copiar el siguiente enlace para probar el flujo de aceptación.",
+        "invitationUrl": "Enlace de invitación",
+        "copy": "Copiar",
+        "copied": "Copiado",
+        "successToast": "¡Invitación enviada correctamente!",
+        "errors": {
+          "generic": "No se ha podido crear la invitación"
+        }
+      },
+      "row": {
+        "you": "Tú",
+        "actions": "Acciones",
+        "changeRole": "Cambiar rol",
+        "selectRole": "Selecciona un rol",
+        "roleChanged": "Rol cambiado",
+        "reloginRequired": "El usuario deberá volver a iniciar sesión para que los cambios surtan efecto.",
+        "resend": "Reenviar invitación",
+        "revoke": "Revocar invitación",
+        "deactivate": "Desactivar",
+        "reactivate": "Reactivar"
+      },
+      "errors": {
+        "generic": "No se ha podido completar la acción"
+      }
+    },
+    "profile": {
+      "title": "Mi perfil",
+      "subtitle": "Gestiona tu nombre, avatar y contraseña. Esta información es privada y solo la ves tú.",
+      "sections": {
+        "avatar": "Tu foto",
+        "avatarDesc": "Sube una imagen cuadrada que te identifique. Si no tienes, se muestran las iniciales de tu nombre.",
+        "identity": "Tus datos",
+        "identityDesc": "Tu nombre aparece en los presupuestos, facturas y correos que envías en nombre de la empresa.",
+        "security": "Contraseña",
+        "securityDesc": "Elige una contraseña fuerte. Si la cambias, tendrás que iniciar sesión de nuevo en el resto de dispositivos.",
+        "preferences": "Preferencias de interfaz",
+        "preferencesDesc": "Elige el tema visual y el idioma de la aplicación. Se guardan en tu cuenta y te siguen en cualquier dispositivo.",
+        "sessions": "Sesiones activas",
+        "sessionsDesc": "Cierra la sesión en los dispositivos donde no quieras seguir conectado. La sesión actual no se puede cerrar desde aquí — utiliza el botón de cerrar sesión."
+      },
+      "sessions": {
+        "empty": "No tienes ninguna sesión activa.",
+        "current": "Este dispositivo",
+        "lastActivity": "Última actividad: {when}",
+        "revoke": "Cerrar sesión",
+        "revokeAllOthers": "Cerrar todas las demás sesiones",
+        "feedback": {
+          "revoked": "Sesión cerrada",
+          "revokedMany": "Se han cerrado {count} sesiones",
+          "revokedNone": "No había ninguna otra sesión activa"
+        },
+        "errors": {
+          "generic": "No se ha podido cerrar la sesión",
+          "cannotRevokeCurrent": "No puedes cerrar la sesión actual desde aquí. Utiliza el botón de cerrar sesión."
+        }
+      },
+      "preferences": {
+        "saving": "Guardando…",
+        "saved": "Preferencia guardada",
+        "theme": {
+          "label": "Tema",
+          "help": "Define el aspecto claro u oscuro de toda la aplicación.",
+          "light": "Claro",
+          "dark": "Oscuro"
+        },
+        "language": {
+          "label": "Idioma",
+          "help": "Idioma de todos los textos de la aplicación.",
+          "ca": "Català",
+          "es": "Castellano"
+        },
+        "errors": {
+          "generic": "No se ha podido guardar la preferencia"
+        }
+      },
+      "avatar": {
+        "title": "Foto de perfil",
+        "subtitle": "Arrastra una imagen o pulsa el botón para elegir una.",
+        "choose": "Elegir imagen",
+        "replace": "Cambiar imagen",
+        "remove": "Eliminar",
+        "formats": "Formatos: PNG, JPG, WebP, SVG. Máximo 2 MB.",
+        "success": "Foto de perfil actualizada",
+        "removed": "Foto de perfil eliminada",
+        "failed": "No se ha podido subir la foto",
+        "removeFailed": "No se ha podido eliminar la foto",
+        "errors": {
+          "unsupported": "Formato no soportado. Prueba con PNG, JPG, WebP o SVG.",
+          "tooLarge": "El archivo es demasiado grande. Máximo 2 MB.",
+          "empty": "El archivo está vacío."
+        }
+      },
+      "nameForm": {
+        "name": "Nombre completo",
+        "email": "Correo electrónico",
+        "emailHint": "El correo es el identificador de tu cuenta. Si quieres cambiarlo, contacta con el propietario de la empresa.",
+        "save": "Guardar cambios",
+        "saved": "Nombre guardado correctamente"
+      },
+      "passwordForm": {
+        "current": "Contraseña actual",
+        "next": "Contraseña nueva",
+        "confirm": "Repite la contraseña nueva",
+        "hint": "Mínimo 8 caracteres. Combina mayúsculas, minúsculas y números para reforzarla.",
+        "save": "Cambiar contraseña",
+        "saved": "Contraseña cambiada",
+        "show": "Mostrar contraseña",
+        "hide": "Ocultar contraseña"
+      },
+      "errors": {
+        "load": "No se ha podido cargar el perfil",
+        "generic": "No se ha podido completar la acción"
+      }
+    }
+  },
+  "acceptInvitation": {
+    "title": "Acepta la invitación",
+    "subtitle": "Elige una contraseña para activar tu cuenta. En cuanto lo hagas, iniciarás sesión automáticamente.",
+    "invitedAs": "Te han invitado como {name} ({email}).",
+    "fields": {
+      "password": "Contraseña nueva",
+      "confirm": "Repite la contraseña",
+      "hint": "Mínimo 8 caracteres."
+    },
+    "show": "Mostrar la contraseña",
+    "hide": "Ocultar la contraseña",
+    "submit": "Activar cuenta y acceder",
+    "success": {
+      "signInPending": "Cuenta activada. Inicia sesión manualmente para continuar."
+    },
+    "errors": {
+      "missingToken": "Falta el token de invitación en la URL.",
+      "invalidToken": "Esta invitación no es válida o ha caducado. Pide al propietario de la empresa que te la reenvíe.",
+      "alreadyAccepted": "Esta invitación ya se ha aceptado. Inicia sesión con tus credenciales.",
+      "passwordTooShort": "La contraseña debe tener como mínimo 8 caracteres.",
+      "generic": "No se ha podido activar la cuenta. Vuelve a intentarlo."
+    }
+  },
+  "field": {
+    "title": "Mi día",
+    "subtitle": "{count, plural, =0 {No tienes ninguna orden asignada.} one {1 orden asignada.} other {{count} órdenes asignadas.}}",
+    "empty": {
+      "title": "Todo al día",
+      "body": "Cuando la oficina te asigne una orden de trabajo, aparecerá aquí."
+    },
+    "card": {
+      "openDetailsHint": "Abre los detalles de la orden"
+    },
+    "actions": {
+      "in_progress": "Empezar",
+      "paused": "Pausar",
+      "completed": "Finalizar",
+      "closed": "Esta orden ya está cerrada.",
+      "success": "Estado actualizado",
+      "errors": {
+        "generic": "No se ha podido actualizar el estado",
+        "notAssigned": "Esta orden no está asignada a ti.",
+        "notFound": "La orden ya no existe."
+      }
+    }
+  }
+}

@@ -1,0 +1,106 @@
+{
+  "sidebar": {
+    "brand": "RIBOTFLOW",
+    "sections": {
+      "main": "Principal"
+    },
+    "modules": {
+      "dashboard": {
+        "label": "Inici"
+      },
+      "sat": {
+        "label": "SAT",
+        "subItems": {
+          "workOrders": "Ordres de Treball",
+          "field": "Camp",
+          "quotes": "Pressupostos",
+          "quoteTemplates": "Plantilles",
+          "map": "Mapa",
+          "routes": "Rutes",
+          "clients": "Clients",
+          "categories": "Categories"
+        }
+      },
+      "erp": {
+        "label": "ERP",
+        "subItems": {
+          "products": "Productes",
+          "inventory": "Inventari"
+        }
+      },
+      "billing": {
+        "label": "Facturació",
+        "subItems": {
+          "invoices": "Factures",
+          "budgets": "Pressupostos"
+        }
+      },
+      "crm": {
+        "label": "CRM",
+        "subItems": {
+          "contacts": "Contactes",
+          "opportunities": "Oportunitats"
+        }
+      },
+      "access": {
+        "label": "Control d'Accés",
+        "subItems": {
+          "timeTracking": "Fichatge",
+          "absences": "Absències"
+        }
+      },
+      "settings": {
+        "label": "Configuració",
+        "subItems": {
+          "company": "Empresa",
+          "email": "Correu",
+          "team": "Equip",
+          "users": "Usuaris",
+          "profile": "Perfil"
+        }
+      }
+    },
+    "actions": {
+      "collapse": "Plegar menú",
+      "expand": "Expandir menú",
+      "darkMode": "Mode fosc",
+      "lightMode": "Mode clar",
+      "language": "Idioma",
+      "logout": "Tancar sessió"
+    },
+    "user": {
+      "account": "El meu compte",
+      "manage": "Gestionar perfil"
+    }
+  },
+  "dashboard": {
+    "title": "Benvingut a RIBOTFLOW",
+    "subtitle": "Selecciona un mòdul per començar",
+    "modules": {
+      "sat": {
+        "title": "SAT",
+        "description": "Ordres de treball i assistència tècnica"
+      },
+      "erp": {
+        "title": "ERP",
+        "description": "Productes, stock i magatzems"
+      },
+      "billing": {
+        "title": "Facturació",
+        "description": "Pressupostos, factures i Veri*factu"
+      },
+      "crm": {
+        "title": "CRM",
+        "description": "Clients, vendes i oportunitats"
+      },
+      "access": {
+        "title": "Control d'Accés",
+        "description": "Fichatge de jornada i absències"
+      },
+      "settings": {
+        "title": "Configuració",
+        "description": "Ajustos d'empresa i usuaris"
+      }
+    }
+  }
+}
