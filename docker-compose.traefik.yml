@@ -1,0 +1,41 @@
+# ==========================================
+# RIBOTFLOW - Docker Compose (Traefik Override)
+# Use with: docker compose -f docker-compose.prod.yml -f docker-compose.traefik.yml up -d
+# ==========================================
+# This file removes Caddy and adds Traefik labels
+# Prerequisites: Traefik already running, network "traefik" exists
+
+services:
+  # --- Remove Caddy (Traefik handles HTTPS) ---
+  caddy:
+    profiles:
+      - disabled
+
+  # --- App: Add Traefik labels ---
+  app:
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.ribotflow.rule=Host(`${DOMAIN}`)"
+      - "traefik.http.routers.ribotflow.entrypoints=websecure"
+      - "traefik.http.routers.ribotflow.tls.certresolver=letsencrypt"
+      - "traefik.http.services.ribotflow.loadbalancer.server.port=3000"
+    networks:
+      - internal
+      - traefik
+
+  # --- MinIO: Add Traefik labels (optional console access) ---
+  minio:
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.ribotflow-minio.rule=Host(`minio.${DOMAIN}`)"
+      - "traefik.http.routers.ribotflow-minio.entrypoints=websecure"
+      - "traefik.http.routers.ribotflow-minio.tls.certresolver=letsencrypt"
+      - "traefik.http.services.ribotflow-minio.loadbalancer.server.port=9001"
+    networks:
+      - internal
+      - traefik
+
+# --- External Traefik Network ---
+networks:
+  traefik:
+    external: true

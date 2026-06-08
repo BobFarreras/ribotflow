@@ -3,175 +3,210 @@
 ## Architecture
 
 ```
-Internet → ssribotflow.digitaistudios.com → Traefik (HTTPS) → ribotflow-app:3000
-                                                                    ↓
-                                                            PostgreSQL:5432
-                                                            MinIO:9000/9001
+                    ┌─────────────────┐
+   Internet ──────►│  Reverse Proxy   │──── HTTPS
+                    │  (Caddy/Traefik) │
+                    └────────┬────────┘
+                             │
+                    ┌────────▼────────┐
+                    │   Next.js App   │
+                    │    (port 3000)  │
+                    └────────┬────────┘
+                             │
+              ┌──────────────┼──────────────┐
+              │              │              │
+     ┌────────▼──────┐ ┌────▼────┐ ┌───────▼───────┐
+     │  PostgreSQL   │ │  MinIO  │ │   Backup      │
+     │  (port 5432)  │ │ (9000)  │ │  (daily)      │
+     └───────────────┘ └─────────┘ └───────────────┘
 ```
 
 ## Prerequisites
 
-- VPS: Contabo (95.111.224.230)
-- Docker + Docker Compose installed
-- Traefik already running (ports 80/443)
-- DNS: `ssribotflow.digitaistudios.com` → VPS IP ✅
+- VPS with Docker + Docker Compose installed
+- Domain name with DNS pointing to your VPS
+- (Optional) Existing reverse proxy (Traefik, Nginx, etc.)
 
-## Step-by-Step Deployment
+## Deployment Options
 
-### 1. SSH into VPS
+### Option A: Standalone with Caddy (Recommended)
+
+Best for: New servers, simple setups, no existing reverse proxy.
+
 ```bash
-ssh root@95.111.224.230
-```
+# 1. SSH into your server
+ssh root@your-server-ip
 
-### 2. Create project directory
-```bash
-mkdir -p /opt/ribotflow
+# 2. Clone the repository
+git clone -b features/Fxboix https://github.com/BobFarreras/ribotflow.git /opt/ribotflow
 cd /opt/ribotflow
-```
 
-### 3. Clone the repository
-```bash
-git clone -b features/Fxboix https://github.com/BobFarreras/ribotflow.git .
-```
+# 3. Create .env.local (see Environment Variables below)
+cp .env.production .env.local
+nano .env.local
 
-### 4. Create .env.local
-```bash
-cat > .env.local << 'EOF'
-# Auth
-AUTH_SECRET=QrvNE7eEniSOnIQzABMB0KySgl2Ozl7aPz5fWCWVJps
-
-# Database
-POSTGRES_PASSWORD=OewMjA_U0ruIJjIfROIXoTk9xDOXEebl
-DATABASE_URL=postgresql://postgres:OewMjA_U0ruIJjIfROIXoTk9xDOXEebl@db:5432/ribotflow
-
-# App
-NEXT_PUBLIC_APP_URL=https://ssribotflow.digitaistudios.com
-NEXT_PUBLIC_APP_MODE=self-hosted
-NODE_ENV=production
-
-# MinIO
-MINIO_ROOT_USER=8a8bR25hObJeghjCn5pq1Q
-MINIO_ROOT_PASSWORD=-pyzlgOy66AlpGWM3H9Q
-MINIO_ENDPOINT=minio
-MINIO_PORT=9000
-MINIO_BUCKET=ribotflow-uploads
-MINIO_USE_SSL=false
-
-# SMTP - Configure with your email provider
-# Gmail example:
-# SMTP_HOST=smtp.gmail.com
-# SMTP_PORT=465
-# SMTP_SECURE=true
-# SMTP_USER=your-email@gmail.com
-# SMTP_PASSWORD=your-app-password
-# SMTP_FROM=noreply@digitaistudios.com
-EOF
-```
-
-### 5. Create uploads directory
-```bash
+# 4. Create uploads directory
 mkdir -p uploads
-```
 
-### 6. Ensure Traefik network exists
-```bash
-docker network ls | grep traefik
-# If not exists:
-docker network create traefik
-```
-
-### 7. Build and start
-```bash
+# 5. Build and start
 docker compose -f docker-compose.prod.yml up -d --build
-```
 
-### 8. Check status
-```bash
+# 6. Check status
 docker compose -f docker-compose.prod.yml ps
 docker compose -f docker-compose.prod.yml logs -f app
 ```
 
-### 9. Run database migrations
+**Caddy** will automatically:
+- Obtain SSL certificates from Let's Encrypt
+- Redirect HTTP to HTTPS
+- Serve your app on port 443
+
+### Option B: With Existing Traefik
+
+Best for: Servers already running Traefik (like Contabo VPS with n8n/Portainer).
+
+```bash
+# 1. SSH into your server
+ssh root@your-server-ip
+
+# 2. Clone the repository
+git clone -b features/Fxboix https://github.com/BobFarreras/ribotflow.git /opt/ribotflow
+cd /opt/ribotflow
+
+# 3. Create .env.local
+cp .env.production .env.local
+nano .env.local
+
+# 4. Create uploads directory
+mkdir -p uploads
+
+# 5. Ensure Traefik network exists
+docker network ls | grep traefik || docker network create traefik
+
+# 6. Build and start (with Traefik override)
+docker compose -f docker-compose.prod.yml -f docker-compose.traefik.yml up -d --build
+
+# 7. Check status
+docker compose -f docker-compose.prod.yml -f docker-compose.traefik.yml ps
+docker compose -f docker-compose.prod.yml -f docker-compose.traefik.yml logs -f app
+```
+
+**Requirements for Traefik:**
+- Traefik must be running with ports 80/443
+- Network `traefik` must exist
+- Certresolver `letsencrypt` must be configured
+
+### Option C: With Existing Nginx
+
+Best for: Servers already running Nginx as reverse proxy.
+
+```bash
+# 1. Deploy with Caddy disabled (only internal)
+docker compose -f docker-compose.prod.yml up -d --build
+
+# 2. Add Nginx config
+cat > /etc/nginx/sites-available/ribotflow << 'EOF'
+server {
+    listen 443 ssl http2;
+    server_name ribotflow.yourdomain.com;
+
+    ssl_certificate /etc/letsencrypt/live/ribotflow.yourdomain.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/ribotflow.yourdomain.com/privkey.pem;
+
+    location / {
+        proxy_pass http://127.0.0.1:80;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_cache_bypass $http_upgrade;
+    }
+}
+EOF
+
+# 3. Enable site
+ln -s /etc/nginx/sites-available/ribotflow /etc/nginx/sites-enabled/
+nginx -t && systemctl reload nginx
+```
+
+## Environment Variables
+
+### Required
+
+| Variable | Description | How to Generate |
+|----------|-------------|-----------------|
+| `AUTH_SECRET` | NextAuth JWT secret | `openssl rand -base64 32` |
+| `POSTGRES_PASSWORD` | Database password | `openssl rand -base64 24` |
+| `MINIO_ROOT_USER` | MinIO admin user | `openssl rand -base64 16` |
+| `MINIO_ROOT_PASSWORD` | MinIO admin password | `openssl rand -base64 16` |
+| `DOMAIN` | Your domain name | e.g., `ribotflow.yourdomain.com` |
+
+### Optional (Email)
+
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `SMTP_HOST` | SMTP server | `smtp.gmail.com` |
+| `SMTP_PORT` | SMTP port | `465` or `587` |
+| `SMTP_SECURE` | Use SSL | `true` (465) or `false` (587) |
+| `SMTP_USER` | SMTP username | `your-email@gmail.com` |
+| `SMTP_PASSWORD` | SMTP password | App password |
+| `SMTP_FROM` | Sender address | `noreply@yourdomain.com` |
+
+### .env.local Template
+
+```bash
+# Auth
+AUTH_SECRET=your-generated-secret-here
+
+# Database
+POSTGRES_PASSWORD=your-generated-password-here
+
+# App
+DOMAIN=ribotflow.yourdomain.com
+NEXT_PUBLIC_APP_URL=https://ribotflow.yourdomain.com
+NEXT_PUBLIC_APP_MODE=self-hosted
+NODE_ENV=production
+
+# MinIO
+MINIO_ROOT_USER=your-minio-user-here
+MINIO_ROOT_PASSWORD=your-minio-password-here
+
+# SMTP (optional)
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=465
+SMTP_SECURE=true
+SMTP_USER=your-email@gmail.com
+SMTP_PASSWORD=your-app-password
+SMTP_FROM=noreply@yourdomain.com
+```
+
+## Database Management
+
+### Run migrations
 ```bash
 docker compose -f docker-compose.prod.yml exec app npx drizzle-kit push
 ```
 
-### 10. Access the application
-- **URL**: https://ssribotflow.digitaistudios.com
-- **Login**: dais@test.com / 12345678
-
-## Traefik Configuration
-
-The app service includes Traefik labels for automatic HTTPS:
-
-```yaml
-labels:
-  - "traefik.enable=true"
-  - "traefik.http.routers.ribotflow.rule=Host(`ssribotflow.digitaistudios.com`)"
-  - "traefik.http.routers.ribotflow.entrypoints=websecure"
-  - "traefik.http.routers.ribotflow.tls.certresolver=letsencrypt"
-  - "traefik.http.services.ribotflow.loadbalancer.server.port=3000"
-```
-
-**Important**: Make sure your Traefik has a `letsencrypt` certresolver configured. If not, add this to your Traefik static config:
-
-```yaml
-certificatesResolvers:
-  letsencrypt:
-    acme:
-      email: your-email@digitaistudios.com
-      storage: /letsencrypt/acme.json
-      httpChallenge:
-        entryPoint: web
-```
-
-## Troubleshooting
-
-### App not accessible
-```bash
-# Check if app is running
-docker compose -f docker-compose.prod.yml ps
-
-# Check Traefik labels
-docker inspect ribotflow-app | grep -A 20 "Labels"
-
-# Check logs
-docker compose -f docker-compose.prod.yml logs app
-```
-
-### Database connection error
-```bash
-# Check PostgreSQL is running
-docker compose -f docker-compose.prod.yml ps db
-
-# Test connection
-docker compose -f docker-compose.prod.yml exec db pg_isready -U postgres
-```
-
-### HTTPS not working
-1. Check DNS: `nslookup ssribotflow.digitaistudios.com`
-2. Check Traefik logs: `docker logs traefik | grep ribotflow`
-3. Check certresolver name matches your Traefik config
-
-## Backup Management
-
 ### Manual backup
 ```bash
 docker compose -f docker-compose.prod.yml exec backup /bin/sh -c \
-  "PGPASSWORD=OewMjA_U0ruIJjIfROIXoTk9xDOXEebl pg_dump -h db -U postgres ribotflow | gzip > /backups/manual_$(date +%Y%m%d_%H%M%S).sql.gz"
+  "PGPASSWORD=your-password pg_dump -h db -U postgres ribotflow | gzip > /backups/manual_$(date +%Y%m%d_%H%M%S).sql.gz"
 ```
 
 ### Restore from backup
 ```bash
-# Find backup file
+# List backups
 docker compose -f docker-compose.prod.yml exec backup ls -la /backups/
 
 # Restore
 docker compose -f docker-compose.prod.yml exec backup /bin/sh -c \
-  "gunzip < /backups/ribotflow_YYYYMMDD_HHMMSS.sql.gz | PGPASSWORD=OewMjA_U0ruIJjIfROIXoTk9xDOXEebl psql -h db -U postgres ribotflow"
+  "gunzip < /backups/ribotflow_YYYYMMDD_HHMMSS.sql.gz | PGPASSWORD=your-password psql -h db -U postgres ribotflow"
 ```
 
-## Updating the Application
+## Updating
 
 ```bash
 cd /opt/ribotflow
@@ -183,23 +218,75 @@ docker compose -f docker-compose.prod.yml up -d --build
 
 ```bash
 cd /opt/ribotflow
-git log --oneline -5  # Find previous commit
+git log --oneline -5
 git checkout <commit-hash>
 docker compose -f docker-compose.prod.yml up -d --build
 ```
 
-## Environment Variables Reference
+## Troubleshooting
 
-| Variable | Description | Example |
-|----------|-------------|---------|
-| `AUTH_SECRET` | NextAuth JWT secret | `QrvNE7eEniSOnIQzABMB0KySgl2Ozl7aPz5fWCWVJps` |
-| `POSTGRES_PASSWORD` | PostgreSQL password | `OewMjA_U0ruIJjIfROIXoTk9xDOXEebl` |
-| `NEXT_PUBLIC_APP_URL` | Application URL | `https://ssribotflow.digitaistudios.com` |
-| `MINIO_ROOT_USER` | MinIO admin user | `8a8bR25hObJeghjCn5pq1Q` |
-| `MINIO_ROOT_PASSWORD` | MinIO admin password | `-pyzlgOy66AlpGWM3H9Q` |
-| `SMTP_HOST` | SMTP server hostname | `smtp.gmail.com` |
-| `SMTP_PORT` | SMTP server port | `465` or `587` |
-| `SMTP_SECURE` | Use SSL/TLS | `true` (465) or `false` (587) |
-| `SMTP_USER` | SMTP username | `your-email@gmail.com` |
-| `SMTP_PASSWORD` | SMTP password | `your-app-password` |
-| `SMTP_FROM` | Sender email address | `noreply@digitaistudios.com` |
+### App not accessible
+```bash
+# Check containers
+docker compose -f docker-compose.prod.yml ps
+
+# Check app logs
+docker compose -f docker-compose.prod.yml logs app
+
+# Check Caddy/Traefik logs
+docker compose -f docker-compose.prod.yml logs caddy
+```
+
+### Database connection error
+```bash
+# Check PostgreSQL
+docker compose -f docker-compose.prod.yml ps db
+docker compose -f docker-compose.prod.yml exec db pg_isready -U postgres
+```
+
+### HTTPS not working
+1. **DNS**: Verify `nslookup yourdomain.com` points to your VPS
+2. **Ports**: Ensure ports 80/443 are open in firewall
+3. **Caddy**: Check `docker compose logs caddy`
+4. **Traefik**: Check `docker logs traefik`
+
+### Traefik specific
+```bash
+# Ensure network exists
+docker network ls | grep traefik
+
+# Check Traefik labels
+docker inspect ribotflow-app | grep -A 20 "Labels"
+
+# Check certresolver name matches your Traefik config
+docker logs traefik | grep ribotflow
+```
+
+## Architecture Details
+
+### Services
+
+| Service | Image | Port | Purpose |
+|---------|-------|------|---------|
+| app | Custom build | 3000 | Next.js application |
+| db | postgres:16-alpine | 5432 | PostgreSQL database |
+| minio | minio/minio:latest | 9000/9001 | Object storage |
+| caddy | caddy:2-alpine | 80/443 | Reverse proxy (Option A) |
+| backup | postgres:16-alpine | - | Daily database backups |
+
+### Volumes
+
+| Volume | Purpose |
+|--------|---------|
+| db_data | PostgreSQL data |
+| minio_data | MinIO files |
+| app_uploads | User uploads |
+| caddy_data | SSL certificates |
+| caddy_config | Caddy config |
+
+### Networks
+
+| Network | Purpose |
+|---------|---------|
+| internal | Inter-service communication |
+| traefik | External Traefik network (Option B only) |
