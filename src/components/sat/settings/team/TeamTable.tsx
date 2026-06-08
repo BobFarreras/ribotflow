@@ -46,7 +46,7 @@ export function TeamTable({ members, canManage }: Props) {
         )}
       </div>
 
-      <div className="overflow-hidden rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface)] shadow-sm">
+      <div className="overflow-visible rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface)] shadow-sm">
         <table className="w-full table-fixed text-left">
           <thead>
             <tr className="border-b border-[color:var(--border)] bg-[color:var(--surface-2)] text-xs uppercase tracking-wide text-[color:var(--text-muted)]">
