@@ -107,8 +107,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         try {
           const h = await headers();
           const userAgent = h.get("user-agent") ?? null;
-          const ipAddress =
-            h.get("x-forwarded-for") ?? h.get("x-real-ip") ?? null;
+          const ipAddress = h.get("x-forwarded-for") ?? h.get("x-real-ip") ?? null;
           await db.insert(sessions).values({
             sessionToken: randomUUID(),
             userId: user.id as string,

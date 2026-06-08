@@ -70,8 +70,7 @@ export function ActiveSessionsList({ sessions: rows, currentFingerprint }: Props
   };
 
   const isCurrentSession = (s: ActiveSessionDto) =>
-    s.userAgent === currentFingerprint.userAgent &&
-    s.ipAddress === currentFingerprint.ipAddress;
+    s.userAgent === currentFingerprint.userAgent && s.ipAddress === currentFingerprint.ipAddress;
 
   const hasOthers = rows.some((s) => !isCurrentSession(s));
 

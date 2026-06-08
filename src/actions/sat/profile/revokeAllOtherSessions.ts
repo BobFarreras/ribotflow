@@ -20,10 +20,7 @@ export async function revokeAllOtherSessionsAction() {
       return { success: false as const, error: "Unauthorized" };
     }
     const fingerprint = await getCurrentSessionFingerprint();
-    const count = await sessionsService.revokeAllOtherSessions(
-      session.user.id,
-      fingerprint
-    );
+    const count = await sessionsService.revokeAllOtherSessions(session.user.id, fingerprint);
     revalidatePath("/settings/profile");
     return { success: true as const, data: { revoked: count } };
   } catch (err) {
