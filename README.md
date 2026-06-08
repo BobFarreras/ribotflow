@@ -1,77 +1,89 @@
 ﻿# RIBOTFLOW
 
-Field Service Management (FSM) platform for telecommunications companies. Manage work orders, clients, quotes, routes, and team from a single dashboard.
+**Field Service Management Platform for Telecommunications**
+
+---
+
+## Overview
+
+RIBOTFLOW is a comprehensive FSM platform designed for telecom companies to manage work orders, clients, quotes, routes, and field teams from a single dashboard.
+
+### Key Features
+
+- **Work Order Management** - Create, assign, and track field work orders with real-time status updates
+- **Client Management** - Customer database with contact info, locations, and service history
+- **Quote Generation** - Professional PDF quotes with customizable templates
+- **Route Optimization** - Haversine-based route planning with interactive maps
+- **Team Management** - Role-based access (Owner, Admin, Technician, Office)
+- **Email Notifications** - Automated invitations and status updates
+- **File Attachments** - Secure cloud storage for documents and photos
+- **Internationalization** - Catalan and Spanish UI
+- **Mobile-First** - Responsive design optimized for field technicians
+- **PWA Support** - Offline-capable for field work in low-connectivity areas
+
+---
 
 ## Tech Stack
 
 ### Frontend
-| Technology | Version | Purpose |
-|------------|---------|---------|
-| Next.js | 16+ | React framework (App Router, Server Components) |
-| React | 19 | UI library |
-| TypeScript | 5.x | Type safety |
-| Tailwind CSS | 4.x | Utility-first CSS |
-| Radix UI | - | Accessible component primitives |
-| Leaflet | 1.9 | Interactive maps |
-| next-intl | 4.x | Internationalization (Catalan/Spanish) |
-| React Hook Form | - | Form management |
-| Zod | 3.x | Schema validation |
-| Sonner | 2.x | Toast notifications |
-| motion | 12.x | Animations |
+```
+Next.js 16+          React 19           TypeScript 5.x
+Tailwind CSS 4.x     Radix UI           Leaflet 1.9
+next-intl 4.x        React Hook Form    Zod 3.x
+Sonner 2.x           motion 12.x        Lucide React
+```
 
 ### Backend
-| Technology | Version | Purpose |
-|------------|---------|---------|
-| Next.js API Routes | - | Server Actions as controllers |
-| Auth.js | 5.x (beta) | Authentication (JWT strategy) |
-| Drizzle ORM | 0.38 | Database ORM |
-| PostgreSQL | 16+ | Primary database |
-| MinIO | Latest | S3-compatible object storage |
-| Nodemailer | 8.x | Email sending (SMTP) |
-| pdf-lib | 1.17 | PDF generation |
-| BullMQ | - | Job queue (Cloud mode) |
+```
+Next.js Server Actions    Auth.js 5.x (JWT)     Drizzle ORM 0.38
+PostgreSQL 16+            MinIO (S3)            Nodemailer 8.x
+pdf-lib 1.17              BullMQ/Redis          Zod Validation
+```
 
 ### DevOps
-| Technology | Purpose |
-|------------|---------|
-| Docker | Containerization (multi-stage build, ~315MB) |
-| Caddy | Auto HTTPS / Reverse proxy |
-| Traefik | Alternative reverse proxy (override file) |
-| Vitest | Unit testing (393 tests) |
-| ESLint | Code linting |
-| Prettier | Code formatting |
-| Husky | Git hooks |
-| GitHub Actions | CI/CD |
+```
+Docker (multi-stage)     Caddy/Traefik         Vitest 4.x
+ESLint 9.x               Prettier 3.x          Husky 9.x
+GitHub Actions           Drizzle Kit           PostgreSQL 16
+```
 
-### Database
-| Technology | Purpose |
-|------------|---------|
-| PostgreSQL 16 | Primary database |
-| Drizzle ORM | Type-safe queries |
-| Drizzle Kit | Migrations |
+---
 
 ## Architecture
 
 ```
-┌─────────────────────────────────────────────────┐
-│                   Frontend                       │
-│  Next.js App Router + Server Components          │
-│  Tailwind CSS + Radix UI + Leaflet Maps          │
-└──────────────────────┬──────────────────────────┘
-                       │ Server Actions
-┌──────────────────────▼──────────────────────────┐
-│                   Backend                        │
-│  Auth.js (JWT) + Drizzle ORM + Zod Validation   │
-│  PDF Generation + Email Service + File Upload   │
-└──────────────────────┬──────────────────────────┘
-                       │
-        ┌──────────────┼──────────────┐
-        │              │              │
-┌───────▼──────┐ ┌─────▼─────┐ ┌─────▼─────┐
-│  PostgreSQL  │ │   MinIO   │ │  Nodemailer│
-│   (Data)     │ │  (Files)  │ │  (Email)   │
-└──────────────┘ └───────────┘ └───────────┘
+┌─────────────────────────────────────────────────────────────┐
+│                        CLIENTS                              │
+│   Browser (Desktop)     Mobile (Field)      Tablet (Office) │
+└───────────────────────────┬─────────────────────────────────┘
+                            │ HTTPS
+┌───────────────────────────▼─────────────────────────────────┐
+│                     REVERSE PROXY                           │
+│            Caddy (Auto HTTPS) or Traefik                    │
+└───────────────────────────┬─────────────────────────────────┘
+                            │
+┌───────────────────────────▼─────────────────────────────────┐
+│                     NEXT.JS APP                             │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────┐ │
+│  │   Pages     │  │   API       │  │  Server Actions     │ │
+│  │  (SSR/SSG)  │  │  Routes     │  │  (Business Logic)   │ │
+│  └─────────────┘  └─────────────┘  └──────────┬──────────┘ │
+└────────────────────────────────────────────────┼────────────┘
+                                                 │
+                    ┌────────────────────────────┼────────┐
+                    │                            │        │
+            ┌───────▼──────┐           ┌────────▼────┐   │
+            │  PostgreSQL  │           │    MinIO    │   │
+            │   (Data)     │           │   (Files)   │   │
+            └──────────────┘           └─────────────┘   │
+                                                         │
+                                            ┌────────────▼────┐
+                                            │   Nodemailer    │
+                                            │    (Email)      │
+                                            └─────────────────┘
 ```
+
+---
 
 ## Project Structure
 
@@ -87,41 +99,32 @@ ribotflow/
 │   │   ├── layout/             # Shell, sidebar, header
 │   │   ├── sat/                # SAT-specific components
 │   │   └── ui/                 # Shared UI components
-│   ├── actions/                # Server Actions
-│   ├── services/               # Business logic
+│   ├── actions/                # Server Actions (controllers)
+│   ├── services/               # Business logic layer
 │   ├── lib/                    # Utilities, auth, validators
 │   ├── db/                     # Database schema & migrations
-│   └── locales/                # i18n translations (ca, es)
+│   └── locales/                # i18n (ca, es)
 ├── tests/                      # Unit & integration tests
 ├── docker/                     # Docker configurations
-│   ├── caddy/                  # Caddyfile
-│   ├── postgres/               # Init SQL scripts
-│   └── scripts/                # Backup scripts
 ├── docker-compose.prod.yml     # Production (Caddy)
 ├── docker-compose.traefik.yml  # Traefik override
-├── Dockerfile                  # Multi-stage build
-└── DEPLOY.md                   # Deployment guide
+├── Dockerfile                  # Multi-stage build (~315MB)
+└── package.json                # Dependencies & scripts
 ```
 
-## Features
-
-- **Work Order Management**: Create, assign, and track field work orders
-- **Client Management**: Customer database with contact info and locations
-- **Quote Generation**: PDF quotes with templates
-- **Route Optimization**: Haversine-based route planning with maps
-- **Team Management**: Role-based access (Owner, Admin, Technician, Office)
-- **Email Notifications**: SMTP-based invitation and notification system
-- **File Attachments**: MinIO/S3-compatible object storage
-- **Internationalization**: Catalan and Spanish UI
-- **Mobile-First**: Responsive design for field technicians
-- **PWA Support**: Offline-capable for field work
+---
 
 ## Quick Start
+
+### Prerequisites
+- Node.js 22+
+- PostgreSQL 16+
+- pnpm (package manager)
 
 ### Development
 
 ```bash
-# Clone
+# Clone repository
 git clone https://github.com/BobFarreras/ribotflow.git
 cd ribotflow
 
@@ -131,23 +134,35 @@ pnpm install
 # Setup database
 pnpm db:setup
 
-# Start dev server
+# Start development server
 pnpm dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000)
 
-### Production
+### Default User
+- **Email:** dais@test.com
+- **Password:** 12345678
 
-See [DEPLOY.md](DEPLOY.md) for complete deployment instructions.
+---
 
-```bash
-# Universal (with Caddy)
-docker compose -f docker-compose.prod.yml up -d
+## Scripts
 
-# With Traefik
-docker compose -f docker-compose.prod.yml -f docker-compose.traefik.yml up -d
-```
+| Command | Description |
+|---------|-------------|
+| `pnpm dev` | Start development server |
+| `pnpm build` | Build for production |
+| `pnpm start` | Start production server |
+| `pnpm test` | Run test suite (393 tests) |
+| `pnpm test:coverage` | Run with coverage |
+| `pnpm lint` | Run ESLint |
+| `pnpm typecheck` | TypeScript check |
+| `pnpm db:setup` | Setup database (migrate + seed) |
+| `pnpm db:generate` | Generate migration |
+| `pnpm db:migrate` | Run migrations |
+| `pnpm db:studio` | Open Drizzle Studio |
+
+---
 
 ## Testing
 
@@ -155,40 +170,79 @@ docker compose -f docker-compose.prod.yml -f docker-compose.traefik.yml up -d
 # Run all tests
 pnpm test
 
+# Run specific test file
+pnpm test tests/unit/lib/auth/permissions.test.ts
+
 # Run with coverage
 pnpm test:coverage
-
-# Run specific test
-pnpm test tests/unit/lib/auth/permissions.test.ts
 ```
 
-## Available Scripts
+**Test Structure:**
+- `tests/unit/` - Unit tests (services, actions, lib)
+- `tests/components/` - Component tests
+- `tests/factories/` - Test data factories
 
-| Command | Description |
-|---------|-------------|
-| `pnpm dev` | Start development server |
-| `pnpm build` | Build for production |
-| `pnpm start` | Start production server |
-| `pnpm test` | Run test suite |
-| `pnpm lint` | Run ESLint |
-| `pnpm typecheck` | Run TypeScript check |
-| `pnpm db:setup` | Setup database (migrate + seed) |
-| `pnpm db:generate` | Generate migration |
-| `pnpm db:migrate` | Run migrations |
-| `pnpm db:push` | Push schema (dev only) |
-| `pnpm db:studio` | Open Drizzle Studio |
+---
+
+## Roles & Permissions
+
+| Role | Access |
+|------|--------|
+| **OWNER** | Full access, settings, email config |
+| **ADMIN** | Most features, team management |
+| **TECHNICIAN** | Field work orders, mobile views |
+| **OFFICE** | Read-only, quotes, clients |
+
+---
+
+## Internationalization
+
+- **UI Language:** Catalan (ca) / Spanish (es)
+- **Code:** English
+- **Database:** English (states, categories)
+- **i18n Keys:** `sat.workOrder.create.success`
+
+---
+
+## Production Deployment
+
+For deployment instructions, see [INSTALL.md](INSTALL.md)
+
+---
 
 ## Environment Variables
 
-See [`.env.production`](.env.production) for all variables with documentation.
+See [`.env.production`](.env.production) for all variables.
 
-Key variables:
-- `AUTH_SECRET` - NextAuth JWT secret
-- `DATABASE_URL` - PostgreSQL connection string
-- `NEXT_PUBLIC_APP_URL` - Application URL
-- `MINIO_*` - Object storage config
+**Required:**
+- `AUTH_SECRET` - JWT secret
+- `DATABASE_URL` - PostgreSQL connection
+- `MINIO_*` - Object storage
+
+**Optional:**
 - `SMTP_*` - Email configuration
+- `SENTRY_DSN` - Error tracking
+
+---
+
+## Contributing
+
+1. Fork the repository
+2. Create feature branch (`git checkout -b feature/amazing`)
+3. Commit changes (`git commit -m 'feat: add amazing'`)
+4. Push to branch (`git push origin feature/amazing`)
+5. Open Pull Request
+
+---
 
 ## License
 
 Private - DigitAIStudios
+
+---
+
+## Support
+
+- **Documentation:** See `/docs` folder
+- **Issues:** GitHub Issues
+- **Email:** support@digitaistudios.com
