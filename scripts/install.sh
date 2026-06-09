@@ -51,7 +51,7 @@ print_banner() {
 
 BANNER
     echo -e "${NC}"
-    echo -e "  ${DIM}Field Service Management Platform${NC}"
+    echo -e "  ${BOLD}${WHITE}RIBOTFLOW${NC}"
     echo -e "  ${DIM}v0.1.0 ${DIM}│${NC} ${DIM}https://github.com/BobFarreras/ribotflow${NC}"
     echo ""
 }
@@ -480,6 +480,10 @@ start_services() {
     esac
 
     mkdir -p uploads
+
+    info "Building application image..."
+    docker compose -f docker-compose.prod.yml build
+    ok "Image built"
 
     case $PROXY in
         caddy)

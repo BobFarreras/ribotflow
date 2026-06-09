@@ -15,7 +15,7 @@
 services:
   # --- Next.js Application ---
   app:
-    image: ${DOCKER_IMAGE:-ghcr.io/bobfarreras/ribotflow:latest}
+    build: .
     container_name: ribotflow-app
     env_file: .env
     environment:
