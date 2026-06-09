@@ -1,18 +1,28 @@
 #!/bin/bash
 # ==========================================
 # RIBOTFLOW - Management Script
-# Usage: ./manage.sh [start|stop|restart|logs|status|update|backup]
+# Usage: ./manage.sh [start|stop|restart|logs|status|update|backup|restore|shell|db]
 # ==========================================
 set -e
 
-# Colors
+# ─── Colors & Formatting ───────────────────────────────────────
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
+CYAN='\033[0;36m'
+WHITE='\033[1;37m'
+DIM='\033[2m'
+BOLD='\033[1m'
 NC='\033[0m'
 
-# Detect which compose files to use
+# ─── Symbols ────────────────────────────────────────────────────
+ARROW="${CYAN}▸${NC}"
+CHECK="${GREEN}✓${NC}"
+WARN="${YELLOW}⚠${NC}"
+LINE="${DIM}──────────────────────────────────────────────────────────${NC}"
+
+# ─── Detect Compose Files ──────────────────────────────────────
 if [ -f ".compose-profile" ]; then
     source .compose-profile
     COMPOSE="docker compose $COMPOSE_FILES"
@@ -24,42 +34,57 @@ else
     COMPOSE="docker compose -f docker-compose.prod.yml"
 fi
 
+# ─── Commands ───────────────────────────────────────────────────
+
 show_help() {
     echo ""
-    echo "RIBOTFLOW Management Script"
+    echo -e "${CYAN}"
+    cat << 'BANNER'
+     ██████╗ ██╗████████╗████████╗██████╗ ██╗ ██████╗ ██╗     ██╗
+     ██╔══██╗██║╚══██╔══╝╚══██╔══╝██╔══██╗██║██╔═══██╗██║     ██║
+     ██████╔╝██║   ██║      ██║   ██████╔╝██║██║   ██║██║     ██║
+     ██╔══██╗██║   ██║      ██║   ██╔══██╗██║██║   ██║██║     ██║
+     ██║  ██║██║   ██║      ██║   ██║  ██║██║╚██████╔╝███████╗██║
+     ╚═╝  ╚═╝╚═╝   ╚═╝      ╚═╝   ╚═╝  ╚═╝╚═╝ ╚═════╝ ╚══════╝╚═╝
+BANNER
+    echo -e "${NC}"
+    echo -e "  ${DIM}Management CLI${NC}"
     echo ""
-    echo "Usage: ./manage.sh [command]"
+    echo -e "  ${BOLD}Usage:${NC} ./manage.sh [command]"
     echo ""
-    echo "Commands:"
-    echo "  start     Start all services"
-    echo "  stop      Stop all services"
-    echo "  restart   Restart all services"
-    echo "  logs      View application logs"
-    echo "  status    Show service status"
-    echo "  update    Pull latest and rebuild"
-    echo "  backup    Create manual database backup"
-    echo "  restore   Restore from backup"
-    echo "  shell     Open app shell"
-    echo "  db        Open database shell"
+    echo -e "  ${BOLD}Commands:${NC}"
+    echo -e "    ${CYAN}start${NC}     Start all services"
+    echo -e "    ${CYAN}stop${NC}      Stop all services"
+    echo -e "    ${CYAN}restart${NC}   Restart all services"
+    echo -e "    ${CYAN}logs${NC}      View application logs"
+    echo -e "    ${CYAN}status${NC}    Show service status"
+    echo -e "    ${CYAN}update${NC}    Pull latest and rebuild"
+    echo -e "    ${CYAN}backup${NC}    Create manual database backup"
+    echo -e "    ${CYAN}restore${NC}   Restore from backup"
+    echo -e "    ${CYAN}shell${NC}     Open app shell"
+    echo -e "    ${CYAN}db${NC}        Open database shell"
     echo ""
 }
 
 start() {
-    echo -e "${BLUE}Starting RIBOTFLOW...${NC}"
+    echo -e "\n${BOLD}${BLUE}  ◈ Starting RIBOTFLOW${NC}"
+    echo -e "${DIM}${LINE}${NC}"
     $COMPOSE up -d
-    echo -e "${GREEN}✓ Services started${NC}"
+    echo -e "  ${CHECK} ${GREEN}Services started${NC}\n"
 }
 
 stop() {
-    echo -e "${BLUE}Stopping RIBOTFLOW...${NC}"
+    echo -e "\n${BOLD}${BLUE}  ◈ Stopping RIBOTFLOW${NC}"
+    echo -e "${DIM}${LINE}${NC}"
     $COMPOSE down
-    echo -e "${GREEN}✓ Services stopped${NC}"
+    echo -e "  ${CHECK} ${GREEN}Services stopped${NC}\n"
 }
 
 restart() {
-    echo -e "${BLUE}Restarting RIBOTFLOW...${NC}"
+    echo -e "\n${BOLD}${BLUE}  ◈ Restarting RIBOTFLOW${NC}"
+    echo -e "${DIM}${LINE}${NC}"
     $COMPOSE restart
-    echo -e "${GREEN}✓ Services restarted${NC}"
+    echo -e "  ${CHECK} ${GREEN}Services restarted${NC}\n"
 }
 
 logs() {
@@ -67,63 +92,69 @@ logs() {
 }
 
 status() {
-    echo -e "${BLUE}RIBOTFLOW Service Status${NC}"
+    echo -e "\n${BOLD}${BLUE}  ◈ RIBOTFLOW Service Status${NC}"
+    echo -e "${DIM}${LINE}${NC}"
     echo ""
     $COMPOSE ps
+    echo ""
 }
 
 update() {
-    echo -e "${BLUE}Updating RIBOTFLOW...${NC}"
+    echo -e "\n${BOLD}${BLUE}  ◈ Updating RIBOTFLOW${NC}"
+    echo -e "${DIM}${LINE}${NC}"
     echo ""
-    
-    # Pull latest image
-    echo "Pulling latest image..."
+    echo -e "  ${ARROW} Pulling latest image..."
     $COMPOSE pull
-    
-    # Restart with new image
-    echo "Restarting containers..."
-    $COMPOSE up -d
-    
     echo ""
-    echo -e "${GREEN}✓ Update complete!${NC}"
+    echo -e "  ${ARROW} Restarting containers..."
+    $COMPOSE up -d
+    echo ""
+    echo -e "  ${CHECK} ${GREEN}Update complete!${NC}\n"
 }
 
 backup() {
-    echo -e "${BLUE}Creating database backup...${NC}"
-    
+    echo -e "\n${BOLD}${BLUE}  ◈ Creating Database Backup${NC}"
+    echo -e "${DIM}${LINE}${NC}"
+
+    mkdir -p ./backups
+
     # Source environment variables
     source .env 2>/dev/null || true
-    
+
     BACKUP_NAME="ribotflow_$(date +%Y%m%d_%H%M%S).sql.gz"
-    
+
     $COMPOSE exec -T db pg_dump -U postgres ribotflow | gzip > "./backups/$BACKUP_NAME"
-    
-    echo -e "${GREEN}✓ Backup created: $BACKUP_NAME${NC}"
-    echo "  Size: $(du -h "./backups/$BACKUP_NAME" | cut -f1)"
+
+    echo -e "  ${CHECK} ${GREEN}Backup created: $BACKUP_NAME${NC}"
+    echo -e "  ${DIM}Size: $(du -h "./backups/$BACKUP_NAME" | cut -f1)${NC}\n"
 }
 
 restore() {
-    echo -e "${YELLOW}Available backups:${NC}"
+    echo -e "\n${BOLD}${BLUE}  ◈ Restore from Backup${NC}"
+    echo -e "${DIM}${LINE}${NC}"
     echo ""
-    ls -la ./backups/*.sql.gz 2>/dev/null || echo "No backups found"
+    echo -e "  ${WARN} ${YELLOW}Available backups:${NC}"
     echo ""
-    
-    read -p "Enter backup filename: " BACKUP_FILE
-    
+    ls -la ./backups/*.sql.gz 2>/dev/null || echo -e "  ${DIM}No backups found${NC}"
+    echo ""
+
+    read -p "  Enter backup filename: " BACKUP_FILE
+
     if [ ! -f "./backups/$BACKUP_FILE" ]; then
-        echo -e "${RED}Backup file not found${NC}"
+        echo -e "  ${RED}✗ Backup file not found${NC}\n"
         exit 1
     fi
-    
-    echo -e "${YELLOW}⚠ This will OVERWRITE the current database!${NC}"
-    read -p "Are you sure? (yes/no): " CONFIRM
-    
+
+    echo ""
+    echo -e "  ${WARN} ${RED}This will OVERWRITE the current database!${NC}"
+    read -p "  Are you sure? (yes/no): " CONFIRM
+
     if [ "$CONFIRM" = "yes" ]; then
-        echo -e "${BLUE}Restoring from $BACKUP_FILE...${NC}"
+        echo -e "\n  ${ARROW} Restoring from $BACKUP_FILE..."
         gunzip < "./backups/$BACKUP_FILE" | $COMPOSE exec -T db psql -U postgres ribotflow
-        echo -e "${GREEN}✓ Restore complete!${NC}"
+        echo -e "  ${CHECK} ${GREEN}Restore complete!${NC}\n"
     else
-        echo "Restore cancelled."
+        echo -e "  ${DIM}Restore cancelled.${NC}\n"
     fi
 }
 
@@ -135,7 +166,7 @@ db_shell() {
     $COMPOSE exec db psql -U postgres ribotflow
 }
 
-# Main command handler
+# ─── Main ───────────────────────────────────────────────────────
 case "${1:-help}" in
     start)   start ;;
     stop)    stop ;;
