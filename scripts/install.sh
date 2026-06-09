@@ -38,21 +38,24 @@ fail()  { echo -e "  ${CROSS} ${RED}$1${NC}"; }
 
 # ─── ASCII Art Title ────────────────────────────────────────────
 print_banner() {
+    CYAN='\033[0;36m'
+    WHITE='\033[1;37m'
+    DIM='\033[2m'
+    BOLD='\033[1m'
+    NC='\033[0m'
+
     echo ""
     echo -e "${CYAN}"
     cat << 'BANNER'
-
-     ██████╗ ██╗████████╗████████╗██████╗ ██╗ ██████╗ ██╗     ██╗
-     ██╔══██╗██║╚══██╔══╝╚══██╔══╝██╔══██╗██║██╔═══██╗██║     ██║
-     ██████╔╝██║   ██║      ██║   ██████╔╝██║██║   ██║██║     ██║
-     ██╔══██╗██║   ██║      ██║   ██╔══██╗██║██║   ██║██║     ██║
-     ██║  ██║██║   ██║      ██║   ██║  ██║██║╚██████╔╝███████╗██║
-     ╚═╝  ╚═╝╚═╝   ╚═╝      ╚═╝   ╚═╝  ╚═╝╚═╝ ╚═════╝ ╚══════╝╚═╝
-
+ ____  ___ ____   ___ _____ _____ _      ___  __        __
+|  _ \|_ _| __ ) / _ \_   _|  ___| |    / _ \ \ \      / /
+| |_) || ||  _ \| | | || | | |_  | |   | | | | \ \ /\ / / 
+|  _ < | || |_) | |_| || | |  _| | |___| |_| |  \ V  V /  
+|_| \_\___|____/ \___/ |_| |_|   |_____ \___/    \_/\_/    
 BANNER
     echo -e "${NC}"
     echo -e "  ${BOLD}${WHITE}RIBOTFLOW${NC}"
-    echo -e "  ${DIM}v0.1.0 ${DIM}│${NC} ${DIM}https://github.com/BobFarreras/ribotflow${NC}"
+    echo -e "  ${DIM}v0.1.0 │ https://github.com/BobFarreras/ribotflow${NC}"
     echo ""
 }
 
@@ -241,11 +244,27 @@ configure_proxy() {
 #  3. GENERATE SECRETS
 # ═══════════════════════════════════════════════════════════════
 
+# URL-encode a string (for use in DATABASE_URL passwords)
+urlencode() {
+    local string="$1"
+    local length=${#string}
+    local encoded=""
+    local c
+    for (( i = 0; i < length; i++ )); do
+        c="${string:i:1}"
+        case "$c" in
+            [a-zA-Z0-9.~_-]) encoded+="$c" ;;
+            *) encoded+=$(printf '%%%02X' "'$c") ;;
+        esac
+    done
+    echo "$encoded"
+}
+
 generate_secrets() {
     step "Step 3/7 — Generating Cryptographic Secrets"
 
     AUTH_SECRET=$(openssl rand -base64 32)
-    POSTGRES_PASSWORD=$(openssl rand -base64 24)
+    POSTGRES_PASSWORD=$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9' | head -c 24)
     MINIO_USER=$(openssl rand -base64 16 | tr -dc 'a-zA-Z0-9' | head -c 20)
     MINIO_PASSWORD=$(openssl rand -base64 16 | tr -dc 'a-zA-Z0-9' | head -c 20)
     ENCRYPTION_KEY=$(openssl rand -base64 32)
@@ -424,7 +443,7 @@ create_env() {
         "" \
         "# Database" \
         "POSTGRES_PASSWORD=$POSTGRES_PASSWORD" \
-        "DATABASE_URL=postgresql://postgres:$POSTGRES_PASSWORD@db:5432/ribotflow" \
+        "DATABASE_URL=postgresql://postgres:$(urlencode "$POSTGRES_PASSWORD")@db:5432/ribotflow" \
         "" \
         "# App" \
         "DOMAIN=$DOMAIN" \
