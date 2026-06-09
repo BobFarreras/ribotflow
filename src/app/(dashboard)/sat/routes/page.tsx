@@ -66,12 +66,7 @@ export default async function RoutePlanningPage({ searchParams }: Props) {
         <h1 className="text-lg font-semibold text-[var(--text)]">{t("title")}</h1>
         <p className="text-sm text-[var(--text-muted)]">{t("subtitle")}</p>
       </header>
-      <RoutePlanner
-        orders={orders}
-        hq={company?.location ?? { lat: 41.3851, lng: 2.1734 }}
-        companyName={company?.name ?? "RIBOTFLOW"}
-        selectedDate={selectedDate}
-      />
+      <RoutePlanner orders={orders} hq={company?.location ?? { lat: 41.3851, lng: 2.1734 }} />
     </div>
   );
 }

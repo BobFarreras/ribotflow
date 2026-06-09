@@ -19,10 +19,9 @@ import type { ThemePreference, LocalePreference } from "@/services/sat/preferenc
 
 interface Props {
   initialTheme: ThemePreference;
-  initialLocale: LocalePreference;
 }
 
-export function PreferencesForm({ initialTheme, initialLocale }: Props) {
+export function PreferencesForm({ initialTheme }: Props) {
   const t = useTranslations("sat.settings.profile.preferences");
   const locale = useLocale();
   const router = useRouter();

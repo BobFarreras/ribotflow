@@ -27,7 +27,8 @@ function getProvider(): StorageProvider {
 
 function fallbackToLocal(provider: string): LocalFileStorage {
   const isProduction = process.env.NODE_ENV === "production";
-  if (isProduction) {
+  const isBuild = process.env.npm_lifecycle_event === "build";
+  if (isProduction && !isBuild) {
     throw new Error(
       `Missing environment variables for storage provider "${provider}". ` +
         "Check your production configuration."
@@ -48,8 +49,8 @@ export function createFileStorage(): FileStorage {
   switch (provider) {
     case "minio": {
       const endPoint = process.env.MINIO_ENDPOINT;
-      const accessKey = process.env.MINIO_ACCESS_KEY;
-      const secretKey = process.env.MINIO_SECRET_KEY;
+      const accessKey = process.env.MINIO_ACCESS_KEY ?? process.env.MINIO_ROOT_USER;
+      const secretKey = process.env.MINIO_SECRET_KEY ?? process.env.MINIO_ROOT_PASSWORD;
       const bucket = process.env.MINIO_BUCKET;
 
       if (!endPoint || !accessKey || !secretKey || !bucket) {

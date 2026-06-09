@@ -15,12 +15,19 @@ COPY package.json pnpm-lock.yaml ./
 RUN pnpm install --frozen-lockfile
 COPY . .
 
+FROM base AS prod-deps
+WORKDIR /app
+COPY package.json pnpm-lock.yaml ./
+RUN pnpm install --prod --frozen-lockfile --ignore-scripts && pnpm rebuild sharp
+
 # --- Stage 2: Build the application ---
 FROM base AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
+ARG NEXT_PUBLIC_APP_MODE=self_hosted
+ENV NEXT_PUBLIC_APP_MODE=$NEXT_PUBLIC_APP_MODE
 RUN pnpm build
 
 # --- Stage 3: Production runner ---
@@ -38,9 +45,14 @@ RUN addgroup --system --gid 1001 nodejs && \
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
+COPY --from=prod-deps /app/node_modules ./node_modules
+COPY --from=builder /app/src/db/migrations ./src/db/migrations
+COPY --from=builder /app/docker/scripts ./docker/scripts
 
 # Create uploads directory with proper permissions
-RUN mkdir -p /app/uploads && chown nextjs:nodejs /app/uploads
+RUN chmod +x /app/docker/scripts/start.sh && \
+    mkdir -p /app/uploads && \
+    chown -R nextjs:nodejs /app/uploads /app/src/db/migrations /app/docker/scripts
 
 USER nextjs
 
@@ -48,7 +60,7 @@ EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
-HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-  CMD wget --no-verbose --tries=1 --spider http://localhost:3000/api/health || exit 1
+HEALTHCHECK --interval=15s --timeout=5s --start-period=10s --retries=3 \
+  CMD wget -qO- http://127.0.0.1:3000/api/health > /dev/null || exit 1
 
-CMD ["node", "server.js"]
+CMD ["/app/docker/scripts/start.sh"]

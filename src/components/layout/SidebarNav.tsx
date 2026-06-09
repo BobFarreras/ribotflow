@@ -8,7 +8,7 @@
 
 "use client";
 
-import { useState, useRef, memo } from "react";
+import { useState, useRef } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { useTranslations } from "next-intl";

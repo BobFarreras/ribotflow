@@ -73,7 +73,7 @@ export async function addAttachmentAction(formData: FormData) {
       .limit(1);
 
     const ctx: StorageContext = {
-      mode: process.env.NEXT_PUBLIC_APP_MODE === "self-hosted" ? "self-hosted" : "cloud",
+      mode: process.env.NEXT_PUBLIC_APP_MODE === "self_hosted" ? "self_hosted" : "cloud",
       companyId,
       tenantSlug: company?.tenantSlug,
       clientId: client.id,

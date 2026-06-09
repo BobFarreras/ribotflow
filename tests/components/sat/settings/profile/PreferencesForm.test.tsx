@@ -49,7 +49,7 @@ beforeEach(() => {
 
 describe("PreferencesForm", () => {
   it("marks the active theme and locale as checked", () => {
-    render(<PreferencesForm initialTheme="light" initialLocale="ca" />);
+    render(<PreferencesForm initialTheme="light" />);
     const themeRadios = screen.getAllByRole("radio", { name: /Clar|Fosc/ });
     expect(themeRadios[0]).toHaveAttribute("aria-checked", "true");
     expect(themeRadios[1]).toHaveAttribute("aria-checked", "false");
@@ -61,7 +61,7 @@ describe("PreferencesForm", () => {
   it("switches the active theme when the user clicks Dark", async () => {
     updatePreferencesActionMock.mockResolvedValue({ success: true, data: {} });
     const user = userEvent.setup();
-    render(<PreferencesForm initialTheme="light" initialLocale="ca" />);
+    render(<PreferencesForm initialTheme="light" />);
     await user.click(screen.getByRole("radio", { name: /Fosc/ }));
     expect(updatePreferencesActionMock).toHaveBeenCalledWith({ theme: "dark" });
   });
@@ -69,7 +69,7 @@ describe("PreferencesForm", () => {
   it("triggers router.refresh on a successful language change", async () => {
     updatePreferencesActionMock.mockResolvedValue({ success: true, data: {} });
     const user = userEvent.setup();
-    render(<PreferencesForm initialTheme="light" initialLocale="ca" />);
+    render(<PreferencesForm initialTheme="light" />);
     await user.click(screen.getByRole("radio", { name: /Castellano/ }));
     expect(updatePreferencesActionMock).toHaveBeenCalledWith({ locale: "es" });
     expect(refreshMock).toHaveBeenCalled();
@@ -81,7 +81,7 @@ describe("PreferencesForm", () => {
       error: "boom",
     });
     const user = userEvent.setup();
-    render(<PreferencesForm initialTheme="light" initialLocale="ca" />);
+    render(<PreferencesForm initialTheme="light" />);
     await user.click(screen.getByRole("radio", { name: /Fosc/ }));
     expect(await screen.findByText("boom")).toBeInTheDocument();
   });
@@ -89,7 +89,7 @@ describe("PreferencesForm", () => {
   it("falls back to the generic message when the server returns no error", async () => {
     updatePreferencesActionMock.mockResolvedValue({ success: false });
     const user = userEvent.setup();
-    render(<PreferencesForm initialTheme="light" initialLocale="ca" />);
+    render(<PreferencesForm initialTheme="light" />);
     await user.click(screen.getByRole("radio", { name: /Fosc/ }));
     expect(await screen.findByText("Error genèric")).toBeInTheDocument();
   });

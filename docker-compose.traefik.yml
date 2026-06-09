@@ -2,37 +2,26 @@
 # RIBOTFLOW - Docker Compose (Traefik Override)
 # Use with: docker compose -f docker-compose.prod.yml -f docker-compose.traefik.yml up -d
 # ==========================================
-# This adds Traefik labels to the app and MinIO console.
-# Prerequisites: Traefik already running, network "traefik" exists.
+# Prerequisites: Traefik already running with Docker provider.
+# Configure TRAEFIK_NETWORK, TRAEFIK_ENTRYPOINT, and TRAEFIK_CERT_RESOLVER in .env.
+# After any label change, restart Traefik if your setup does not auto-detect labels.
 
 services:
   # --- App: Add Traefik labels ---
   app:
+    ports: !reset []
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.ribotflow.rule=Host(`${DOMAIN}`)"
-      - "traefik.http.routers.ribotflow.entrypoints=websecure"
-      - "traefik.http.routers.ribotflow.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.ribotflow.entrypoints=${TRAEFIK_ENTRYPOINT:-websecure}"
+      - "traefik.http.routers.ribotflow.tls.certresolver=${TRAEFIK_CERT_RESOLVER:-letsencrypt}"
       - "traefik.http.services.ribotflow.loadbalancer.server.port=3000"
+      - "traefik.docker.network=${TRAEFIK_NETWORK:-traefik-public}"
     networks:
       - internal
       - traefik
 
-  # --- MinIO: Add Traefik labels (optional console access) ---
-  minio:
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.ribotflow-minio.rule=Host(`minio.${DOMAIN}`)"
-      - "traefik.http.routers.ribotflow-minio.entrypoints=websecure"
-      - "traefik.http.routers.ribotflow-minio.tls.certresolver=letsencrypt"
-      - "traefik.http.services.ribotflow-minio.loadbalancer.server.port=9001"
-    networks:
-      - internal
-      - traefik
-
-# --- External Traefik Network ---
-# NOTE: Your Traefik might use "traefik-public". Change this if needed.
 networks:
   traefik:
     external: true
-    name: traefik-public
+    name: ${TRAEFIK_NETWORK:-traefik-public}

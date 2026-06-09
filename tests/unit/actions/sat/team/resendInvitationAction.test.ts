@@ -63,7 +63,7 @@ describe("resendInvitationAction — team:write gate", () => {
 describe("resendInvitationAction — happy path", () => {
   beforeEach(() => {
     authMock.mockResolvedValue(session("OWNER"));
-    vi.stubEnv("NEXT_PUBLIC_APP_MODE", "self-hosted");
+    vi.stubEnv("NEXT_PUBLIC_APP_MODE", "self_hosted");
   });
 
   afterEach(() => {

@@ -6,7 +6,7 @@
 
 import { db } from "@/db";
 import { quoteItems, quotes } from "@/db/schema/sat";
-import { eq, and, desc, sql } from "drizzle-orm";
+import { eq, and, sql } from "drizzle-orm";
 import type { AddQuoteItemInput, UpdateQuoteItemInput } from "@/lib/validators/sat/quoteSchema";
 
 /* ============================================================

@@ -9,6 +9,7 @@ import { companies, users } from "@/db/schema/auth";
 import { eq } from "drizzle-orm";
 import { hashPassword } from "@/lib/utils/crypto";
 import { EmailAlreadyExistsError } from "@/lib/errors/auth";
+import { seedWorkOrderCategories } from "@/db/seeds/satCategories";
 
 export const authService = {
   async createCompanyAndOwner(input: { companyName: string; email: string; password: string }) {
@@ -48,6 +49,8 @@ export const authService = {
         role: "OWNER",
       })
       .returning();
+
+    await seedWorkOrderCategories(company.id);
 
     return { company, user };
   },

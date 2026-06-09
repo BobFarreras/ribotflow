@@ -48,7 +48,7 @@ export function sanitizeFileName(name: string): string {
    STORAGE CONTEXT
    ============================================================ */
 
-export type DeploymentMode = "cloud" | "self-hosted";
+export type DeploymentMode = "cloud" | "self_hosted";
 
 export interface StorageContext {
   /** Deployment mode (cloud = multi-tenant shared bucket, self-hosted = single-tenant per company). */
@@ -73,7 +73,7 @@ export function buildStorageContext(input: {
   clientName: string;
 }): StorageContext {
   const mode: DeploymentMode =
-    process.env.NEXT_PUBLIC_APP_MODE === "self-hosted" ? "self-hosted" : "cloud";
+    process.env.NEXT_PUBLIC_APP_MODE === "self_hosted" ? "self_hosted" : "cloud";
 
   return {
     mode,
@@ -94,7 +94,7 @@ export function buildStorageContext(input: {
  * - Self-hosted: "" (no prefix, single tenant per bucket)
  */
 export function getCompanyFolder(ctx: StorageContext): string {
-  if (ctx.mode === "self-hosted") return "";
+  if (ctx.mode === "self_hosted") return "";
   return sanitizeFileName(ctx.tenantSlug ?? ctx.companyId);
 }
 
@@ -280,7 +280,7 @@ export function buildAttachmentStorageKey(
   companyName?: string
 ): string {
   const mode = process.env.NEXT_PUBLIC_APP_MODE;
-  const folder = mode === "self-hosted" && companyName ? sanitizeFileName(companyName) : companyId;
+  const folder = mode === "self_hosted" && companyName ? sanitizeFileName(companyName) : companyId;
   const ext = originalFileName.includes(".")
     ? originalFileName.slice(originalFileName.lastIndexOf("."))
     : "";
@@ -304,7 +304,7 @@ export function buildPdfStorageKey(
   companyName?: string
 ): string {
   const mode = process.env.NEXT_PUBLIC_APP_MODE;
-  const folder = mode === "self-hosted" && companyName ? sanitizeFileName(companyName) : companyId;
+  const folder = mode === "self_hosted" && companyName ? sanitizeFileName(companyName) : companyId;
   return `${module}/${folder}/${sanitizeFileName(entityNumber)}-report-${lang}.pdf`;
 }
 
@@ -319,6 +319,6 @@ export function buildSignatureStorageKey(
   companyName?: string
 ): string {
   const mode = process.env.NEXT_PUBLIC_APP_MODE;
-  const folder = mode === "self-hosted" && companyName ? sanitizeFileName(companyName) : companyId;
+  const folder = mode === "self_hosted" && companyName ? sanitizeFileName(companyName) : companyId;
   return `${module}/${folder}/${sanitizeFileName(entityNumber)}-signature.png`;
 }

@@ -23,7 +23,7 @@ export default async function NewQuotePage({ searchParams }: Props) {
   const { otId } = await searchParams;
   const companyId = session.user.companyId;
 
-  const [clientList, productList, workOrderList, workOrder, companyResult] = await Promise.all([
+  const [clientList, productList, workOrderList, _workOrder, companyResult] = await Promise.all([
     db.select().from(clients).where(eq(clients.companyId, companyId)),
     db.select().from(products).where(eq(products.companyId, companyId)),
     db

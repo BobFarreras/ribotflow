@@ -7,7 +7,6 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { UserCircle } from "lucide-react";
 
 interface SmtpSenderState {
   fromName: string;

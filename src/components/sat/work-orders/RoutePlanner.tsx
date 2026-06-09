@@ -7,21 +7,19 @@
 
 "use client";
 
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import { optimizeRoute, type RouteStop } from "@/services/routing/routeOptimizer";
 import type { GeoPoint } from "@/services/routing/interface";
 import type { WorkOrder, Client } from "@/types/sat";
-import { MapPin, Route, Clock, ChevronRight, Check } from "lucide-react";
+import { MapPin, Route, Clock, Check } from "lucide-react";
 
 interface Props {
   orders: { workOrder: WorkOrder; client: Client }[];
   hq: GeoPoint;
-  companyName: string;
-  selectedDate: string;
 }
 
-export function RoutePlanner({ orders, hq, companyName, selectedDate }: Props) {
+export function RoutePlanner({ orders, hq }: Props) {
   const t = useTranslations("sat.routes");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [optimizedRoute, setOptimizedRoute] = useState<ReturnType<typeof optimizeRoute> | null>(

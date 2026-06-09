@@ -12,7 +12,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { Save, Loader2, Check } from "lucide-react";
+import { Save, Loader2 } from "lucide-react";
 import { updateProfileNameAction } from "@/actions/sat/profile/updateProfile";
 
 interface Props {
