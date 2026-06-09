@@ -27,7 +27,8 @@ function getProvider(): StorageProvider {
 
 function fallbackToLocal(provider: string): LocalFileStorage {
   const isProduction = process.env.NODE_ENV === "production";
-  if (isProduction) {
+  const isBuild = process.env.npm_lifecycle_event === "build";
+  if (isProduction && !isBuild) {
     throw new Error(
       `Missing environment variables for storage provider "${provider}". ` +
         "Check your production configuration."
