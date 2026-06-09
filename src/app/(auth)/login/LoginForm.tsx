@@ -2,6 +2,7 @@
  * Creation/modification date: 24/05/2026
  * Path: src/app/(auth)/login/LoginForm.tsx
  * Description: Client login form with controlled inputs and client-side signIn via next-auth/react.
+ *              Auth.js handles all credential validation via the authorize callback.
  */
 
 "use client";
@@ -11,7 +12,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { motion } from "motion/react";
 import { Lock, Mail } from "lucide-react";
-import { loginAction } from "@/actions/auth/login";
+
+const isSelfHosted = process.env.NEXT_PUBLIC_APP_MODE === "self_hosted";
 
 export function LoginForm() {
   const router = useRouter();
@@ -28,13 +30,6 @@ export function LoginForm() {
     setError(null);
 
     try {
-      const validation = await loginAction({ email, password });
-
-      if (!validation.success) {
-        setError(validation.error ?? "Invalid email or password");
-        return;
-      }
-
       const result = await signIn("credentials", {
         email,
         password,
@@ -138,15 +133,17 @@ export function LoginForm() {
             {isPending ? "Iniciando sesión..." : "Iniciar sesión"}
           </button>
 
-          <p className="text-center text-sm text-[var(--text-muted)]">
-            ¿No tienes cuenta?{" "}
-            <a
-              href="/register"
-              className="font-medium text-[var(--primary)] hover:text-[var(--primary-hover)]"
-            >
-              Regístrate
-            </a>
-          </p>
+          {!isSelfHosted && (
+            <p className="text-center text-sm text-[var(--text-muted)]">
+              ¿No tienes cuenta?{" "}
+              <a
+                href="/register"
+                className="font-medium text-[var(--primary)] hover:text-[var(--primary-hover)]"
+              >
+                Regístrate
+              </a>
+            </p>
+          )}
         </form>
       </motion.div>
     </div>

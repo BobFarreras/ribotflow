@@ -3,6 +3,7 @@
  * Path: src/app/(auth)/register/page.tsx
  * Description: Registration page. Orchestrator: state, submit, layout.
  *              Form fields extracted to RegisterFormFields component.
+ *              Disabled in self-hosted mode.
  */
 
 "use client";
@@ -13,6 +14,8 @@ import { signIn } from "next-auth/react";
 import { motion } from "motion/react";
 import { registerAction } from "@/actions/auth/register";
 import { RegisterFormFields } from "./_components/RegisterFormFields";
+
+const isSelfHosted = process.env.NEXT_PUBLIC_APP_MODE === "self_hosted";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -52,6 +55,11 @@ export default function RegisterPage() {
       router.push("/dashboard");
       router.refresh();
     }
+  }
+
+  if (isSelfHosted) {
+    router.replace("/login");
+    return null;
   }
 
   return (
