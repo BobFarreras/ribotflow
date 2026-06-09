@@ -8,7 +8,7 @@ import { auth } from "@/lib/auth";
 import { quoteTemplateService } from "@/services/sat/quotes/quoteTemplateService";
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
-import { FolderOpen, Plus, Copy, Pencil, Trash2 } from "lucide-react";
+import { FolderOpen, Plus, Copy, Pencil } from "lucide-react";
 
 export default async function QuoteTemplatesPage() {
   const session = await auth();

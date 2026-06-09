@@ -39,7 +39,7 @@ interface Props {
 }
 
 export function WorkOrderTable({ orders }: Props) {
-  const t = useTranslations("sat.workOrder");
+  useTranslations("sat.workOrder");
   const [sortKey, setSortKey] = useState<SortKey>("scheduledDate");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
 

@@ -1,5 +1,3 @@
-/* global console, process */
-
 import { Pool } from "pg";
 import bcrypt from "bcryptjs";
 import { drizzle } from "drizzle-orm/node-postgres";

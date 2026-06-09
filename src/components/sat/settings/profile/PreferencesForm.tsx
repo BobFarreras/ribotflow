@@ -22,7 +22,7 @@ interface Props {
   initialLocale: LocalePreference;
 }
 
-export function PreferencesForm({ initialTheme, initialLocale }: Props) {
+export function PreferencesForm({ initialTheme, _initialLocale }: Props) {
   const t = useTranslations("sat.settings.profile.preferences");
   const locale = useLocale();
   const router = useRouter();

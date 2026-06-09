@@ -69,8 +69,6 @@ export default async function RoutePlanningPage({ searchParams }: Props) {
       <RoutePlanner
         orders={orders}
         hq={company?.location ?? { lat: 41.3851, lng: 2.1734 }}
-        companyName={company?.name ?? "RIBOTFLOW"}
-        selectedDate={selectedDate}
       />
     </div>
   );

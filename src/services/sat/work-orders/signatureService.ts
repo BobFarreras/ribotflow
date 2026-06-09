@@ -7,7 +7,7 @@
  */
 
 import { db } from "@/db";
-import { signatures, quotes, clients } from "@/db/schema/sat";
+import { signatures, clients } from "@/db/schema/sat";
 import { companies } from "@/db/schema/auth";
 import { eq, and } from "drizzle-orm";
 import {

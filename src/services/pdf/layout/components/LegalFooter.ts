@@ -22,7 +22,6 @@ export function drawLegalFooter(
 
   builder.ensureSpace(40);
   const startY = builder.y;
-  const contentW = builder.measureWidth(lines[0], 8, false) > 0 ? 0 : 0; // no-op, just for clarity
 
   for (const line of lines) {
     const trimmed = line.length > 130 ? line.slice(0, 127) + "…" : line;

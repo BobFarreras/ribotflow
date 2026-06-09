@@ -93,7 +93,7 @@ export default async function WorkOrderDetailPage({ params }: Props) {
         products={products}
         attachments={attachments}
         signature={signature}
-        technician={technician ? { ...technician, email: null } : null}
+        technician={technician ? { id: technician.id, name: technician.name, email: null } : null}
         technicians={technicians}
         quotes={quotes as any}
         locations={normalizeLocations(locations) as any}

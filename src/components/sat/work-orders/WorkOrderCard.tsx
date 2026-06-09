@@ -23,7 +23,7 @@ interface Props {
 }
 
 export function WorkOrderCard({ workOrder, client, category, technicianName }: Props) {
-  const t = useTranslations("sat.workOrder");
+  useTranslations("sat.workOrder");
 
   return (
     <Link

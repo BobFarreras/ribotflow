@@ -79,7 +79,7 @@ export function WorkOrderKanban({ orders: initialOrders }: Props) {
         {visibleColumns.map((col) => {
           const colOrders = items.filter((o) => o.workOrder.status === col.key);
           const isValidTarget = draggedStatus
-            ? isValidTransition(draggedStatus as any, col.key as any)
+            ? isValidTransition(draggedStatus, col.key)
             : false;
 
           return (

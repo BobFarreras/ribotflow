@@ -20,7 +20,7 @@ interface Props {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
-export default async function SatListPage({ searchParams }: Props) {
+export default async function SatListPage({ searchParams: _searchParams }: Props) {
   const session = await auth();
   if (!session?.user?.companyId) {
     return null;

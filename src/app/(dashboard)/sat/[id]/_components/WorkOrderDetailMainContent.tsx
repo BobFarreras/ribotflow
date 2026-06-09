@@ -20,6 +20,7 @@ import type {
   WorkOrderStatus,
   Product,
 } from "@/types/sat";
+import type { StatusHistoryItem } from "@/components/sat/work-orders/StatusHistorySection";
 
 interface TechnicianOption {
   id: string;
@@ -44,7 +45,7 @@ interface QuoteSummary {
 interface WorkOrderDetailMainContentProps {
   workOrderId: string;
   description: string | null;
-  history: any[];
+  history: StatusHistoryItem[];
   materials: WorkOrderMaterial[];
   products: Product[];
   attachments: WorkOrderAttachment[];

@@ -10,7 +10,7 @@
 
 import { db } from "@/db";
 import { sessions } from "@/db/schema/auth";
-import { and, eq, ne, isNull, or } from "drizzle-orm";
+import { and, eq, ne, isNull } from "drizzle-orm";
 import type { SessionFingerprint } from "@/lib/auth/currentSession";
 
 /** Errors raised by the sessions service. */
