@@ -7,7 +7,7 @@
 
 import { db } from "@/db";
 import { users, companies } from "@/db/schema/auth";
-import { eq, and } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { isCertError, certErrorHelp } from "@/lib/utils/smtpErrors";
 import { checkInTemplate, completionTemplate, invitationTemplate } from "./emailTemplates";
 import type { InvitationEmailData } from "./emailTemplates";
@@ -146,7 +146,7 @@ function buildTransporter(config: SmtpConfig, nodemailer: typeof import("nodemai
 }
 
 async function sendEmail(payload: NotificationPayload, companyId: string): Promise<void> {
-  const { config, missing, source, fromName, fromEmail } = await resolveSmtpConfig(companyId);
+  const { config, missing, fromName, fromEmail } = await resolveSmtpConfig(companyId);
   if (!config) {
     console.warn(`[Notification] SMTP no configurat. Falten: ${missing.join(", ")}.`);
     console.warn(`  To: ${payload.to}`);

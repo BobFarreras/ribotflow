@@ -38,12 +38,12 @@ Best for: New servers, simple setups, no existing reverse proxy.
 ssh root@your-server-ip
 
 # 2. Clone the repository
-git clone -b features/Fxboix https://github.com/BobFarreras/ribotflow.git /opt/ribotflow
+git clone -b main https://github.com/BobFarreras/ribotflow.git /opt/ribotflow
 cd /opt/ribotflow
 
-# 3. Create .env.local (see Environment Variables below)
-cp .env.production .env.local
-nano .env.local
+# 3. Create .env (see Environment Variables below)
+cp .env.production .env
+nano .env
 
 # 4. Create uploads directory
 mkdir -p uploads
@@ -70,12 +70,12 @@ Best for: Servers already running Traefik (like Contabo VPS with n8n/Portainer).
 ssh root@your-server-ip
 
 # 2. Clone the repository
-git clone -b features/Fxboix https://github.com/BobFarreras/ribotflow.git /opt/ribotflow
+git clone -b main https://github.com/BobFarreras/ribotflow.git /opt/ribotflow
 cd /opt/ribotflow
 
-# 3. Create .env.local
-cp .env.production .env.local
-nano .env.local
+# 3. Create .env
+cp .env.production .env
+nano .env
 
 # 4. Create uploads directory
 mkdir -p uploads
@@ -155,7 +155,7 @@ nginx -t && systemctl reload nginx
 | `SMTP_PASSWORD` | SMTP password | App password |
 | `SMTP_FROM` | Sender address | `noreply@yourdomain.com` |
 
-### .env.local Template
+### .env Template
 
 ```bash
 # Auth
@@ -167,7 +167,7 @@ POSTGRES_PASSWORD=your-generated-password-here
 # App
 DOMAIN=ribotflow.yourdomain.com
 NEXT_PUBLIC_APP_URL=https://ribotflow.yourdomain.com
-NEXT_PUBLIC_APP_MODE=self-hosted
+NEXT_PUBLIC_APP_MODE=self_hosted
 NODE_ENV=production
 
 # MinIO
@@ -187,7 +187,7 @@ SMTP_FROM=noreply@yourdomain.com
 
 ### Run migrations
 ```bash
-docker compose -f docker-compose.prod.yml exec app npx drizzle-kit push
+docker compose -f docker-compose.prod.yml restart app
 ```
 
 ### Manual backup
@@ -210,7 +210,7 @@ docker compose -f docker-compose.prod.yml exec backup /bin/sh -c \
 
 ```bash
 cd /opt/ribotflow
-git pull origin features/Fxboix
+git pull origin main
 docker compose -f docker-compose.prod.yml up -d --build
 ```
 

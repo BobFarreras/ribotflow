@@ -10,7 +10,7 @@ import { useState, useMemo } from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { QuoteStatusBadge } from "./QuoteStatusBadge";
-import { Search, Filter, Calendar, User, FileText, ChevronRight } from "lucide-react";
+import { Search, FileText, ChevronRight } from "lucide-react";
 
 interface Quote {
   id: string;
@@ -31,7 +31,7 @@ interface Props {
 }
 
 export function QuoteList({ quotes }: Props) {
-  const t = useTranslations("sat.quotes");
+  useTranslations("sat.quotes");
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
 

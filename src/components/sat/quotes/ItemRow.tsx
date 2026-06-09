@@ -4,7 +4,6 @@
  * Description: Single editable quote item row with product picker.
  */
 
-import { useState } from "react";
 import { Trash2 } from "lucide-react";
 import type { QuoteItemForm, Product } from "./types";
 

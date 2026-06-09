@@ -8,7 +8,7 @@
 
 import { useTranslations } from "next-intl";
 
-interface StatusHistoryItem {
+export interface StatusHistoryItem {
   id: string;
   statusFrom: string | null;
   statusTo: string;
@@ -21,7 +21,7 @@ interface Props {
 }
 
 export function StatusHistorySection({ history }: Props) {
-  const t = useTranslations("sat.workOrder");
+  useTranslations("sat.workOrder");
 
   return (
     <div className="space-y-2">

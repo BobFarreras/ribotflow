@@ -6,7 +6,7 @@
 
 import { db } from "@/db";
 import { products } from "@/db/schema/sat";
-import { eq, and, like, sql } from "drizzle-orm";
+import { eq, and, sql } from "drizzle-orm";
 
 export const productService = {
   async getByCompany(companyId: string, search?: string) {

@@ -7,7 +7,7 @@
  */
 
 import { db } from "@/db";
-import { signatures, quotes, clients } from "@/db/schema/sat";
+import { signatures, clients } from "@/db/schema/sat";
 import { companies } from "@/db/schema/auth";
 import { eq, and } from "drizzle-orm";
 import {
@@ -91,7 +91,7 @@ export class SignatureService {
     }
 
     return {
-      mode: process.env.NEXT_PUBLIC_APP_MODE === "self-hosted" ? "self-hosted" : "cloud",
+      mode: process.env.NEXT_PUBLIC_APP_MODE === "self_hosted" ? "self_hosted" : "cloud",
       companyId,
       tenantSlug: company?.tenantSlug,
       clientId,

@@ -54,8 +54,8 @@ export const travelBillingService = {
 
   async getTotalTravelCostsByDateRange(
     companyId: string,
-    startDate: Date,
-    endDate: Date
+    _startDate: Date,
+    _endDate: Date
   ): Promise<{ totalDistanceKm: number; totalCost: number }> {
     const orders = await db
       .select({

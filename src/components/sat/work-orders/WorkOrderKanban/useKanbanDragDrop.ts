@@ -12,6 +12,7 @@ import { useCallback, useRef, useState } from "react";
 import { isValidTransition } from "@/lib/constants/statusTransitions";
 import { updateWorkOrderStatusAction } from "@/actions/sat/work-orders/updateStatus";
 import type { KanbanOrder } from "./types";
+import type { WorkOrderStatus } from "@/types/sat";
 
 interface UseKanbanDragDropOptions {
   initialItems: KanbanOrder[];
@@ -21,7 +22,7 @@ interface UseKanbanDragDropOptions {
 export function useKanbanDragDrop({ initialItems, onAfterDrop }: UseKanbanDragDropOptions) {
   const [items, setItems] = useState<KanbanOrder[]>(initialItems);
   const [draggingId, setDraggingId] = useState<string | null>(null);
-  const [dragOverColumn, setDragOverColumn] = useState<string | null>(null);
+  const [dragOverColumn, setDragOverColumn] = useState<WorkOrderStatus | null>(null);
 
   // Refs for latest state inside event handlers (avoid stale closures)
   const itemsRef = useRef(items);
@@ -38,13 +39,13 @@ export function useKanbanDragDrop({ initialItems, onAfterDrop }: UseKanbanDragDr
     setDragOverColumn(null);
   };
 
-  const handleDragOver = (e: React.DragEvent, status: string) => {
+  const handleDragOver = (e: React.DragEvent, status: WorkOrderStatus) => {
     e.preventDefault();
     const draggedId = draggingId;
     if (!draggedId) return;
     const item = itemsRef.current.find((o) => o.workOrder.id === draggedId);
     const fromStatus = item?.workOrder.status;
-    if (fromStatus && !isValidTransition(fromStatus as any, status as any)) {
+    if (fromStatus && !isValidTransition(fromStatus, status)) {
       e.dataTransfer.dropEffect = "none";
       return;
     }
@@ -53,7 +54,7 @@ export function useKanbanDragDrop({ initialItems, onAfterDrop }: UseKanbanDragDr
   };
 
   const handleDrop = useCallback(
-    async (e: React.DragEvent, newStatus: string) => {
+    async (e: React.DragEvent, newStatus: WorkOrderStatus) => {
       e.preventDefault();
       const orderId = e.dataTransfer.getData("text/plain");
       setDragOverColumn(null);
@@ -70,7 +71,7 @@ export function useKanbanDragDrop({ initialItems, onAfterDrop }: UseKanbanDragDr
       const fromStatus = item.workOrder.status;
       if (fromStatus === newStatus) return;
 
-      if (!isValidTransition(fromStatus, newStatus as any)) {
+      if (!isValidTransition(fromStatus, newStatus)) {
         console.warn(`[Kanban] Invalid transition: ${fromStatus} -> ${newStatus}`);
         return;
       }
@@ -79,7 +80,7 @@ export function useKanbanDragDrop({ initialItems, onAfterDrop }: UseKanbanDragDr
       setItems((prev) =>
         prev.map((o) =>
           o.workOrder.id === orderId
-            ? { ...o, workOrder: { ...o.workOrder, status: newStatus as any } }
+            ? { ...o, workOrder: { ...o.workOrder, status: newStatus } }
             : o
         )
       );
@@ -88,7 +89,7 @@ export function useKanbanDragDrop({ initialItems, onAfterDrop }: UseKanbanDragDr
       try {
         const result = await updateWorkOrderStatusAction({
           workOrderId: orderId,
-          status: newStatus as any,
+          status: newStatus,
         });
         if (!result.success) throw new Error(result.error);
         onAfterDrop?.();

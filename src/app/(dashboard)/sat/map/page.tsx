@@ -11,7 +11,7 @@ import { MapView } from "@/components/sat/work-orders/MapView";
 import { db } from "@/db";
 import { workOrders, clients, workOrderCategories } from "@/db/schema/sat";
 import { companies, users } from "@/db/schema/auth";
-import { eq, and } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 
 export default async function WorkOrderMapPage() {
   const session = await auth();

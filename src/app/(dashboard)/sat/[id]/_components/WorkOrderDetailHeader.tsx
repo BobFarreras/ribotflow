@@ -8,12 +8,13 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { WorkOrderPriorityBadge } from "@/components/sat/shared/WorkOrderPriorityBadge";
 import { WorkOrderStatusBadge } from "@/components/sat/shared/WorkOrderStatusBadge";
+import type { WorkOrderPriority, WorkOrderStatus } from "@/types/sat";
 
 interface WorkOrderDetailHeaderProps {
   number: string;
   title: string;
-  priority: string;
-  status: string;
+  priority: WorkOrderPriority;
+  status: WorkOrderStatus;
 }
 
 export function WorkOrderDetailHeader({
@@ -40,8 +41,8 @@ export function WorkOrderDetailHeader({
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <WorkOrderPriorityBadge priority={priority as any} />
-          <WorkOrderStatusBadge status={status as any} size="sm" />
+          <WorkOrderPriorityBadge priority={priority} />
+          <WorkOrderStatusBadge status={status} size="sm" />
         </div>
       </div>
     </header>

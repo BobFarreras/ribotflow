@@ -29,7 +29,6 @@ export default async function TeamSettingsPage() {
 
   const t = await getTranslations("sat.settings.team");
   const tCompany = await getTranslations("sat.settings.company");
-  const tStatus = await getTranslations("sat.settings.company.status");
 
   const { members } = await listTeamMembersAction();
   const canManage = can(session.user.role, "team:write");

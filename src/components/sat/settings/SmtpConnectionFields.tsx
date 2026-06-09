@@ -9,7 +9,7 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { Eye, EyeOff, Server, Shield } from "lucide-react";
+import { Eye, EyeOff, Shield } from "lucide-react";
 
 export interface SmtpConnectionState {
   host: string;

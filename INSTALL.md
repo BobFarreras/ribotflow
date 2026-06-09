@@ -9,28 +9,27 @@ ssh root@your-server-ip
 
 ### 2. Run the remote installer
 ```bash
-curl -fsSL https://raw.githubusercontent.com/BobFarreras/ribotflow/features/Fxboix/scripts/install-remote.sh | bash
+curl -fsSL https://raw.githubusercontent.com/BobFarreras/ribotflow/main/scripts/install-remote.sh | bash
 ```
 
-Or, if you prefer to download the bundle manually:
-```bash
-mkdir -p /opt/ribotflow && cd /opt/ribotflow
-wget https://github.com/BobFarreras/ribotflow/releases/latest/download/ribotflow-deploy.tar.gz
-tar -xzf ribotflow-deploy.tar.gz
-./scripts/install.sh
-```
+Run this from any directory, including `/root` after SSH login. The remote installer downloads the deployment files to `/opt/ribotflow` and launches the interactive wizard. Use `root` or `sudo` because the default install path is under `/opt`.
+
+**Requirements:** Docker and Docker Compose must be installed on the server.
 
 The installer will:
 - Ask for your domain name
 - Detect your reverse proxy preference (Caddy, Traefik, Nginx, or none)
 - Generate secure secrets automatically (Auth, DB, MinIO, Encryption)
+- Pull the Docker image from GHCR (pre-built by CI/CD)
+- Run Drizzle migrations automatically when the app container starts
+- Create the first company and OWNER user when the database is empty
 - Configure SMTP (optional)
 - Start all services
 
 ### 3. Access the application
 - **URL:** https://yourdomain.com (or http://yourdomain.com:3000 if no proxy)
-- **Login:** dais@test.com
-- **Password:** 12345678
+- **Login:** the admin email entered during installation
+- **Password:** the admin password entered during installation
 
 ---
 
@@ -56,15 +55,22 @@ The installer will:
 │  ├─ MINIO_USER/PASSWORD (file storage)                     │
 │  └─ ENCRYPTION_KEY (AES-256-GCM for SMTP passwords)      │
 │                                                             │
-│  Step 4: SMTP Configuration (optional)                      │
+│  Step 4: Company and Admin User Configuration               │
+│  ├─ Company name                                             │
+│  ├─ Admin email                                              │
+│  └─ Admin password                                           │
+│                                                             │
+│  Step 5: SMTP Configuration (optional)                      │
 │  ├─ Gmail / Brevo / Mailgun / Custom                       │
 │  └─ Username & password                                    │
 │                                                             │
-│  Step 5: Create .env.local                                  │
+│  Step 6: Create .env                                        │
 │  └─ All configuration saved securely                       │
 │                                                             │
-│  Step 6: Start Services                                     │
-│  └─ Docker containers running                              │
+│  Step 7: Start Services                                     │
+│  ├─ Docker containers running                              │
+│  ├─ Drizzle migrations applied by the app container         │
+│  └─ Initial OWNER seeded if the database is empty           │
 │                                                             │
 └─────────────────────────────────────────────────────────────┘
 ```
@@ -233,11 +239,11 @@ The script automatically detects which Docker Compose files you used during inst
 
 1. Go to **Settings > Email** in the application
 2. Enter your SMTP details
-3. Or edit `.env.local` directly:
+3. Or edit `.env` directly:
 
 ```bash
 # Edit configuration
-nano .env.local
+nano .env
 
 # Restart after changes
 ./manage.sh restart
@@ -245,10 +251,11 @@ nano .env.local
 
 ### Run Database Migrations
 
+Migrations run automatically when the app container starts (`RUN_MIGRATIONS=true`).
+To force them again, restart the app:
+
 ```bash
-./manage.sh shell
-npx drizzle-kit push
-exit
+./manage.sh restart
 ```
 
 ---
@@ -317,6 +324,23 @@ systemctl status docker
 ```bash
 docker compose -f docker-compose.prod.yml logs
 ```
+
+**Traefik returns `404 page not found`:**
+This response is from Traefik, not from Next.js. It means Traefik did not match a router for the requested host.
+
+```bash
+cd /opt/ribotflow
+cat .env | grep -E 'DOMAIN|TRAEFIK_'
+docker inspect ribotflow-app --format '{{json .Config.Labels}}'
+docker inspect ribotflow-app --format '{{range $name, $_ := .NetworkSettings.Networks}}{{println $name}}{{end}}'
+docker inspect traefik --format '{{range $name, $_ := .NetworkSettings.Networks}}{{println $name}}{{end}}'
+docker inspect traefik --format '{{json .Config.Cmd}}'
+docker logs traefik --tail 80
+curl -vk https://YOUR_DOMAIN/
+curl -sS -H 'Host: YOUR_DOMAIN' http://127.0.0.1/
+```
+
+The app and Traefik must share the same `TRAEFIK_NETWORK`, and the app labels must include `traefik.http.routers.ribotflow.rule=Host(...)`. If Traefik was started with `providers.docker.constraints`, set `TRAEFIK_CONSTRAINT_LABEL` to the required value, usually `traefik-public`.
 
 **App not reachable (Option D — no proxy):**
 1. Verify port 3000 is open in your firewall: `ufw allow 3000`

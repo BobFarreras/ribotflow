@@ -12,6 +12,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { KanbanCard } from "./KanbanCard";
 import type { KanbanColumn } from "./constants";
 import type { KanbanOrder } from "./types";
+import type { WorkOrderStatus } from "@/types/sat";
 
 interface KanbanColumnProps {
   column: KanbanColumn;
@@ -21,8 +22,8 @@ interface KanbanColumnProps {
   isValidTarget: boolean;
   draggingId: string | null;
   onToggleCollapse: () => void;
-  onDragOver: (e: React.DragEvent, status: string) => void;
-  onDrop: (e: React.DragEvent, status: string) => void;
+  onDragOver: (e: React.DragEvent, status: WorkOrderStatus) => void;
+  onDrop: (e: React.DragEvent, status: WorkOrderStatus) => void;
   onDragLeave: () => void;
   onCardDragStart: (e: React.DragEvent, orderId: string) => void;
   onCardDragEnd: () => void;

@@ -6,8 +6,10 @@
  *              defined in @/lib/constants/statusTransitions.
  */
 
+import type { WorkOrderStatus } from "@/types/sat";
+
 export interface KanbanColumn {
-  key: string;
+  key: WorkOrderStatus;
   label: string;
   short: string;
   color: string;
