@@ -18,7 +18,7 @@ COPY . .
 FROM base AS prod-deps
 WORKDIR /app
 COPY package.json pnpm-lock.yaml ./
-RUN pnpm install --prod --frozen-lockfile
+RUN pnpm install --prod --frozen-lockfile --ignore-scripts && pnpm rebuild sharp
 
 # --- Stage 2: Build the application ---
 FROM base AS builder

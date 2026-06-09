@@ -12,6 +12,8 @@ ssh root@your-server-ip
 curl -fsSL https://raw.githubusercontent.com/BobFarreras/ribotflow/main/scripts/install-remote.sh | bash
 ```
 
+Run this from any directory, including `/root` after SSH login. The remote installer creates `/opt/ribotflow`, downloads the deployment files there, and launches the interactive wizard. Use `root` or `sudo` because the default install path is under `/opt`.
+
 Or, if you prefer to download the bundle manually:
 ```bash
 mkdir -p /opt/ribotflow && cd /opt/ribotflow
