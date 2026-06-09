@@ -14,9 +14,9 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.ribotflow.rule=Host(`${DOMAIN}`)"
       - "traefik.http.routers.ribotflow.entrypoints=${TRAEFIK_ENTRYPOINT:-websecure}"
-      - "traefik.http.routers.ribotflow.tls=true"
       - "traefik.http.routers.ribotflow.tls.certresolver=${TRAEFIK_CERT_RESOLVER:-letsencrypt}"
       - "traefik.http.services.ribotflow.loadbalancer.server.port=3000"
+      - "traefik.docker.network=${TRAEFIK_NETWORK:-traefik-public}"
     networks:
       - internal
       - traefik

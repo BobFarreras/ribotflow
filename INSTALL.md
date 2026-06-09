@@ -330,6 +330,23 @@ systemctl status docker
 docker compose -f docker-compose.prod.yml logs
 ```
 
+**Traefik returns `404 page not found`:**
+This response is from Traefik, not from Next.js. It means Traefik did not match a router for the requested host.
+
+```bash
+cd /opt/ribotflow
+cat .env | grep -E 'DOMAIN|TRAEFIK_'
+docker inspect ribotflow-app --format '{{json .Config.Labels}}'
+docker inspect ribotflow-app --format '{{range $name, $_ := .NetworkSettings.Networks}}{{println $name}}{{end}}'
+docker inspect traefik --format '{{range $name, $_ := .NetworkSettings.Networks}}{{println $name}}{{end}}'
+docker inspect traefik --format '{{json .Config.Cmd}}'
+docker logs traefik --tail 80
+curl -vk https://YOUR_DOMAIN/
+curl -sS -H 'Host: YOUR_DOMAIN' http://127.0.0.1/
+```
+
+The app and Traefik must share the same `TRAEFIK_NETWORK`, and the app labels must include `traefik.http.routers.ribotflow.rule=Host(...)`. If Traefik was started with `providers.docker.constraints`, set `TRAEFIK_CONSTRAINT_LABEL` to the required value, usually `traefik-public`.
+
 **App not reachable (Option D — no proxy):**
 1. Verify port 3000 is open in your firewall: `ufw allow 3000`
 2. Check the app is listening: `curl http://localhost:3000/api/health`

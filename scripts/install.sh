@@ -99,6 +99,7 @@ if [ "$PROXY" = "traefik" ]; then
         TRAEFIK_NETWORK=${TRAEFIK_NETWORK:-traefik-public}
     fi
     TRAEFIK_ENTRYPOINT=${TRAEFIK_ENTRYPOINT:-websecure}
+    TRAEFIK_CONSTRAINT_LABEL=${TRAEFIK_CONSTRAINT_LABEL:-traefik-public}
     if [ -z "$TRAEFIK_CERT_RESOLVER" ]; then
         TRAEFIK_CERT_RESOLVER=$(docker inspect traefik --format='{{json .Config.Cmd}}' 2>/dev/null | grep -oP 'certificatesresolvers\.\K[^.]+' | head -1 || true)
         TRAEFIK_CERT_RESOLVER=${TRAEFIK_CERT_RESOLVER:-letsencrypt}
@@ -106,6 +107,7 @@ if [ "$PROXY" = "traefik" ]; then
     echo -e "${GREEN}✓ Traefik network: $TRAEFIK_NETWORK${NC}"
     echo -e "${GREEN}✓ Traefik entrypoint: $TRAEFIK_ENTRYPOINT${NC}"
     echo -e "${GREEN}✓ Traefik cert resolver: $TRAEFIK_CERT_RESOLVER${NC}"
+    echo -e "${GREEN}✓ Traefik constraint label: $TRAEFIK_CONSTRAINT_LABEL${NC}"
 fi
 echo ""
 
@@ -295,6 +297,7 @@ STORAGE_PROVIDER=minio
 TRAEFIK_NETWORK=${TRAEFIK_NETWORK:-traefik-public}
 TRAEFIK_ENTRYPOINT=${TRAEFIK_ENTRYPOINT:-websecure}
 TRAEFIK_CERT_RESOLVER=${TRAEFIK_CERT_RESOLVER:-letsencrypt}
+TRAEFIK_CONSTRAINT_LABEL=${TRAEFIK_CONSTRAINT_LABEL:-traefik-public}
 
 # Encryption (AES-256-GCM for SMTP passwords at rest)
 ENCRYPTION_KEY=$ENCRYPTION_KEY

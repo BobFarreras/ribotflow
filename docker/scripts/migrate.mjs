@@ -1,9 +1,11 @@
 /* global console, process */
 
 import { Pool } from "pg";
-import { hash } from "bcryptjs";
+import bcrypt from "bcryptjs";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { migrate } from "drizzle-orm/node-postgres/migrator";
+
+const { hash } = bcrypt;
 
 const databaseUrl = process.env.DATABASE_URL;
 const migrationsFolder = process.env.DRIZZLE_MIGRATIONS_FOLDER ?? "/app/src/db/migrations";
@@ -13,8 +15,35 @@ if (!databaseUrl) {
   process.exit(1);
 }
 
-const pool = new Pool({ connectionString: databaseUrl });
-const db = drizzle(pool);
+function quoteIdentifier(value) {
+  return `"${value.replace(/"/g, '""')}"`;
+}
+
+async function ensureDatabaseExists() {
+  const targetUrl = new URL(databaseUrl);
+  const databaseName = decodeURIComponent(targetUrl.pathname.replace(/^\//, ""));
+
+  if (!databaseName) {
+    throw new Error("[migrate] DATABASE_URL must include a database name.");
+  }
+
+  const maintenanceUrl = new URL(targetUrl);
+  maintenanceUrl.pathname = "/postgres";
+
+  const maintenancePool = new Pool({ connectionString: maintenanceUrl.toString() });
+  try {
+    const existing = await maintenancePool.query("select 1 from pg_database where datname = $1", [
+      databaseName,
+    ]);
+
+    if (existing.rowCount === 0) {
+      console.log(`[migrate] Creating database ${databaseName}`);
+      await maintenancePool.query(`create database ${quoteIdentifier(databaseName)}`);
+    }
+  } finally {
+    await maintenancePool.end();
+  }
+}
 
 function slugify(value) {
   return value
@@ -24,7 +53,7 @@ function slugify(value) {
     .slice(0, 60);
 }
 
-async function seedInitialOwner() {
+async function seedInitialOwner(pool) {
   const adminEmail = process.env.ADMIN_EMAIL;
   const adminPassword = process.env.ADMIN_PASSWORD;
   const companyName = process.env.COMPANY_NAME ?? "RIBOTFLOW";
@@ -82,15 +111,17 @@ async function seedInitialOwner() {
 }
 
 try {
+  await ensureDatabaseExists();
+  const pool = new Pool({ connectionString: databaseUrl });
+  const db = drizzle(pool);
   await pool.query('create extension if not exists "pgcrypto"');
   console.log(`[migrate] Applying migrations from ${migrationsFolder}`);
   await migrate(db, { migrationsFolder });
   console.log("[migrate] Database migrations completed.");
-  await seedInitialOwner();
+  await seedInitialOwner(pool);
+  await pool.end();
 } catch (error) {
   console.error("[migrate] Database migration failed.");
   console.error(error);
   process.exitCode = 1;
-} finally {
-  await pool.end();
 }
