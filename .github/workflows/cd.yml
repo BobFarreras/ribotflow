@@ -11,7 +11,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
+  IMAGE_NAME: bobfarreras/ribotflow
 
 jobs:
   build-and-push:
@@ -75,7 +75,7 @@ jobs:
 
       - name: Create deployment bundle
         run: |
-          mkdir -p deploy-bundle
+          mkdir -p deploy-bundle/docker
           cp docker-compose.prod.yml deploy-bundle/
           cp docker-compose.caddy.yml deploy-bundle/
           cp docker-compose.traefik.yml deploy-bundle/
@@ -83,6 +83,7 @@ jobs:
           cp scripts/manage.sh deploy-bundle/
           cp -r docker/caddy deploy-bundle/docker/
           cp -r docker/postgres deploy-bundle/docker/
+          cp -r docker/scripts deploy-bundle/docker/
           cp .env.production deploy-bundle/.env.production
           cp INSTALL.md deploy-bundle/
           cd deploy-bundle

@@ -91,7 +91,7 @@ export class SignatureService {
     }
 
     return {
-      mode: process.env.NEXT_PUBLIC_APP_MODE === "self-hosted" ? "self-hosted" : "cloud",
+      mode: process.env.NEXT_PUBLIC_APP_MODE === "self_hosted" ? "self_hosted" : "cloud",
       companyId,
       tenantSlug: company?.tenantSlug,
       clientId,

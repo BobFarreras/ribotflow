@@ -88,8 +88,12 @@ curl -fsSL -o docker/caddy/Caddyfile "${RAW_URL}/docker/caddy/Caddyfile"
 mkdir -p docker/postgres
 curl -fsSL -o docker/postgres/init.sql "${RAW_URL}/docker/postgres/init.sql"
 
+mkdir -p docker/scripts
+curl -fsSL -o docker/scripts/migrate.mjs "${RAW_URL}/docker/scripts/migrate.mjs"
+curl -fsSL -o docker/scripts/start.sh "${RAW_URL}/docker/scripts/start.sh"
+
 # Fix permissions
-chmod +x install.sh manage.sh
+chmod +x install.sh manage.sh docker/scripts/start.sh
 
 echo -e "${GREEN}✓ Downloaded from GitHub (${BRANCH} branch)${NC}"
 echo ""
@@ -100,5 +104,9 @@ echo ""
 echo -e "${BLUE}━━━ Starting installation wizard ━━━${NC}"
 echo ""
 
-# The install.sh will handle everything from here
+# The install.sh will handle everything from here.
+if [ -r /dev/tty ]; then
+    exec ./install.sh < /dev/tty
+fi
+
 exec ./install.sh

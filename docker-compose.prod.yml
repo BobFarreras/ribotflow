@@ -21,6 +21,7 @@ services:
     environment:
       - NODE_ENV=production
       - STORAGE_PROVIDER=minio
+      - RUN_MIGRATIONS=${RUN_MIGRATIONS:-true}
     ports:
       - "3000:3000"
     depends_on:

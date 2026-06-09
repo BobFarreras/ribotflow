@@ -3,18 +3,19 @@
 # Use with: docker compose -f docker-compose.prod.yml -f docker-compose.traefik.yml up -d
 # ==========================================
 # Prerequisites: Traefik already running with Docker provider.
-# IMPORTANT: Change "myresolver" to match your Traefik certificate resolver name.
-# If your Traefik uses "letsencrypt" or "le" as resolver name, update the labels below.
-# After any label change, restart Traefik: docker restart traefik
+# Configure TRAEFIK_NETWORK, TRAEFIK_ENTRYPOINT, and TRAEFIK_CERT_RESOLVER in .env.
+# After any label change, restart Traefik if your setup does not auto-detect labels.
 
 services:
   # --- App: Add Traefik labels ---
   app:
+    ports: !reset []
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.ribotflow.rule=Host(`${DOMAIN}`)"
-      - "traefik.http.routers.ribotflow.entrypoints=websecure"
-      - "traefik.http.routers.ribotflow.tls.certresolver=myresolver"
+      - "traefik.http.routers.ribotflow.entrypoints=${TRAEFIK_ENTRYPOINT:-websecure}"
+      - "traefik.http.routers.ribotflow.tls=true"
+      - "traefik.http.routers.ribotflow.tls.certresolver=${TRAEFIK_CERT_RESOLVER:-letsencrypt}"
       - "traefik.http.services.ribotflow.loadbalancer.server.port=3000"
     networks:
       - internal
@@ -23,4 +24,4 @@ services:
 networks:
   traefik:
     external: true
-    name: traefik-public
+    name: ${TRAEFIK_NETWORK:-traefik-public}

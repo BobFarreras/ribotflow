@@ -9,7 +9,7 @@ ssh root@your-server-ip
 
 ### 2. Run the remote installer
 ```bash
-curl -fsSL https://raw.githubusercontent.com/BobFarreras/ribotflow/features/Fxboix/scripts/install-remote.sh | bash
+curl -fsSL https://raw.githubusercontent.com/BobFarreras/ribotflow/main/scripts/install-remote.sh | bash
 ```
 
 Or, if you prefer to download the bundle manually:
@@ -24,13 +24,15 @@ The installer will:
 - Ask for your domain name
 - Detect your reverse proxy preference (Caddy, Traefik, Nginx, or none)
 - Generate secure secrets automatically (Auth, DB, MinIO, Encryption)
+- Run Drizzle migrations automatically when the app container starts
+- Create the first company and OWNER user when the database is empty
 - Configure SMTP (optional)
 - Start all services
 
 ### 3. Access the application
 - **URL:** https://yourdomain.com (or http://yourdomain.com:3000 if no proxy)
-- **Login:** dais@test.com
-- **Password:** 12345678
+- **Login:** the admin email entered during installation
+- **Password:** the admin password entered during installation
 
 ---
 
@@ -56,15 +58,22 @@ The installer will:
 │  ├─ MINIO_USER/PASSWORD (file storage)                     │
 │  └─ ENCRYPTION_KEY (AES-256-GCM for SMTP passwords)      │
 │                                                             │
-│  Step 4: SMTP Configuration (optional)                      │
+│  Step 4: Company and Admin User Configuration               │
+│  ├─ Company name                                             │
+│  ├─ Admin email                                              │
+│  └─ Admin password                                           │
+│                                                             │
+│  Step 5: SMTP Configuration (optional)                      │
 │  ├─ Gmail / Brevo / Mailgun / Custom                       │
 │  └─ Username & password                                    │
 │                                                             │
-│  Step 5: Create .env.local                                  │
+│  Step 6: Create .env                                        │
 │  └─ All configuration saved securely                       │
 │                                                             │
-│  Step 6: Start Services                                     │
-│  └─ Docker containers running                              │
+│  Step 7: Start Services                                     │
+│  ├─ Docker containers running                              │
+│  ├─ Drizzle migrations applied by the app container         │
+│  └─ Initial OWNER seeded if the database is empty           │
 │                                                             │
 └─────────────────────────────────────────────────────────────┘
 ```
@@ -233,11 +242,11 @@ The script automatically detects which Docker Compose files you used during inst
 
 1. Go to **Settings > Email** in the application
 2. Enter your SMTP details
-3. Or edit `.env.local` directly:
+3. Or edit `.env` directly:
 
 ```bash
 # Edit configuration
-nano .env.local
+nano .env
 
 # Restart after changes
 ./manage.sh restart
@@ -245,10 +254,11 @@ nano .env.local
 
 ### Run Database Migrations
 
+Migrations run automatically when the app container starts (`RUN_MIGRATIONS=true`).
+To force them again, restart the app:
+
 ```bash
-./manage.sh shell
-npx drizzle-kit push
-exit
+./manage.sh restart
 ```
 
 ---
