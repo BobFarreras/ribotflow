@@ -103,11 +103,8 @@ update() {
     echo -e "\n${BOLD}${BLUE}  ◈ Updating RIBOTFLOW${NC}"
     echo -e "${DIM}${LINE}${NC}"
     echo ""
-    echo -e "  ${ARROW} Pulling latest code..."
-    git pull --ff-only origin main 2>/dev/null || echo -e "  ${WARN} git pull failed — using existing code"
-    echo ""
-    echo -e "  ${ARROW} Rebuilding Docker image..."
-    $COMPOSE build
+    echo -e "  ${ARROW} Pulling latest image..."
+    $COMPOSE pull
     echo ""
     echo -e "  ${ARROW} Restarting containers..."
     $COMPOSE up -d

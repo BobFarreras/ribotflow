@@ -481,10 +481,6 @@ start_services() {
 
     mkdir -p uploads
 
-    info "Building application image..."
-    docker compose -f docker-compose.prod.yml build
-    ok "Image built"
-
     case $PROXY in
         caddy)
             info "Starting with Caddy (auto HTTPS)..."

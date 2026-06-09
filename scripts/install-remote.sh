@@ -74,17 +74,9 @@ if ! command -v curl &> /dev/null; then
     exit 1
 fi
 
-# Check git
-if ! command -v git &> /dev/null; then
-    echo -e "  ${RED}✗ git is not installed.${NC}"
-    echo "  Install git: apt-get install git / yum install git"
-    exit 1
-fi
-
 echo -e "  ${GREEN}✓${NC} Docker $(docker --version | grep -oP '\d+\.\d+\.\d+' | head -1)"
 echo -e "  ${GREEN}✓${NC} Docker Compose"
 echo -e "  ${GREEN}✓${NC} curl"
-echo -e "  ${GREEN}✓${NC} git"
 echo ""
 
 # ==========================================
@@ -97,20 +89,39 @@ echo -e "${DIM}─────────────────────�
 mkdir -p "$INSTALL_DIR"
 cd "$INSTALL_DIR"
 
-# Shallow clone the repo (needed for Docker build)
-if [ -d ".git" ]; then
-    git pull --ff-only origin "$BRANCH" 2>/dev/null || true
-    echo -e "  ${GREEN}✓${NC} Repository updated"
-else
-    git clone --depth 1 --branch "$BRANCH" "https://github.com/${REPO}.git" _source
-    # Move files from cloned repo to install dir
-    mv _source/* _source/.* . 2>/dev/null || true
-    rm -rf _source
-    echo -e "  ${GREEN}✓${NC} Repository cloned"
-fi
+# Download all required files directly from GitHub (always latest)
+curl -fsSL -o docker-compose.prod.yml "${RAW_URL}/docker-compose.prod.yml"
+echo -e "  ${GREEN}✓${NC} docker-compose.prod.yml"
 
-# Ensure scripts are executable
-chmod +x scripts/install.sh scripts/manage.sh docker/scripts/start.sh 2>/dev/null || true
+curl -fsSL -o docker-compose.traefik.yml "${RAW_URL}/docker-compose.traefik.yml"
+echo -e "  ${GREEN}✓${NC} docker-compose.traefik.yml"
+
+curl -fsSL -o docker-compose.caddy.yml "${RAW_URL}/docker-compose.caddy.yml"
+echo -e "  ${GREEN}✓${NC} docker-compose.caddy.yml"
+
+curl -fsSL -o install.sh "${RAW_URL}/scripts/install.sh"
+echo -e "  ${GREEN}✓${NC} install.sh"
+
+curl -fsSL -o manage.sh "${RAW_URL}/scripts/manage.sh"
+echo -e "  ${GREEN}✓${NC} manage.sh"
+
+mkdir -p docker/caddy
+curl -fsSL -o docker/caddy/Caddyfile "${RAW_URL}/docker/caddy/Caddyfile"
+echo -e "  ${GREEN}✓${NC} docker/caddy/Caddyfile"
+
+mkdir -p docker/postgres
+curl -fsSL -o docker/postgres/init.sql "${RAW_URL}/docker/postgres/init.sql"
+echo -e "  ${GREEN}✓${NC} docker/postgres/init.sql"
+
+mkdir -p docker/scripts
+curl -fsSL -o docker/scripts/migrate.mjs "${RAW_URL}/docker/scripts/migrate.mjs"
+echo -e "  ${GREEN}✓${NC} docker/scripts/migrate.mjs"
+
+curl -fsSL -o docker/scripts/start.sh "${RAW_URL}/docker/scripts/start.sh"
+echo -e "  ${GREEN}✓${NC} docker/scripts/start.sh"
+
+# Fix permissions
+chmod +x install.sh manage.sh docker/scripts/start.sh
 echo ""
 
 # ==========================================
@@ -122,7 +133,7 @@ echo ""
 
 # The install.sh will handle everything from here.
 if [ -r /dev/tty ]; then
-    exec ./scripts/install.sh < /dev/tty
+    exec ./install.sh < /dev/tty
 fi
 
-exec ./scripts/install.sh
+exec ./install.sh
