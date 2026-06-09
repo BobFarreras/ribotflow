@@ -122,7 +122,7 @@ export default async function ProfileSettingsPage() {
           title={t("sections.preferences")}
           description={t("sections.preferencesDesc")}
         >
-          <PreferencesForm initialTheme={prefs.theme} initialLocale={prefs.locale} />
+          <PreferencesForm initialTheme={prefs.theme} />
         </SectionShell>
 
         <SectionShell
