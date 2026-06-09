@@ -12,20 +12,16 @@ ssh root@your-server-ip
 curl -fsSL https://raw.githubusercontent.com/BobFarreras/ribotflow/main/scripts/install-remote.sh | bash
 ```
 
-Run this from any directory, including `/root` after SSH login. The remote installer creates `/opt/ribotflow`, downloads the deployment files there, and launches the interactive wizard. Use `root` or `sudo` because the default install path is under `/opt`.
+Run this from any directory, including `/root` after SSH login. The remote installer clones the repository to `/opt/ribotflow` (needed to build the Docker image locally) and launches the interactive wizard. Use `root` or `sudo` because the default install path is under `/opt`.
 
-Or, if you prefer to download the bundle manually:
-```bash
-mkdir -p /opt/ribotflow && cd /opt/ribotflow
-wget https://github.com/BobFarreras/ribotflow/releases/latest/download/ribotflow-deploy.tar.gz
-tar -xzf ribotflow-deploy.tar.gz
-./scripts/install.sh
-```
+**Requirements:** Docker, Docker Compose, curl, and git must be installed on the server.
 
 The installer will:
+- Clone the repository (needed for Docker build)
 - Ask for your domain name
 - Detect your reverse proxy preference (Caddy, Traefik, Nginx, or none)
 - Generate secure secrets automatically (Auth, DB, MinIO, Encryption)
+- Build the Docker image locally
 - Run Drizzle migrations automatically when the app container starts
 - Create the first company and OWNER user when the database is empty
 - Configure SMTP (optional)
