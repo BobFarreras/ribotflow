@@ -26,6 +26,8 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
+ARG NEXT_PUBLIC_APP_MODE=self_hosted
+ENV NEXT_PUBLIC_APP_MODE=$NEXT_PUBLIC_APP_MODE
 RUN pnpm build
 
 # --- Stage 3: Production runner ---
