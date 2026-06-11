@@ -196,6 +196,7 @@ export const workOrderService = {
           phone: clients.phone,
           address: clients.address,
           location: clients.location,
+          contactPerson: clients.contactPerson,
         },
         category: {
           id: workOrderCategories.id,

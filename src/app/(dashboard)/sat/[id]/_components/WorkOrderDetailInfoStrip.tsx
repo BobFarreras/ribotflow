@@ -16,6 +16,7 @@ interface ClientSummary {
   phone: string | null;
   address: string | null;
   location: { lat: number; lng: number } | null;
+  contactPerson: string | null;
 }
 
 interface CategorySummary {
