@@ -6,11 +6,11 @@
 
 import { auth } from "@/lib/auth";
 import { db } from "@/db";
-import { clients } from "@/db/schema/sat";
+import { clients, clientCategories } from "@/db/schema/sat";
 import { eq, asc } from "drizzle-orm";
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
-import { Users, Plus, Phone, MapPin, Mail } from "lucide-react";
+import { Users, Plus, Phone, MapPin, Mail, Building2 } from "lucide-react";
 
 export default async function ClientsPage() {
   const session = await auth();
@@ -20,8 +20,21 @@ export default async function ClientsPage() {
   const t = await getTranslations("sat.clients");
 
   const clientList = await db
-    .select()
+    .select({
+      id: clients.id,
+      name: clients.name,
+      email: clients.email,
+      phone: clients.phone,
+      address: clients.address,
+      location: clients.location,
+      contactPerson: clients.contactPerson,
+      position: clients.position,
+      categoryId: clients.categoryId,
+      categoryName: clientCategories.name,
+      categoryColor: clientCategories.color,
+    })
     .from(clients)
+    .leftJoin(clientCategories, eq(clients.categoryId, clientCategories.id))
     .where(eq(clients.companyId, companyId))
     .orderBy(asc(clients.name));
 
@@ -70,6 +83,24 @@ export default async function ClientsPage() {
                 <h3 className="relative z-10 text-sm font-semibold text-[var(--text)] group-hover:text-[var(--module-sat)]">
                   {client.name}
                 </h3>
+                {client.categoryName && (
+                  <span
+                    className="relative z-10 mt-1 inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium"
+                    style={{
+                      backgroundColor: client.categoryColor ? `${client.categoryColor}20` : "var(--bg)",
+                      color: client.categoryColor ?? "var(--text-muted)",
+                    }}
+                  >
+                    {client.categoryName}
+                  </span>
+                )}
+                {client.contactPerson && (
+                  <div className="relative z-10 mt-1.5 flex items-center gap-1.5 text-xs text-[var(--text-muted)]">
+                    <Building2 className="h-3.5 w-3.5" />
+                    <span>{client.contactPerson}</span>
+                    {client.position && <span>— {client.position}</span>}
+                  </div>
+                )}
                 <div className="relative z-10 mt-3 space-y-1.5 text-xs text-[var(--text-muted)]">
                   {client.phone && (
                     <div className="flex items-center gap-1.5">

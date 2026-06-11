@@ -1,16 +1,29 @@
 /**
  * Creation/modification date: 27/05/2026
  * Path: src/app/(dashboard)/sat/clients/[id]/page.tsx
- * Description: Client detail page with info and associated work orders.
+ * Description: Client detail page with contacts, categories, notes, and work orders.
  */
 
 import { auth } from "@/lib/auth";
 import { db } from "@/db";
-import { clients, workOrders } from "@/db/schema/sat";
+import { clients, workOrders, clientContacts, clientCategories } from "@/db/schema/sat";
 import { eq, desc } from "drizzle-orm";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Phone, Mail, MapPin, FileText, User, Wrench, Pencil } from "lucide-react";
+import {
+  ArrowLeft,
+  Phone,
+  Mail,
+  MapPin,
+  FileText,
+  User,
+  Wrench,
+  Pencil,
+  Globe,
+  StickyNote,
+  BadgeCheck,
+  Building2,
+} from "lucide-react";
 import { WorkOrderStatusBadge } from "@/components/sat/shared/WorkOrderStatusBadge";
 
 interface Props {
@@ -30,18 +43,39 @@ export default async function ClientDetailPage({ params }: Props) {
     notFound();
   }
 
-  const orders = await db
-    .select({
-      id: workOrders.id,
-      number: workOrders.number,
-      title: workOrders.title,
-      status: workOrders.status,
-      priority: workOrders.priority,
-      scheduledDate: workOrders.scheduledDate,
-    })
-    .from(workOrders)
-    .where(eq(workOrders.clientId, id))
-    .orderBy(desc(workOrders.createdAt));
+  const [contacts, category, orders] = await Promise.all([
+    db
+      .select()
+      .from(clientContacts)
+      .where(eq(clientContacts.clientId, id))
+      .orderBy(desc(clientContacts.isPrimary), desc(clientContacts.createdAt)),
+    client.categoryId
+      ? db
+          .select()
+          .from(clientCategories)
+          .where(eq(clientCategories.id, client.categoryId))
+          .limit(1)
+          .then((r) => r[0] ?? null)
+      : Promise.resolve(null),
+    db
+      .select({
+        id: workOrders.id,
+        number: workOrders.number,
+        title: workOrders.title,
+        status: workOrders.status,
+        priority: workOrders.priority,
+        scheduledDate: workOrders.scheduledDate,
+      })
+      .from(workOrders)
+      .where(eq(workOrders.clientId, id))
+      .orderBy(desc(workOrders.createdAt)),
+  ]);
+
+  const fiscalData = client.fiscalData as {
+    iban?: string;
+    activityCode?: string;
+    registrationDate?: string;
+  } | null;
 
   return (
     <div className="flex-1 bg-[var(--bg)]">
@@ -57,6 +91,17 @@ export default async function ClientDetailPage({ params }: Props) {
             <div className="flex items-center gap-2">
               <User className="h-5 w-5 text-[var(--module-sat)]" />
               <h1 className="text-lg font-semibold text-[var(--text)]">{client.name}</h1>
+              {category && (
+                <span
+                  className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium"
+                  style={{
+                    backgroundColor: category.color ? `${category.color}20` : "var(--bg)",
+                    color: category.color ?? "var(--text-muted)",
+                  }}
+                >
+                  {category.name}
+                </span>
+              )}
             </div>
           </div>
           <Link
@@ -71,13 +116,25 @@ export default async function ClientDetailPage({ params }: Props) {
 
       <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6">
         <div className="grid gap-6 lg:grid-cols-3">
-          {/* Info card */}
+          {/* Left column: info + contacts + notes */}
           <div className="space-y-4 lg:col-span-1">
+            {/* Client data card */}
             <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-4">
               <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
-                Dades de contacte
+                Dades del Client
               </h2>
               <div className="space-y-2 text-sm">
+                {client.contactPerson && (
+                  <div className="flex items-center gap-2 text-[var(--text)]">
+                    <Building2 className="h-4 w-4 text-[var(--text-muted)]" />
+                    <span>
+                      {client.contactPerson}
+                      {client.position && (
+                        <span className="text-[var(--text-muted)]"> — {client.position}</span>
+                      )}
+                    </span>
+                  </div>
+                )}
                 {client.phone && (
                   <div className="flex items-center gap-2 text-[var(--text)]">
                     <Phone className="h-4 w-4 text-[var(--text-muted)]" />
@@ -106,6 +163,19 @@ export default async function ClientDetailPage({ params }: Props) {
                     <span>{client.address}</span>
                   </div>
                 )}
+                {client.website && (
+                  <div className="flex items-center gap-2 text-[var(--text)]">
+                    <Globe className="h-4 w-4 text-[var(--text-muted)]" />
+                    <a
+                      href={client.website}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hover:text-[var(--module-sat)] hover:underline"
+                    >
+                      {client.website.replace(/^https?:\/\//, "")}
+                    </a>
+                  </div>
+                )}
                 {client.taxId && (
                   <div className="flex items-center gap-2 text-[var(--text-muted)]">
                     <FileText className="h-4 w-4" />
@@ -127,6 +197,111 @@ export default async function ClientDetailPage({ params }: Props) {
                 </div>
               )}
             </div>
+
+            {/* Contacts card */}
+            <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-4">
+              <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
+                Contactes ({contacts.length})
+              </h2>
+              {contacts.length === 0 ? (
+                <p className="text-sm text-[var(--text-muted)]">
+                  No hi ha contactes afegits.
+                </p>
+              ) : (
+                <div className="space-y-3">
+                  {contacts.map((contact) => (
+                    <div
+                      key={contact.id}
+                      className="rounded-lg border border-[var(--border)] bg-[var(--bg)] p-3"
+                    >
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <div className="flex items-center gap-1.5">
+                            {contact.isPrimary && (
+                              <BadgeCheck className="h-3.5 w-3.5 text-yellow-500" />
+                            )}
+                            <span className="text-sm font-medium text-[var(--text)]">
+                              {contact.name}
+                            </span>
+                          </div>
+                          {contact.position && (
+                            <p className="mt-0.5 text-xs text-[var(--text-muted)]">
+                              {contact.position}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                      <div className="mt-2 space-y-1 text-xs">
+                        {contact.phone && (
+                          <div className="flex items-center gap-1.5 text-[var(--text-muted)]">
+                            <Phone className="h-3 w-3" />
+                            <a
+                              href={`tel:${contact.phone}`}
+                              className="hover:text-[var(--module-sat)] hover:underline"
+                            >
+                              {contact.phone}
+                            </a>
+                          </div>
+                        )}
+                        {contact.email && (
+                          <div className="flex items-center gap-1.5 text-[var(--text-muted)]">
+                            <Mail className="h-3 w-3" />
+                            <a
+                              href={`mailto:${contact.email}`}
+                              className="hover:text-[var(--module-sat)] hover:underline"
+                            >
+                              {contact.email}
+                            </a>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Notes card */}
+            {client.notes && (
+              <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-4">
+                <h2 className="mb-2 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
+                  <StickyNote className="h-3.5 w-3.5" />
+                  Observacions
+                </h2>
+                <p className="whitespace-pre-wrap text-sm text-[var(--text)]">{client.notes}</p>
+              </div>
+            )}
+
+            {/* Fiscal data card */}
+            {fiscalData && (fiscalData.iban || fiscalData.activityCode || fiscalData.registrationDate) && (
+              <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-4">
+                <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
+                  Dades Fiscals
+                </h2>
+                <div className="space-y-1.5 text-sm">
+                  {fiscalData.iban && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-[var(--text-muted)]">IBAN:</span>
+                      <span className="font-mono text-[var(--text)]">{fiscalData.iban}</span>
+                    </div>
+                  )}
+                  {fiscalData.activityCode && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-[var(--text-muted)]">Codi activitat:</span>
+                      <span className="text-[var(--text)]">{fiscalData.activityCode}</span>
+                    </div>
+                  )}
+                  {fiscalData.registrationDate && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-[var(--text-muted)]">Data registre:</span>
+                      <span className="text-[var(--text)]">
+                        {new Date(fiscalData.registrationDate).toLocaleDateString("ca-ES")}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* Actions */}
             <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-4">
