@@ -1,11 +1,12 @@
 /**
  * Creation/modification date: 11/06/2026
  * Path: src/app/(dashboard)/sat/clients/[id]/edit/page.tsx
- * Description: Edit SAT client page. Fetches client data server-side, renders ClientForm.
+ * Description: Edit SAT client page. Fetches client + categories server-side, renders ClientForm.
  */
 
 import { auth } from "@/lib/auth";
 import { clientService } from "@/services/sat/clients/clientService";
+import { categoryService } from "@/services/sat/clients/categoryService";
 import { notFound } from "next/navigation";
 import { ClientForm } from "@/components/sat/clients/ClientForm";
 import { updateClientAction } from "@/actions/sat/clients/updateClient";
@@ -19,7 +20,12 @@ export default async function EditClientPage({ params }: Props) {
   if (!session?.user?.companyId) return null;
 
   const { id } = await params;
-  const client = await clientService.getById(session.user.companyId, id);
+  const companyId = session.user.companyId;
+
+  const [client, categories] = await Promise.all([
+    clientService.getById(companyId, id),
+    categoryService.getAll(companyId),
+  ]);
 
   if (!client) {
     notFound();
@@ -28,6 +34,7 @@ export default async function EditClientPage({ params }: Props) {
   return (
     <ClientForm
       mode="edit"
+      categories={categories}
       initialData={{
         name: client.name,
         email: client.email,
@@ -35,6 +42,16 @@ export default async function EditClientPage({ params }: Props) {
         address: client.address,
         taxId: client.taxId,
         location: client.location as { lat: number; lng: number } | null,
+        contactPerson: client.contactPerson,
+        position: client.position,
+        website: client.website,
+        notes: client.notes,
+        fiscalData: client.fiscalData as {
+          iban?: string;
+          activityCode?: string;
+          registrationDate?: string;
+        } | null,
+        categoryId: client.categoryId,
       }}
       onSubmit={async (data) => {
         "use server";
@@ -46,6 +63,19 @@ export default async function EditClientPage({ params }: Props) {
           taxId: data.taxId || null,
           lat: data.lat ? parseFloat(data.lat) : null,
           lng: data.lng ? parseFloat(data.lng) : null,
+          contactPerson: data.contactPerson || null,
+          position: data.position || null,
+          website: data.website || null,
+          notes: data.notes || null,
+          fiscalData:
+            data.fiscalIban || data.fiscalActivityCode || data.fiscalRegistrationDate
+              ? {
+                  iban: data.fiscalIban || undefined,
+                  activityCode: data.fiscalActivityCode || undefined,
+                  registrationDate: data.fiscalRegistrationDate || undefined,
+                }
+              : null,
+          categoryId: data.categoryId || null,
         });
       }}
       cancelHref={`/sat/clients/${id}`}
