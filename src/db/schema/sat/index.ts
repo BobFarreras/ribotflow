@@ -7,6 +7,8 @@
 
 /* ---------- Entities ---------- */
 export { clients, clientsRelations } from "./clients";
+export { clientContacts, clientContactsRelations } from "./clientContacts";
+export { clientCategories, clientCategoriesRelations } from "./clientCategories";
 export { workOrderCategories, workOrderCategoriesRelations } from "./workOrderCategories";
 export { products, productsRelations } from "./products";
 export { workOrders, workOrdersRelations } from "./workOrders";
