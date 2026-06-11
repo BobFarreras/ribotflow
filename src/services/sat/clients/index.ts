@@ -6,3 +6,7 @@
 
 export { clientService } from "./clientService";
 export type { CreateClientInput, UpdateClientInput } from "./clientService";
+export { contactService } from "./contactService";
+export type { CreateContactInput, UpdateContactInput } from "./contactService";
+export { categoryService } from "./categoryService";
+export type { CreateCategoryInput, UpdateCategoryInput } from "./categoryService";

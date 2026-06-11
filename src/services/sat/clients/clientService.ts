@@ -16,6 +16,16 @@ export interface CreateClientInput {
   address?: string | null;
   taxId?: string | null;
   location?: { lat: number; lng: number } | null;
+  contactPerson?: string | null;
+  position?: string | null;
+  website?: string | null;
+  notes?: string | null;
+  fiscalData?: {
+    iban?: string;
+    activityCode?: string;
+    registrationDate?: string;
+  } | null;
+  categoryId?: string | null;
 }
 
 export type UpdateClientInput = Partial<Omit<CreateClientInput, "companyId">>;
@@ -68,6 +78,12 @@ export const clientService = {
         address: input.address ?? null,
         taxId: input.taxId ?? null,
         location: input.location ?? null,
+        contactPerson: input.contactPerson ?? null,
+        position: input.position ?? null,
+        website: input.website ?? null,
+        notes: input.notes ?? null,
+        fiscalData: input.fiscalData ?? null,
+        categoryId: input.categoryId ?? null,
       })
       .returning();
 
@@ -94,6 +110,12 @@ export const clientService = {
         ...(input.address !== undefined && { address: input.address }),
         ...(input.taxId !== undefined && { taxId: input.taxId }),
         ...(input.location !== undefined && { location: input.location }),
+        ...(input.contactPerson !== undefined && { contactPerson: input.contactPerson }),
+        ...(input.position !== undefined && { position: input.position }),
+        ...(input.website !== undefined && { website: input.website }),
+        ...(input.notes !== undefined && { notes: input.notes }),
+        ...(input.fiscalData !== undefined && { fiscalData: input.fiscalData }),
+        ...(input.categoryId !== undefined && { categoryId: input.categoryId }),
         updatedAt: new Date(),
       })
       .where(eq(clients.id, clientId))
