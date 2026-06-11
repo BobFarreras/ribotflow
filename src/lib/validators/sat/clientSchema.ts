@@ -15,8 +15,6 @@ export const clientSchema = z.object({
   lat: z.coerce.number().min(-90).max(90).optional().nullable(),
   lng: z.coerce.number().min(-180).max(180).optional().nullable(),
   // CRM fields
-  contactPerson: z.string().max(200).optional().nullable(),
-  position: z.string().max(100).optional().nullable(),
   website: z.string().url("URL invàlida").optional().nullable(),
   notes: z.string().max(2000).optional().nullable(),
   fiscalData: z

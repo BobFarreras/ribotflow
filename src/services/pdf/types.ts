@@ -29,7 +29,6 @@ export interface ClientInfo {
   address: string | null;
   email: string | null;
   phone: string | null;
-  contactPerson: string | null;
 }
 
 export interface QuoteItemRow {

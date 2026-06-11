@@ -29,8 +29,6 @@ export default async function NewClientPage() {
           taxId: data.taxId || null,
           lat: data.lat ? parseFloat(data.lat) : null,
           lng: data.lng ? parseFloat(data.lng) : null,
-          contactPerson: data.contactPerson || null,
-          position: data.position || null,
           website: data.website || null,
           notes: data.notes || null,
           fiscalData:

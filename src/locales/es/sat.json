@@ -190,10 +190,6 @@
       "website": "Website",
       "category": "Categoría",
       "categoryNone": "Sin categoría",
-      "contactPerson": "Nombre del contacto",
-      "contactPersonPlaceholder": "Nombre de la persona de contacto",
-      "position": "Cargo",
-      "positionPlaceholder": "Gerente, Administrador, Contabilidad...",
       "iban": "IBAN",
       "activityCode": "Código de actividad",
       "registrationDate": "Fecha de registro",
@@ -206,7 +202,16 @@
       "cancel": "Cancelar",
       "create": "Crear cliente",
       "save": "Guardar cambios",
-      "error": "Error al procesar la solicitud"
+      "error": "Error al procesar la solicitud",
+      "contactSectionTitle": "Contactos",
+      "contactNew": "Nuevo Contacto",
+      "contactEdit": "Editar Contacto",
+      "contactEmpty": "No hay contactos agregados.",
+      "contactName": "Nombre",
+      "contactNamePlaceholder": "Nombre del contacto",
+      "contactIsPrimary": "Contacto principal",
+      "contactDeleteConfirm": "¿Estás seguro de que quieres eliminar este contacto?",
+      "contactError": "Error al guardar el contacto"
     }
   },
   "categories": {

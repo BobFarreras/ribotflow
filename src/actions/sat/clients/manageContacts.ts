@@ -76,6 +76,27 @@ export async function updateContactAction(contactId: string, input: unknown) {
   }
 }
 
+export async function getContactsAction(clientId: string) {
+  try {
+    const session = await auth();
+    if (!session?.user?.companyId) {
+      return { success: false, error: "Unauthorized" };
+    }
+
+    const contacts = await contactService.getByClient(
+      session.user.companyId,
+      clientId
+    );
+
+    return { success: true, data: contacts };
+  } catch (error) {
+    if (error instanceof Error) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to fetch contacts" };
+  }
+}
+
 export async function deleteContactAction(contactId: string) {
   try {
     const session = await auth();

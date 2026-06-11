@@ -5,7 +5,7 @@
  *              Enhanced with contacts, categories, and extended fiscal data.
  */
 
-import { pgTable, uuid, text, timestamp, index, jsonb, boolean } from "drizzle-orm/pg-core";
+import { pgTable, uuid, text, timestamp, index, jsonb } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { companies } from "../auth";
 
@@ -23,8 +23,6 @@ export const clients = pgTable(
     location: jsonb("location").$type<{ lat: number; lng: number }>(),
     taxId: text("tax_id"),
     // Enhanced CRM fields
-    contactPerson: text("contact_person"),
-    position: text("position"),
     website: text("website"),
     notes: text("notes"),
     fiscalData: jsonb("fiscal_data").$type<{

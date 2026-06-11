@@ -37,8 +37,6 @@ export async function updateClientAction(clientId: string, input: unknown) {
       address: parsed.data.address,
       taxId: parsed.data.taxId,
       location,
-      contactPerson: parsed.data.contactPerson,
-      position: parsed.data.position,
       website: parsed.data.website,
       notes: parsed.data.notes,
       fiscalData: parsed.data.fiscalData,

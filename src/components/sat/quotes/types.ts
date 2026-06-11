@@ -12,8 +12,6 @@ export interface Client {
   address: string | null;
   taxId: string | null;
   location: { lat: number; lng: number } | null;
-  contactPerson: string | null;
-  position: string | null;
 }
 
 export interface Product {

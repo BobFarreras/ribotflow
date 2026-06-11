@@ -190,10 +190,6 @@
       "website": "Website",
       "category": "Categoria",
       "categoryNone": "Sense categoria",
-      "contactPerson": "Nom del contacte",
-      "contactPersonPlaceholder": "Nom de la persona de contacte",
-      "position": "Càrrec",
-      "positionPlaceholder": "Gerent, Administrador, Comptabilitat...",
       "iban": "IBAN",
       "activityCode": "Codi d'activitat",
       "registrationDate": "Data de registre",
@@ -206,7 +202,16 @@
       "cancel": "Cancel·lar",
       "create": "Crear client",
       "save": "Desar canvis",
-      "error": "Error en processar la sol·licitud"
+      "error": "Error en processar la sol·licitud",
+      "contactSectionTitle": "Contactes",
+      "contactNew": "Nou Contacte",
+      "contactEdit": "Editar Contacte",
+      "contactEmpty": "No hi ha contactes afegits.",
+      "contactName": "Nom",
+      "contactNamePlaceholder": "Nom del contacte",
+      "contactIsPrimary": "Contacte principal",
+      "contactDeleteConfirm": "Estàs segur que vols eliminar aquest contacte?",
+      "contactError": "Error en desar el contacte"
     }
   },
   "categories": {

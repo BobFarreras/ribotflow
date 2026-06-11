@@ -13,15 +13,15 @@ import Link from "next/link";
 import { useTranslations } from "next-intl";
 import {
   ArrowLeft,
-  Loader2,
   MapPin,
   Building2,
-  User,
   FileText,
   StickyNotes,
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
+import { FloatingActionBar } from "./FloatingActionBar";
+import { ContactList } from "./ContactList";
 
 export interface ClientFormData {
   name: string;
@@ -31,8 +31,6 @@ export interface ClientFormData {
   taxId: string;
   lat: string;
   lng: string;
-  contactPerson: string;
-  position: string;
   website: string;
   notes: string;
   fiscalIban: string;
@@ -49,6 +47,7 @@ interface ClientCategory {
 
 interface ClientFormProps {
   mode: "create" | "edit";
+  clientId?: string;
   initialData?: {
     name: string;
     email?: string | null;
@@ -56,8 +55,6 @@ interface ClientFormProps {
     address?: string | null;
     taxId?: string | null;
     location?: { lat: number; lng: number } | null;
-    contactPerson?: string | null;
-    position?: string | null;
     website?: string | null;
     notes?: string | null;
     fiscalData?: {
@@ -111,6 +108,7 @@ function SectionHeader({
 
 export function ClientForm({
   mode,
+  clientId,
   initialData,
   categories = [],
   onSubmit,
@@ -123,7 +121,6 @@ export function ClientForm({
 
   const [openSections, setOpenSections] = useState({
     client: true,
-    contact: false,
     fiscal: false,
     notes: false,
     gps: false,
@@ -141,8 +138,6 @@ export function ClientForm({
     taxId: toFormValue(initialData?.taxId),
     lat: initialData?.location?.lat?.toString() ?? "",
     lng: initialData?.location?.lng?.toString() ?? "",
-    contactPerson: toFormValue(initialData?.contactPerson),
-    position: toFormValue(initialData?.position),
     website: toFormValue(initialData?.website),
     notes: toFormValue(initialData?.notes),
     fiscalIban: toFormValue(initialData?.fiscalData?.iban),
@@ -190,7 +185,7 @@ export function ClientForm({
         </div>
       </header>
 
-      <main className="mx-auto max-w-2xl px-4 py-6 sm:px-6">
+      <main className="mx-auto max-w-2xl px-4 pb-24 pt-6 sm:px-6">
         <form onSubmit={handleSubmit} className="space-y-5">
           {error && (
             <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
@@ -306,43 +301,12 @@ export function ClientForm({
             )}
           </div>
 
-          {/* Section 2: Primary Contact */}
-          <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-4 space-y-4">
-            <SectionHeader
-              icon={User}
-              title={t("form.sectionContact")}
-              isOpen={openSections.contact}
-              onToggle={() => toggleSection("contact")}
-            />
-            {openSections.contact && (
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div>
-                  <label className="mb-1.5 block text-sm font-medium text-[var(--text)]">
-                    {t("form.contactPerson")}
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.contactPerson}
-                    onChange={(e) => update("contactPerson", e.target.value)}
-                    placeholder={t("form.contactPersonPlaceholder")}
-                    className={inputClass}
-                  />
-                </div>
-                <div>
-                  <label className="mb-1.5 block text-sm font-medium text-[var(--text)]">
-                    {t("form.position")}
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.position}
-                    onChange={(e) => update("position", e.target.value)}
-                    placeholder={t("form.positionPlaceholder")}
-                    className={inputClass}
-                  />
-                </div>
-              </div>
-            )}
-          </div>
+          {/* Section 2: Contacts (edit mode only) */}
+          {isEdit && clientId && (
+            <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-4 space-y-4">
+              <ContactList clientId={clientId} />
+            </div>
+          )}
 
           {/* Section 3: Fiscal Data */}
           <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-4 space-y-4">
@@ -445,23 +409,14 @@ export function ClientForm({
             )}
           </div>
 
-          {/* Actions */}
-          <div className="flex justify-end gap-3 pt-2">
-            <Link
-              href={cancelHref}
-              className="rounded-lg border border-[var(--border)] px-4 py-2 text-sm font-medium text-[var(--text)] transition-colors hover:bg-[var(--bg)]"
-            >
-              {t("form.cancel")}
-            </Link>
-            <button
-              type="submit"
-              disabled={isLoading || !formData.name}
-              className="flex items-center gap-2 rounded-lg bg-[var(--module-sat)] px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50"
-            >
-              {isLoading && <Loader2 className="h-4 w-4 animate-spin" />}
-              {isEdit ? t("form.save") : t("form.create")}
-            </button>
-          </div>
+          {/* Floating Action Bar */}
+          <FloatingActionBar
+            cancelHref={cancelHref}
+            cancelLabel={t("form.cancel")}
+            saveLabel={isEdit ? t("form.save") : t("form.create")}
+            isLoading={isLoading}
+            disabled={!formData.name}
+          />
         </form>
       </main>
     </div>

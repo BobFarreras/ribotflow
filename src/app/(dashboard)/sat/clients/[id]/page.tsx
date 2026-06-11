@@ -22,7 +22,6 @@ import {
   Globe,
   StickyNote,
   BadgeCheck,
-  Building2,
 } from "lucide-react";
 import { WorkOrderStatusBadge } from "@/components/sat/shared/WorkOrderStatusBadge";
 
@@ -124,17 +123,6 @@ export default async function ClientDetailPage({ params }: Props) {
                 Dades del Client
               </h2>
               <div className="space-y-2 text-sm">
-                {client.contactPerson && (
-                  <div className="flex items-center gap-2 text-[var(--text)]">
-                    <Building2 className="h-4 w-4 text-[var(--text-muted)]" />
-                    <span>
-                      {client.contactPerson}
-                      {client.position && (
-                        <span className="text-[var(--text-muted)]"> — {client.position}</span>
-                      )}
-                    </span>
-                  </div>
-                )}
                 {client.phone && (
                   <div className="flex items-center gap-2 text-[var(--text)]">
                     <Phone className="h-4 w-4 text-[var(--text-muted)]" />

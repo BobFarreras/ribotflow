@@ -10,7 +10,7 @@ import { clients, clientCategories } from "@/db/schema/sat";
 import { eq, asc } from "drizzle-orm";
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
-import { Users, Plus, Phone, MapPin, Mail, Building2 } from "lucide-react";
+import { Users, Plus, Phone, MapPin, Mail } from "lucide-react";
 
 export default async function ClientsPage() {
   const session = await auth();
@@ -27,8 +27,6 @@ export default async function ClientsPage() {
       phone: clients.phone,
       address: clients.address,
       location: clients.location,
-      contactPerson: clients.contactPerson,
-      position: clients.position,
       categoryId: clients.categoryId,
       categoryName: clientCategories.name,
       categoryColor: clientCategories.color,
@@ -93,13 +91,6 @@ export default async function ClientsPage() {
                   >
                     {client.categoryName}
                   </span>
-                )}
-                {client.contactPerson && (
-                  <div className="relative z-10 mt-1.5 flex items-center gap-1.5 text-xs text-[var(--text-muted)]">
-                    <Building2 className="h-3.5 w-3.5" />
-                    <span>{client.contactPerson}</span>
-                    {client.position && <span>— {client.position}</span>}
-                  </div>
                 )}
                 <div className="relative z-10 mt-3 space-y-1.5 text-xs text-[var(--text-muted)]">
                   {client.phone && (

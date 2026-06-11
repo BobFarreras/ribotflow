@@ -23,7 +23,7 @@ This document contains all critical context from previous development sessions i
 **Type:** Enterprise Operating System (ERP, SAT, CRM, Billing, Access Control)
 **Stack:** Next.js 16 + React 19 + TypeScript + PostgreSQL + Drizzle ORM + Auth.js v5
 **Language:** English code, Catalan/Spanish UI via i18n
-**Branch:** `refactor/pdf-solid-architecture` (active development, 18+ commits ahead of `features/sat-work-orders`)
+**Branch:** `features/client-crm-enhanced` (active development, ahead of `develop`)
 
 ---
 
@@ -110,7 +110,7 @@ This document contains all critical context from previous development sessions i
 ## SAT Module Status
 
 ### Completed
-- [x] Database schema (13 tables: clients, categories, work_orders, status_history, materials, attachments, signatures, locations, products, **quotes**, **quote_items**, **quote_templates**, **quote_status_history**)
+- [x] Database schema (21 tables: clients, categories, work_orders, status_history, materials, attachments, signatures, locations, products, quotes, quote_items, quote_templates, quote_status_history, **client_contacts**, **client_categories**, companies, users, sessions, invitations, smtp_configs, preferences)
 - [x] Work order service with status workflow transitions
 - [x] Material service with product catalog + free-text materials
 - [x] Attachment service with local file storage
@@ -141,7 +141,12 @@ This document contains all critical context from previous development sessions i
 - [x] Travel billing service (distance × rate per km)
 - [x] Notification service (email SMTP with lazy nodemailer import, per-company DB config with env fallback, 5-min cache)
 - [x] Category CRUD with visual icon picker (~12 SVG icons) and color picker
-- [x] Client CRUD (list, detail, create)
+- [x] Client CRUD (list, detail, create, **edit**)
+- [x] **Client CRM enhancement** — Multiple contacts (`client_contacts` table), categories (`client_categories`), fiscal data (JSONB), website, GPS, notes
+- [x] **ContactList component** — List with star badge, phone, email, add/edit/delete via modal
+- [x] **FloatingActionBar** — Sticky bottom bar with Cancel/Save buttons (glassmorphism)
+- [x] **ContactFormModal** — Add/edit contact with `createPortal` to escape parent `<form>`
+- [x] **Client edit page** (`/sat/clients/[id]/edit`) — Full form with 5 sections + contacts list
 - [x] Category icon propagation — `icon` field flows from DB → Service → all 6 UI components
 - [x] **Quote professional editor** with split view (editor + PDF preview)
 - [x] **Quote PDF preview** simulating A4 document with professional layout
@@ -169,9 +174,8 @@ This document contains all critical context from previous development sessions i
 
 ### Pending / Next Features (Priority Order)
 1. **Vista pública del client** — Enllaç sense login perquè el client pugui acceptar/rebutjar
-2. **Edició de Clients** (`/sat/clients/[id]/edit`)
-3. **Personalització de PDF i Company Settings** (logo, colors, text legal, tarifa desplaçament)
-4. **Mode PWA Offline** per a tècnics
+2. **Personalització de PDF i Company Settings** (logo, colors, text legal, tarifa desplaçament)
+3. **Mode PWA Offline** per a tècnics
 5. **Email notifications on status changes** for work orders
 6. **Calendar integration** for scheduled dates
 
@@ -723,34 +727,38 @@ Multiple agents (including this one) investigated the wrong causes:
 
 ---
 
-## Session Handoff — Last Update: 08/06/2026
+## Session Handoff — Last Update: 11/06/2026
+
+### What Was Done (Session 11/06 — CRM Enhancement)
+1. **Schema ampliat** — `client_contacts`, `client_categories` taules noves. `clients` ampliat amb website, gps_latitude, gps_longitude, fiscal_data (JSONB), notes
+2. **Services creats** — `contactService.ts`, `categoryService.ts` amb CRUD complet
+3. **Server Actions** — `manageContacts.ts` (get/create/update/delete contacts), `manageCategories.ts` (get/create/update/delete)
+4. **ClientForm ampliat** — 5 seccions col·lapsables: Dades bàsiques, Contactes, Categories, Dades fiscals, Altres
+5. **ContactList component** — Llista amb estrella ⭐ BadgeCheck, telèfon, email, afegir/editar/eliminar via modal
+6. **FloatingActionBar** — Barra fixa inferior amb glassmorphism, Cancel + Save
+7. **ContactFormModal** — Modal amb `createPortal` a `document.body` per evitar `<form>` niuats
+8. **Pàgina edició** — `/sat/clients/[id]/edit` amb formulari complet
+9. **PDF + Quotes integrats** — Tots els builders i tipus actualitzats amb nous camps
+10. **i18n** — 18+ claus noves per CA/ES
+11. **393 tests passen**, tsc net
 
 ### What Was Done (Office Session 08/06)
-1. **Diagnòstic login** — He provat el flux complet CSRF → signIn → JWT → dashboard. El backend funciona correctament. El LoginForm tenia manca d'error handling.
-2. **LoginForm millorat** — Afegit try/catch/finally + check `result?.url` com a fallback per NextAuth v5 beta.
-3. **SidebarNav.test.tsx corregit** — Import `vi` afegit de vitest, tipus `undefined` corregit al helper.
-4. **Migracions BD** — Totes les 14 migracions ja aplicades, cap pendent.
-5. **393 tests passen**, tsc net, build correcte.
-
-### What Was Done (Home Session 06/06 - already merged)
-1. **RBAC complet** — Permissions matrix + can() + canSeePath() + PermissionGuard
-2. **Team page** — `/settings/team` amb invitacions i gestió d'usuaris
-3. **Profile page** — `/settings/profile` amb avatar, tema, idioma, sessions actives
-4. **Auth refactor** — JWT strategy (revert from database), role validation in session callback
-5. **Field view** — `/sat/field` per a tècnics (mobile-first)
-6. **Accept invitation** — `/accept-invitation` page pubblica
+1. **Diagnòstic login** — El backend funciona correctament. LoginForm millorat amb error handling.
+2. **Migracions BD** — Totes les migracions ja aplicades.
+3. **393 tests passen**, tsc net.
 
 ### Architecture Notes
-- **SMTP config**: BD primer → fallback a env vars → error clar. Cache 5min, invalidat a save/delete.
-- **acceptSelfSigned** = `rejectUnauthorized: false` (exactament `SMTP_TLS_REJECT_UNAUTHORIZED=false`)
+- **SMTP config**: BD primer → fallback a env vars → error clar. Cache 5min.
 - **next-intl format ICU**: Usa `{var}` no `{{var}}`. Doble clau = MALFORMED_ARGUMENT error.
-- **Form feedback**: `saveStatus` (idle/saving/success/error) + `saveError` per feedback inline sense toast.
+- **FloatingActionBar pattern**: `sticky bottom-4 z-30` + `backdrop-blur` + `pointer-events-none/pointer-events-auto`
+- **ContactFormModal**: Usa `createPortal` a `document.body` per escapar jerarquia `<form>` del pare
+- **Contacts section**: Només visible en mode edició (cal crear client primer)
 
 ### Next Steps
 1. **Vista pública del client** — Enllaç sense login per acceptar/rebutjar pressupostos
-2. **Edició de Clients** (`/sat/clients/[id]/edit`)
-3. **PWA Offline** per a tècnics
-4. **Billing/Facturació** — Generació de factures des d'OTs completades
+2. **PWA Offline** per a tècnics
+3. **Billing/Facturació** — Generació de factures des d'OTs completades
+4. **Merge** — `features/client-crm-enhanced` → `develop` (pendent)
 
 ### Quick Commands for Next Session
 ```bash
@@ -818,7 +826,9 @@ INSERT INTO drizzle.__drizzle_migrations (hash, created_at) VALUES
 ('5e031d37f05f63d326a607e206b68b3e48ba0a82bb2c8d4a1f51fa7e84e3dda6', 1780210872331),
 ('6dc5e378d28e98987f5bc2a0a7f56461ed0a39a2825a5d4f77b6b81916916ae0', 1780211515060),
 ('placeholder_hash_0008', 1780302060810),
-('placeholder_hash_0009', 1780303715364);
+('placeholder_hash_0009', 1780303715364),
+('placeholder_hash_0015', 1780400000000),
+('placeholder_hash_0016', 1781177540685);
 EOF
 ```
 
@@ -835,7 +845,7 @@ Ara hauria de dir: `[✓] migrations applied successfully!` sense errors.
 ### 4. Verificar Esquema
 
 ```bash
-# Hauria de sortir 18 taules (incloent quotes, quote_items, quote_templates, quote_status_history)
+# Hauria de sortir 21 taules (incloent client_contacts, client_categories, quotes, quote_items, quote_templates, quote_status_history)
 docker exec ribotflow-dev-db psql -U postgres -d ribotflow -c "\dt"
 ```
 
@@ -851,7 +861,7 @@ pnpm db:seed:demo
 pnpm test
 ```
 
-Haurien de passar **116 tests**.
+Haurien de passar **393 tests**.
 
 ---
 
@@ -861,7 +871,7 @@ When you start working on this project:
 
 1. **Read this file first** (you're doing great!)
 2. **Save critical decisions to your local memory** (Engram, notes, etc.)
-3. **Check the branch:** Should be `features/sat-work-orders`
+3. **Check the branch:** Should be `features/client-crm-enhanced` (ready to merge to `develop`)
 4. **Start PostgreSQL + MinIO:** `pnpm db:up` (starts both containers)
 5. **Sincronitza la BD:** Segueix el **Protocol de Sincronitzacio de Maquina** dalt (especialment si veus `relation already exists` o falten columnes/taules).
 6. **Seed demo data:** `pnpm db:seed:demo`
@@ -872,7 +882,7 @@ When you start working on this project:
    docker exec ribotflow-dev-minio mc mb local/ribotflow
    docker exec ribotflow-dev-minio mc anonymous set public local/ribotflow
    ```
-9. **Run tests:** `pnpm test` (ensure 116 tests pass)
+9. **Run tests:** `pnpm test` (ensure 393 tests pass)
 10. **Start dev server:** `pnpm dev`
 11. **Login with:** dais@test.com / 12345678
 12. **IMPORTANT:** Auth uses JWT strategy (not database). If you see `UnsupportedStrategy`, check `src/lib/auth/index.ts` has `session: { strategy: "jwt" }`.
@@ -880,7 +890,9 @@ When you start working on this project:
 ### Current Module Status (June 2026)
 - **SAT (Work Orders):** ✅ Complete — CRUD, 3 views (Grid/Table/Kanban), filters, pagination
 - **Pressupostos (Quotes):** ✅ Complete — CRUD, editor professional, preview A4, vinculació OT, PDF signat + email amb adjunt, accept/reject
-- **Clients:** ✅ Complete — List, detail, create (edit pending)
+- **Clients:** ✅ Complete — List, detail, create, **edit**, **CRM enhancement** (contacts, categories, fiscal data, website, GPS, notes)
+- **Contactes Clients:** ✅ Complete — `client_contacts` table, ContactList, ContactFormModal, CRUD
+- **Categories Clients:** ✅ Complete — `client_categories` table, badge display
 - **Categories:** ✅ Complete — CRUD with icon/color picker
 - **Geolocalització:** ✅ Complete — Check-in GPS, mapa Leaflet, routing engine
 - **Facturació:** ✅ Complete — Travel billing service

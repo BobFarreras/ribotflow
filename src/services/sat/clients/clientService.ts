@@ -16,8 +16,6 @@ export interface CreateClientInput {
   address?: string | null;
   taxId?: string | null;
   location?: { lat: number; lng: number } | null;
-  contactPerson?: string | null;
-  position?: string | null;
   website?: string | null;
   notes?: string | null;
   fiscalData?: {
@@ -78,8 +76,6 @@ export const clientService = {
         address: input.address ?? null,
         taxId: input.taxId ?? null,
         location: input.location ?? null,
-        contactPerson: input.contactPerson ?? null,
-        position: input.position ?? null,
         website: input.website ?? null,
         notes: input.notes ?? null,
         fiscalData: input.fiscalData ?? null,
@@ -110,8 +106,6 @@ export const clientService = {
         ...(input.address !== undefined && { address: input.address }),
         ...(input.taxId !== undefined && { taxId: input.taxId }),
         ...(input.location !== undefined && { location: input.location }),
-        ...(input.contactPerson !== undefined && { contactPerson: input.contactPerson }),
-        ...(input.position !== undefined && { position: input.position }),
         ...(input.website !== undefined && { website: input.website }),
         ...(input.notes !== undefined && { notes: input.notes }),
         ...(input.fiscalData !== undefined && { fiscalData: input.fiscalData }),

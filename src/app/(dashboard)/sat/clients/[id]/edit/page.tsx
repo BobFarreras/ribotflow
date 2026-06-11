@@ -34,6 +34,7 @@ export default async function EditClientPage({ params }: Props) {
   return (
     <ClientForm
       mode="edit"
+      clientId={id}
       categories={categories}
       initialData={{
         name: client.name,
@@ -42,8 +43,6 @@ export default async function EditClientPage({ params }: Props) {
         address: client.address,
         taxId: client.taxId,
         location: client.location as { lat: number; lng: number } | null,
-        contactPerson: client.contactPerson,
-        position: client.position,
         website: client.website,
         notes: client.notes,
         fiscalData: client.fiscalData as {
@@ -63,8 +62,6 @@ export default async function EditClientPage({ params }: Props) {
           taxId: data.taxId || null,
           lat: data.lat ? parseFloat(data.lat) : null,
           lng: data.lng ? parseFloat(data.lng) : null,
-          contactPerson: data.contactPerson || null,
-          position: data.position || null,
           website: data.website || null,
           notes: data.notes || null,
           fiscalData:
