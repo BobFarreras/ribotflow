@@ -168,7 +168,29 @@
   "clients": {
     "title": "Clientes SAT",
     "newButton": "Nuevo Cliente",
-    "emptyState": "No hay clientes registrados. Crea el primer cliente para empezar."
+    "emptyState": "No hay clientes registrados. Crea el primer cliente para empezar.",
+    "form": {
+      "createTitle": "Nuevo Cliente",
+      "editTitle": "Editar Cliente",
+      "name": "Nombre",
+      "namePlaceholder": "Nombre del cliente o empresa",
+      "email": "Email",
+      "emailPlaceholder": "cliente@email.com",
+      "phone": "Teléfono",
+      "phonePlaceholder": "+34 600 000 000",
+      "address": "Dirección",
+      "addressPlaceholder": "Calle, número, ciudad, CP",
+      "taxId": "NIF / CIF",
+      "taxIdPlaceholder": "B12345678",
+      "gps": "Coordenadas GPS",
+      "latPlaceholder": "Latitud",
+      "lngPlaceholder": "Longitud",
+      "gpsHint": "Opcional. Permite calcular distancias para los desplazamientos.",
+      "cancel": "Cancelar",
+      "create": "Crear cliente",
+      "save": "Guardar cambios",
+      "error": "Error al procesar la solicitud"
+    }
   },
   "categories": {
     "title": "Categorías de Órdenes",

@@ -6,5 +6,6 @@
  *              (e.g. services/sat/quoteService.ts).
  */
 
+export * from "./clients";
 export * from "./quotes";
 export * from "./work-orders";

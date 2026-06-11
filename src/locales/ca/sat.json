@@ -168,7 +168,29 @@
   "clients": {
     "title": "Clients SAT",
     "newButton": "Nou Client",
-    "emptyState": "No hi ha clients registrats. Crea el primer client per començar."
+    "emptyState": "No hi ha clients registrats. Crea el primer client per començar.",
+    "form": {
+      "createTitle": "Nou Client",
+      "editTitle": "Editar Client",
+      "name": "Nom",
+      "namePlaceholder": "Nom del client o empresa",
+      "email": "Email",
+      "emailPlaceholder": "client@email.com",
+      "phone": "Telèfon",
+      "phonePlaceholder": "+34 600 000 000",
+      "address": "Adreça",
+      "addressPlaceholder": "Carrer, número, ciutat, CP",
+      "taxId": "NIF / CIF",
+      "taxIdPlaceholder": "B12345678",
+      "gps": "Coordenades GPS",
+      "latPlaceholder": "Latitud",
+      "lngPlaceholder": "Longitud",
+      "gpsHint": "Opcional. Permet calcular distàncies per als desplaçaments.",
+      "cancel": "Cancel·lar",
+      "create": "Crear client",
+      "save": "Desar canvis",
+      "error": "Error en processar la sol·licitud"
+    }
   },
   "categories": {
     "title": "Categories d'Ordres",

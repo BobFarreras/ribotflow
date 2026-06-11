@@ -10,7 +10,7 @@ import { clients, workOrders } from "@/db/schema/sat";
 import { eq, desc } from "drizzle-orm";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Phone, Mail, MapPin, FileText, User, Wrench } from "lucide-react";
+import { ArrowLeft, Phone, Mail, MapPin, FileText, User, Wrench, Pencil } from "lucide-react";
 import { WorkOrderStatusBadge } from "@/components/sat/shared/WorkOrderStatusBadge";
 
 interface Props {
@@ -59,6 +59,13 @@ export default async function ClientDetailPage({ params }: Props) {
               <h1 className="text-lg font-semibold text-[var(--text)]">{client.name}</h1>
             </div>
           </div>
+          <Link
+            href={`/sat/clients/${client.id}/edit`}
+            className="flex items-center gap-2 rounded-lg border border-[var(--border)] px-3 py-2 text-sm font-medium text-[var(--text)] transition-colors hover:bg-[var(--bg)]"
+          >
+            <Pencil className="h-4 w-4" />
+            Editar
+          </Link>
         </div>
       </header>
 
