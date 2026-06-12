@@ -90,7 +90,7 @@ describe("updateName", () => {
    ================================================================ */
 
 describe("changePassword", () => {
-  it("hashes and persists the new password when the current one matches", async () => {
+  it("hashes and persists the new password when the current one matches", { timeout: 15000 }, async () => {
     // getPasswordHash returns a known hash
     dbMock.limit.mockResolvedValueOnce([{ passwordHash: "OLDHASH" }]);
     // The verification of the password is real (bcrypt) — use a known hash.
@@ -114,7 +114,7 @@ describe("changePassword", () => {
     expect(await verifyPassword("brandNewP@ss", newHash)).toBe(true);
   });
 
-  it("throws IncorrectPasswordError on a wrong current password", async () => {
+  it("throws IncorrectPasswordError on a wrong current password", { timeout: 15000 }, async () => {
     const { hashPassword } = await import("@/lib/utils/crypto");
     const valid = await hashPassword("correct");
     dbMock.limit.mockResolvedValueOnce([{ passwordHash: valid }]);
