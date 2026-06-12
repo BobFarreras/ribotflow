@@ -55,6 +55,8 @@ export const quotes = pgTable(
     acceptedByName: text("accepted_by_name"),
     acceptedByEmail: text("accepted_by_email"),
     signaturePngUrl: text("signature_png_url"),
+    shareToken: text("share_token"),
+    shareTokenExpiresAt: timestamp("share_token_expires_at"),
     rejectedAt: timestamp("rejected_at"),
     rejectionReason: text("rejection_reason"),
     createdBy: uuid("created_by").notNull(),
@@ -67,6 +69,7 @@ export const quotes = pgTable(
     workOrderIdx: index("idx_quotes_work_order").on(table.workOrderId),
     clientIdx: index("idx_quotes_client").on(table.clientId),
     numberUnique: unique("idx_quotes_number_unique").on(table.companyId, table.number),
+    shareTokenIdx: index("idx_quotes_share_token").on(table.shareToken),
   })
 );
 
