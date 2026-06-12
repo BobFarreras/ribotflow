@@ -18,12 +18,20 @@ export class PdfBuilder {
   fontBold: PDFFont;
   y: number;
   lang: Lang;
+  companyName: string;
 
-  constructor(pdfDoc: PDFDocument, font: PDFFont, fontBold: PDFFont, lang: Lang) {
+  constructor(
+    pdfDoc: PDFDocument,
+    font: PDFFont,
+    fontBold: PDFFont,
+    lang: Lang,
+    companyName = "RIBOTFLOW"
+  ) {
     this.pdfDoc = pdfDoc;
     this.font = font;
     this.fontBold = fontBold;
     this.lang = lang;
+    this.companyName = companyName;
     this.page = pdfDoc.addPage([PAGE_W, PAGE_H]);
     this.y = PAGE_H - MARGIN;
   }
@@ -92,7 +100,8 @@ export class PdfBuilder {
   drawFooter() {
     const footerY = MARGIN + 10;
     this.drawLine(footerY + 14, COLORS.border, 0.5);
-    this.drawText(LABELS[this.lang].reportFooter, MARGIN, footerY, {
+    const suffix = LABELS[this.lang].reportFooterSuffix;
+    this.drawText(`${this.companyName} — ${suffix}`, MARGIN, footerY, {
       size: 8,
       color: COLORS.textMuted,
     });

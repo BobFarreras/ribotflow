@@ -9,7 +9,6 @@ import type { Lang } from "./types";
 
 export const LABELS: Record<Lang, Record<string, string>> = {
   ca: {
-    headerTitle: "RIBOTFLOW",
     headerSubtitle: "Informe d'Ordre de Treball",
     quoteDocTitle: "Pressupost",
     quoteNum: "NUM.",
@@ -22,7 +21,7 @@ export const LABELS: Record<Lang, Record<string, string>> = {
     company: "EMPRESA",
     total: "TOTAL",
     generated: "Generat",
-    reportFooter: "RIBOTFLOW — Informe generat automaticament",
+    reportFooterSuffix: "Informe generat automaticament",
     name: "Nom",
     phone: "Telèfon",
     email: "Correu",
@@ -63,7 +62,6 @@ export const LABELS: Record<Lang, Record<string, string>> = {
     acceptanceConfirmed: "Acceptacio confirmada",
   },
   es: {
-    headerTitle: "RIBOTFLOW",
     headerSubtitle: "Informe de Orden de Trabajo",
     quoteDocTitle: "Presupuesto",
     quoteNum: "NUM.",
@@ -76,7 +74,7 @@ export const LABELS: Record<Lang, Record<string, string>> = {
     company: "EMPRESA",
     total: "TOTAL",
     generated: "Generado",
-    reportFooter: "RIBOTFLOW — Informe generado automaticamente",
+    reportFooterSuffix: "Informe generado automaticamente",
     name: "Nombre",
     phone: "Teléfono",
     email: "Correo",
@@ -117,7 +115,6 @@ export const LABELS: Record<Lang, Record<string, string>> = {
     acceptanceConfirmed: "Aceptacion confirmada",
   },
   en: {
-    headerTitle: "RIBOTFLOW",
     headerSubtitle: "Work Order Report",
     quoteDocTitle: "Quote",
     quoteNum: "NO.",
@@ -130,7 +127,7 @@ export const LABELS: Record<Lang, Record<string, string>> = {
     company: "COMPANY",
     total: "TOTAL",
     generated: "Generated",
-    reportFooter: "RIBOTFLOW — Automatically generated report",
+    reportFooterSuffix: "Automatically generated report",
     name: "Name",
     phone: "Phone",
     email: "Email",

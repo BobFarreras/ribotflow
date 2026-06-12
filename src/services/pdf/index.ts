@@ -37,7 +37,7 @@ export class PdfService {
     const pdfDoc = await PDFDocument.create();
     const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
     const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
-    const builder = new PdfBuilder(pdfDoc, font, fontBold, lang);
+    const builder = new PdfBuilder(pdfDoc, font, fontBold, lang, data.company.name);
 
     await buildQuotePdf(builder, {
       quoteNumber: data.quote.number,
@@ -92,7 +92,7 @@ export class PdfService {
     const pdfDoc = await PDFDocument.create();
     const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
     const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
-    const builder = new PdfBuilder(pdfDoc, font, fontBold, lang);
+    const builder = new PdfBuilder(pdfDoc, font, fontBold, lang, data.company.name);
 
     await buildQuotePdf(builder, {
       quoteNumber: data.quote.number,
@@ -147,7 +147,7 @@ export class PdfService {
     const pdfDoc = await PDFDocument.create();
     const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
     const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
-    const builder = new PdfBuilder(pdfDoc, font, fontBold, lang);
+    const builder = new PdfBuilder(pdfDoc, font, fontBold, lang, data.company.name);
 
     await buildWorkOrderPdf(builder, {
       workOrderNumber: data.workOrder.number,
