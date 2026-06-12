@@ -192,9 +192,7 @@ export default async function ClientDetailPage({ params }: Props) {
                 Contactes ({contacts.length})
               </h2>
               {contacts.length === 0 ? (
-                <p className="text-sm text-[var(--text-muted)]">
-                  No hi ha contactes afegits.
-                </p>
+                <p className="text-sm text-[var(--text-muted)]">No hi ha contactes afegits.</p>
               ) : (
                 <div className="space-y-3">
                   {contacts.map((contact) => (
@@ -261,35 +259,36 @@ export default async function ClientDetailPage({ params }: Props) {
             )}
 
             {/* Fiscal data card */}
-            {fiscalData && (fiscalData.iban || fiscalData.activityCode || fiscalData.registrationDate) && (
-              <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-4">
-                <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
-                  Dades Fiscals
-                </h2>
-                <div className="space-y-1.5 text-sm">
-                  {fiscalData.iban && (
-                    <div className="flex items-center gap-2">
-                      <span className="text-[var(--text-muted)]">IBAN:</span>
-                      <span className="font-mono text-[var(--text)]">{fiscalData.iban}</span>
-                    </div>
-                  )}
-                  {fiscalData.activityCode && (
-                    <div className="flex items-center gap-2">
-                      <span className="text-[var(--text-muted)]">Codi activitat:</span>
-                      <span className="text-[var(--text)]">{fiscalData.activityCode}</span>
-                    </div>
-                  )}
-                  {fiscalData.registrationDate && (
-                    <div className="flex items-center gap-2">
-                      <span className="text-[var(--text-muted)]">Data registre:</span>
-                      <span className="text-[var(--text)]">
-                        {new Date(fiscalData.registrationDate).toLocaleDateString("ca-ES")}
-                      </span>
-                    </div>
-                  )}
+            {fiscalData &&
+              (fiscalData.iban || fiscalData.activityCode || fiscalData.registrationDate) && (
+                <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-4">
+                  <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
+                    Dades Fiscals
+                  </h2>
+                  <div className="space-y-1.5 text-sm">
+                    {fiscalData.iban && (
+                      <div className="flex items-center gap-2">
+                        <span className="text-[var(--text-muted)]">IBAN:</span>
+                        <span className="font-mono text-[var(--text)]">{fiscalData.iban}</span>
+                      </div>
+                    )}
+                    {fiscalData.activityCode && (
+                      <div className="flex items-center gap-2">
+                        <span className="text-[var(--text-muted)]">Codi activitat:</span>
+                        <span className="text-[var(--text)]">{fiscalData.activityCode}</span>
+                      </div>
+                    )}
+                    {fiscalData.registrationDate && (
+                      <div className="flex items-center gap-2">
+                        <span className="text-[var(--text-muted)]">Data registre:</span>
+                        <span className="text-[var(--text)]">
+                          {new Date(fiscalData.registrationDate).toLocaleDateString("ca-ES")}
+                        </span>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
             {/* Actions */}
             <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-4">

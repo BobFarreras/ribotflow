@@ -47,12 +47,7 @@ export const contactService = {
       .select()
       .from(clientContacts)
       .innerJoin(clients, eq(clientContacts.clientId, clients.id))
-      .where(
-        and(
-          eq(clientContacts.id, contactId),
-          eq(clients.companyId, companyId)
-        )
-      )
+      .where(and(eq(clientContacts.id, contactId), eq(clients.companyId, companyId)))
       .limit(1);
 
     return contact?.client_contacts ?? null;

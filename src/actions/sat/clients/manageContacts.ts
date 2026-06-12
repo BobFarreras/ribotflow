@@ -32,11 +32,7 @@ export async function createContactAction(clientId: string, input: unknown) {
       return { success: false, error: parsed.error.errors[0]?.message ?? "Invalid data" };
     }
 
-    const contact = await contactService.create(
-      session.user.companyId,
-      clientId,
-      parsed.data
-    );
+    const contact = await contactService.create(session.user.companyId, clientId, parsed.data);
 
     revalidatePath(`/sat/clients/${clientId}`);
     return { success: true, data: contact };
@@ -60,11 +56,7 @@ export async function updateContactAction(contactId: string, input: unknown) {
       return { success: false, error: parsed.error.errors[0]?.message ?? "Invalid data" };
     }
 
-    const contact = await contactService.update(
-      session.user.companyId,
-      contactId,
-      parsed.data
-    );
+    const contact = await contactService.update(session.user.companyId, contactId, parsed.data);
 
     revalidatePath(`/sat/clients`);
     return { success: true, data: contact };
@@ -83,10 +75,7 @@ export async function getContactsAction(clientId: string) {
       return { success: false, error: "Unauthorized" };
     }
 
-    const contacts = await contactService.getByClient(
-      session.user.companyId,
-      clientId
-    );
+    const contacts = await contactService.getByClient(session.user.companyId, clientId);
 
     return { success: true, data: contacts };
   } catch (error) {

@@ -29,12 +29,7 @@ export const categoryService = {
     const [category] = await db
       .select()
       .from(clientCategories)
-      .where(
-        and(
-          eq(clientCategories.id, categoryId),
-          eq(clientCategories.companyId, companyId)
-        )
-      )
+      .where(and(eq(clientCategories.id, categoryId), eq(clientCategories.companyId, companyId)))
       .limit(1);
 
     return category ?? null;
@@ -79,10 +74,7 @@ export const categoryService = {
       throw new Error("Category not found or access denied");
     }
 
-    await db
-      .update(clients)
-      .set({ categoryId: null })
-      .where(eq(clients.categoryId, categoryId));
+    await db.update(clients).set({ categoryId: null }).where(eq(clients.categoryId, categoryId));
 
     await db.delete(clientCategories).where(eq(clientCategories.id, categoryId));
   },
@@ -91,12 +83,7 @@ export const categoryService = {
     const [result] = await db
       .select({ value: count() })
       .from(clients)
-      .where(
-        and(
-          eq(clients.companyId, companyId),
-          eq(clients.categoryId, categoryId)
-        )
-      );
+      .where(and(eq(clients.companyId, companyId), eq(clients.categoryId, categoryId)));
 
     return result?.value ?? 0;
   },

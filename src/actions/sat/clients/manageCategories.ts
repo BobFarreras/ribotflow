@@ -29,10 +29,7 @@ export async function createCategoryAction(input: unknown) {
       return { success: false, error: parsed.error.errors[0]?.message ?? "Invalid data" };
     }
 
-    const category = await categoryService.create(
-      session.user.companyId,
-      parsed.data
-    );
+    const category = await categoryService.create(session.user.companyId, parsed.data);
 
     revalidatePath("/sat/clients");
     return { success: true, data: category };
@@ -56,11 +53,7 @@ export async function updateCategoryAction(categoryId: string, input: unknown) {
       return { success: false, error: parsed.error.errors[0]?.message ?? "Invalid data" };
     }
 
-    const category = await categoryService.update(
-      session.user.companyId,
-      categoryId,
-      parsed.data
-    );
+    const category = await categoryService.update(session.user.companyId, categoryId, parsed.data);
 
     revalidatePath("/sat/clients");
     return { success: true, data: category };

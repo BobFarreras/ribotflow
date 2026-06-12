@@ -11,10 +11,7 @@ import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { X, Loader2, UserCircle } from "lucide-react";
 import { useTranslations } from "next-intl";
-import {
-  createContactAction,
-  updateContactAction,
-} from "@/actions/sat/clients/manageContacts";
+import { createContactAction, updateContactAction } from "@/actions/sat/clients/manageContacts";
 
 export interface ContactFormData {
   name: string;
@@ -124,10 +121,7 @@ export function ContactFormModal({
 
   return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div
-        className="absolute inset-0 bg-black/50"
-        onClick={isLoading ? undefined : onClose}
-      />
+      <div className="absolute inset-0 bg-black/50" onClick={isLoading ? undefined : onClose} />
 
       <div className="relative mx-4 w-full max-w-md rounded-xl border border-[var(--border)] bg-[var(--surface)] shadow-xl">
         <div className="flex items-center justify-between border-b border-[var(--border)] px-5 py-4">

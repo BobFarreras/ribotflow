@@ -9,16 +9,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useTranslations } from "next-intl";
-import {
-  User,
-  Phone,
-  Mail,
-  Pencil,
-  Trash2,
-  BadgeCheck,
-  Plus,
-  Loader2,
-} from "lucide-react";
+import { User, Phone, Mail, Pencil, Trash2, BadgeCheck, Plus, Loader2 } from "lucide-react";
 import { getContactsAction, deleteContactAction } from "@/actions/sat/clients/manageContacts";
 import { ContactFormModal } from "./ContactFormModal";
 
@@ -109,9 +100,7 @@ export function ContactList({ clientId }: ContactListProps) {
           <Loader2 className="h-5 w-5 animate-spin text-[var(--text-muted)]" />
         </div>
       ) : contacts.length === 0 ? (
-        <p className="py-4 text-center text-sm text-[var(--text-muted)]">
-          {t("contactEmpty")}
-        </p>
+        <p className="py-4 text-center text-sm text-[var(--text-muted)]">{t("contactEmpty")}</p>
       ) : (
         <div className="space-y-2 pt-2">
           {contacts.map((contact) => (
@@ -130,9 +119,7 @@ export function ContactList({ clientId }: ContactListProps) {
                     </span>
                   </div>
                   {contact.position && (
-                    <p className="mt-0.5 text-xs text-[var(--text-muted)]">
-                      {contact.position}
-                    </p>
+                    <p className="mt-0.5 text-xs text-[var(--text-muted)]">{contact.position}</p>
                   )}
                 </div>
                 <div className="flex shrink-0 items-center gap-1">

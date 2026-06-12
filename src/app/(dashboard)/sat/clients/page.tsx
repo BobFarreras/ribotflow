@@ -85,7 +85,9 @@ export default async function ClientsPage() {
                   <span
                     className="relative z-10 mt-1 inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium"
                     style={{
-                      backgroundColor: client.categoryColor ? `${client.categoryColor}20` : "var(--bg)",
+                      backgroundColor: client.categoryColor
+                        ? `${client.categoryColor}20`
+                        : "var(--bg)",
                       color: client.categoryColor ?? "var(--text-muted)",
                     }}
                   >
