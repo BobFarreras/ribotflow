@@ -23,7 +23,7 @@ This document contains all critical context from previous development sessions i
 **Type:** Enterprise Operating System (ERP, SAT, CRM, Billing, Access Control)
 **Stack:** Next.js 16 + React 19 + TypeScript + PostgreSQL + Drizzle ORM + Auth.js v5
 **Language:** English code, Catalan/Spanish UI via i18n
-**Branch:** `features/client-crm-enhanced` (active development, ahead of `develop`)
+**Branch:** `develop` (stable). Feature branches pending merge: `fix/pdf-company-name`, `feature/client-public-view`
 
 ---
 
@@ -110,7 +110,7 @@ This document contains all critical context from previous development sessions i
 ## SAT Module Status
 
 ### Completed
-- [x] Database schema (21 tables: clients, categories, work_orders, status_history, materials, attachments, signatures, locations, products, quotes, quote_items, quote_templates, quote_status_history, **client_contacts**, **client_categories**, companies, users, sessions, invitations, smtp_configs, preferences)
+- [x] Database schema (21 tables + 2 new: client_contacts, client_categories. Quotes table has shareToken + shareTokenExpiresAt columns)
 - [x] Work order service with status workflow transitions
 - [x] Material service with product catalog + free-text materials
 - [x] Attachment service with local file storage
@@ -120,7 +120,7 @@ This document contains all critical context from previous development sessions i
 - [x] **Quote service** (CRUD + workflow + PRE-{YYYY}-{SEQ} numbering + calculations)
 - [x] **Quote item service** (line items with auto-recalculation of totals)
 - [x] **Quote template service** (templates with duplicate and usage tracking)
-- [x] Server Actions: createWorkOrder, updateStatus, assignTechnician, addMaterial, removeMaterial, getProducts, addAttachment, deleteAttachment, saveSignature, generatePdf, deletePdf, createCategory, updateCategory, createClient, **createQuote**, **updateQuote**, **deleteQuote**, **updateQuoteStatus**, **addQuoteItem**, **updateQuoteItem**, **removeQuoteItem**, **createQuoteTemplate**, **updateQuoteTemplate**, **deleteQuoteTemplate**, **duplicateQuoteTemplate**, **acceptQuote**, **rejectQuote**
+- [x] Server Actions: createWorkOrder, updateStatus, assignTechnician, addMaterial, removeMaterial, getProducts, addAttachment, deleteAttachment, saveSignature, generatePdf, deletePdf, createCategory, updateCategory, createClient, **createQuote**, **updateQuote**, **deleteQuote**, **updateQuoteStatus**, **addQuoteItem**, **updateQuoteItem**, **removeQuoteItem**, **createQuoteTemplate**, **updateQuoteTemplate**, **deleteQuoteTemplate**, **duplicateQuoteTemplate**, **acceptQuote**, **rejectQuote**, **sendQuoteEmail**, **getQuoteByToken**, **acceptQuotePublic**, **rejectQuotePublic**
 - [x] UI pages: List (`/sat`), Detail (`/sat/[id]`), Create (`/sat/new`), Map (`/sat/map`), Routes (`/sat/routes`), Clients (`/sat/clients`), Client Detail (`/sat/clients/[id]`), Client New (`/sat/clients/new`), Categories (`/sat/categories`), Category New (`/sat/categories/new`), Category Edit (`/sat/categories/[id]`), **Quotes (`/sat/quotes`)**, **Quote Detail (`/sat/quotes/[id]`)**, **Quote New (`/sat/quotes/new`)**, **Quote Templates (`/sat/quotes/templates`)**
 - [x] Client components: WorkOrderForm, WorkOrderActions, TechnicianAssigner, MaterialList, AttachmentSection, SignatureCanvas, PdfGenerator, CheckInButton, AddressAutocomplete, GoogleMapsLink, MapView, TravelCostCard, WorkOrderFilters, Pagination, WorkOrderCard, WorkOrderTable, WorkOrderKanban, CategoryIcon, StatusHistorySection, **QuoteEditor**, **QuotePdfPreview**, **QuoteList**, **QuoteStatusBadge**, **QuoteItemTable**, **QuoteActions**
 - [x] i18n translations (ca/es) for all SAT strings including materials, attachments, signatures, PDF, work orders, clients, categories, **quotes**, **quote templates**
@@ -173,11 +173,11 @@ This document contains all critical context from previous development sessions i
 **IMPORTANT:** Status transitions are now **FREE** — any status can transition to any other status. The `VALID_STATUS_TRANSITIONS` constant in `src/lib/constants/statusTransitions.ts` allows all transitions. No restrictive validation.
 
 ### Pending / Next Features (Priority Order)
-1. **Vista pública del client** — Enllaç sense login perquè el client pugui acceptar/rebutjar
-2. **Personalització de PDF i Company Settings** (logo, colors, text legal, tarifa desplaçament)
-3. **Mode PWA Offline** per a tècnics
-5. **Email notifications on status changes** for work orders
-6. **Calendar integration** for scheduled dates
+1. ~~**Vista pública del client**~~ ✅ Done — `feature/client-public-view` branch (pending merge)
+2. **Billing/Facturació** — Invoice generation from completed work orders
+3. **PWA Offline** per a tècnics
+4. **Email notifications on status changes** for work orders
+5. **Calendar integration** for scheduled dates
 
 > **SMTP Configuration** — See `docs/SMTP_SETUP.md`. The system uses DB-first config (`smtp_configs` table per company, encrypted passwords via `ENCRYPTION_KEY`). Env vars (`SMTP_HOST`, `SMTP_USER`, `SMTP_PASSWORD`) serve as fallback only. Once a company has DB config, env vars are ignored for that company.
 
@@ -327,6 +327,7 @@ src/
     sat/quotes/templates/page.tsx # Quote templates → URL: /sat/quotes/templates
     settings/email/page.tsx   # SMTP config → URL: /settings/email
     api/uploads/[...path]/route.ts  # Local file serving API
+  p/[token]/page.tsx         # Public quote view (no auth) → URL: /p/{token}
   components/layout/        # Layout Components
     SidebarContext.tsx      # React context for sidebar state
     Sidebar.tsx             # Main sidebar (collapsible, responsive)
@@ -349,6 +350,7 @@ src/
       duplicateQuoteTemplate.ts
       acceptQuote.ts        # Accept quote (client signature)
       sendQuoteEmail.ts     # Send quote by email with PDF
+      publicQuote.ts        # Public actions: getQuoteByToken, acceptQuotePublic, rejectQuotePublic
     # Work Orders (subdomain)
     work-orders/
       createWorkOrder.ts
@@ -394,6 +396,7 @@ src/
       QuoteList.tsx         # Quote list with filters
       QuoteStatusBadge.tsx  # Quote status badge
       SendQuoteEmailModal.tsx # Email send modal
+      PublicQuoteView.tsx   # Public quote view (accept/reject without login)
 # Shared (used by both subdomains)
      shared/
        AddressAutocomplete.tsx # Nominatim geocoding autocomplete
@@ -421,9 +424,10 @@ src/
     locationService.ts      # GPS tracking + Haversine distance calculation
     clientService.ts        # SAT client CRUD
     categoryService.ts      # Work order category CRUD
-    quoteService.ts         # Quote CRUD + workflow + calculations
+    quoteService.ts         # Quote CRUD + workflow + calculations + ensureShareToken
     quoteItemService.ts     # Quote line items with auto-recalculation
     quoteTemplateService.ts # Quote templates with duplicate and usage tracking
+    tokens.ts               # Token generation for public quote sharing (30-day TTL)
   services/routing/         # Route Engine (agnostic)
     interface.ts            # RouteEngine contract
     haversineEngine.ts      # Free: straight-line distance
@@ -693,6 +697,10 @@ quotes/Empresa_Test/PRES-2026-0001-signature.png
 | 08/06/2026 | **canSeePath: workorder:read:all implies own** | `/sat` i `/access` accepten `workorder:read:all` com a `workorder:read:own`, però `/sat/field` i `/sat/work-orders` segueixen sent només per TECHNICIAN. |
 | 08/06/2026 | **acceptInvitation i18n: must be top-level in sat.json** | Les claus `acceptInvitation` i `field` estaven nidificades dins de `settings` al JSON, però els components busquen `sat.acceptInvitation.*` (nivell superior). Causava `MISSING_MESSAGE` error. Corregit a ca/es. |
 | 08/06/2026 | **Team dropdown z-index + overflow** | El dropdown dels 3 punts (TeamRow) tenia `z-10` i era tallat per `overflow-hidden` del contenidor (TeamTable). Canviat a `z-50` i `overflow-visible`. |
+| 12/06/2026 | **PDF branding: dynamic company name** | `PdfBuilder` now accepts `companyName` constructor param. `reportFooter` renamed to `reportFooterSuffix`. All 3 PDF construction sites pass `data.company.name`. |
+| 12/06/2026 | **Pre-commit hook: auto-format** | `.husky/pre-commit` runs `pnpm format` + `git add -A` to prevent unformatted code from being committed. |
+| 12/06/2026 | **Public quote view via share token** | New route `/p/[token]` (no auth). Schema adds `shareToken` + `shareTokenExpiresAt` to quotes. Token: `randomBytes(32).toString("base64url")`, 30-day TTL. Public actions: `getQuoteByToken`, `acceptQuotePublic`, `rejectQuotePublic`. Email now includes CTA button with public link. `quoteStatusHistory.changedBy` made nullable for public actions. |
+| 12/06/2026 | **quoteStatusHistory.changedBy nullable** | Changed from `notNull()` to nullable to support public actions (no auth context). Requires migration 0018. |
 
 ---
 
@@ -727,25 +735,36 @@ Multiple agents (including this one) investigated the wrong causes:
 
 ---
 
-## Session Handoff — Last Update: 11/06/2026
+## Session Handoff — Last Update: 12/06/2026
+
+### What Was Done (Session 12/06 — PDF Fix + Public Quote View)
+1. **Merge CRM → develop** — Fast-forward merge de `features/client-crm-enhanced` (29 fitxers, +8086 línies)
+2. **Fix pre-push** — Test timeout bcrypt augmentat a 15000ms + `pnpm format` (354 fitxers)
+3. **Pre-commit hook** — `.husky/pre-commit` automàtic (pnpm format + git add)
+4. **PDF branding fix** — "RIBOTFLOW" hardcoded → nom dinàmic de l'empresa. `PdfBuilder` rep `companyName`, `reportFooter` → `reportFooterSuffix`
+5. **Branca `fix/pdf-company-name`** — Pushed a GitHub, pendent de merge
+6. **Vista pública del client** — Implementació completa:
+   - Schema: `shareToken` + `shareTokenExpiresAt` a taula `quotes` + índex
+   - Token: `randomBytes(32).toString("base64url")`, TTL 30 dies
+   - Ruta pública: `/p/[token]` (proxy.allowlist, sense auth)
+   - Accions: `getQuoteByToken`, `acceptQuotePublic`, `rejectQuotePublic`
+   - UI: Pressupost complet + botons Acceptar/Rebutjar amb formularis
+   - Email: CTA "Veure i acceptar pressupost" amb link públic
+   - Validació: Només `sent` es pot acceptar/rebutjar
+7. **Branca `feature/client-public-view`** — Pushed a GitHub, pendent de merge
 
 ### What Was Done (Session 11/06 — CRM Enhancement)
 1. **Schema ampliat** — `client_contacts`, `client_categories` taules noves. `clients` ampliat amb website, gps_latitude, gps_longitude, fiscal_data (JSONB), notes
 2. **Services creats** — `contactService.ts`, `categoryService.ts` amb CRUD complet
 3. **Server Actions** — `manageContacts.ts` (get/create/update/delete contacts), `manageCategories.ts` (get/create/update/delete)
 4. **ClientForm ampliat** — 5 seccions col·lapsables: Dades bàsiques, Contactes, Categories, Dades fiscals, Altres
-5. **ContactList component** — Llista amb estrella ⭐ BadgeCheck, telèfon, email, afegir/editar/eliminar via modal
+5. **ContactList component** — Llista amb estrella BadgeCheck, telèfon, email, afegir/editar/eliminar via modal
 6. **FloatingActionBar** — Barra fixa inferior amb glassmorphism, Cancel + Save
 7. **ContactFormModal** — Modal amb `createPortal` a `document.body` per evitar `<form>` niuats
 8. **Pàgina edició** — `/sat/clients/[id]/edit` amb formulari complet
 9. **PDF + Quotes integrats** — Tots els builders i tipus actualitzats amb nous camps
 10. **i18n** — 18+ claus noves per CA/ES
 11. **393 tests passen**, tsc net
-
-### What Was Done (Office Session 08/06)
-1. **Diagnòstic login** — El backend funciona correctament. LoginForm millorat amb error handling.
-2. **Migracions BD** — Totes les migracions ja aplicades.
-3. **393 tests passen**, tsc net.
 
 ### Architecture Notes
 - **SMTP config**: BD primer → fallback a env vars → error clar. Cache 5min.
@@ -755,10 +774,11 @@ Multiple agents (including this one) investigated the wrong causes:
 - **Contacts section**: Només visible en mode edició (cal crear client primer)
 
 ### Next Steps
-1. **Vista pública del client** — Enllaç sense login per acceptar/rebutjar pressupostos
-2. **PWA Offline** per a tècnics
-3. **Billing/Facturació** — Generació de factures des d'OTs completades
-4. **Merge** — `features/client-crm-enhanced` → `develop` (pendent)
+1. **Merge branches** — `fix/pdf-company-name` → `develop` + `feature/client-public-view` → `develop`
+2. **Billing/Facturació** — Generació de factures des d'OTs completades
+3. **PWA Offline** per a tècnics
+4. **Email notifications on status changes** for work orders
+5. **Calendar integration** for scheduled dates
 
 ### Quick Commands for Next Session
 ```bash
@@ -871,9 +891,9 @@ When you start working on this project:
 
 1. **Read this file first** (you're doing great!)
 2. **Save critical decisions to your local memory** (Engram, notes, etc.)
-3. **Check the branch:** Should be `features/client-crm-enhanced` (ready to merge to `develop`)
+3. **Check the branch:** Should be `develop` (stable). Feature branches pending merge: `fix/pdf-company-name`, `feature/client-public-view`
 4. **Start PostgreSQL + MinIO:** `pnpm db:up` (starts both containers)
-5. **Sincronitza la BD:** Segueix el **Protocol de Sincronitzacio de Maquina** dalt (especialment si veus `relation already exists` o falten columnes/taules).
+5. **Sincronitza la BD:** Segueix el **Protocol de Sincronitzacio de Maquina** dalt (especialment si veus `relation already exists` o falten columnes/taules). Note: new migrations 0017-0018 add shareToken columns to quotes.
 6. **Seed demo data:** `pnpm db:seed:demo`
 7. **Configure `.env.local`** with MinIO variables (see Environment Variables section above)
 8. **Make MinIO bucket public:**
@@ -889,7 +909,7 @@ When you start working on this project:
 
 ### Current Module Status (June 2026)
 - **SAT (Work Orders):** ✅ Complete — CRUD, 3 views (Grid/Table/Kanban), filters, pagination
-- **Pressupostos (Quotes):** ✅ Complete — CRUD, editor professional, preview A4, vinculació OT, PDF signat + email amb adjunt, accept/reject
+- **Pressupostos (Quotes):** ✅ Complete — CRUD, editor professional, preview A4, vinculació OT, PDF signat + email amb adjunt, accept/reject, **public view via share token** (`/p/[token]`)
 - **Clients:** ✅ Complete — List, detail, create, **edit**, **CRM enhancement** (contacts, categories, fiscal data, website, GPS, notes)
 - **Contactes Clients:** ✅ Complete — `client_contacts` table, ContactList, ContactFormModal, CRUD
 - **Categories Clients:** ✅ Complete — `client_categories` table, badge display
@@ -898,6 +918,7 @@ When you start working on this project:
 - **Facturació:** ✅ Complete — Travel billing service
 - **Notificacions:** ✅ Complete — Email amb per-company DB config + 5min cache + fallback a env vars
 - **SMTP Settings:** ✅ Complete — `/settings/email` amb presets, test connection, AES-256-GCM, i18n ca/es
+- **PDF Branding:** ✅ Complete — Dynamic company name in all PDFs (not hardcoded)
 - **Refactor Fases 1-3:** ✅ Completades — Monolits dividits, schema per entitat, serveis amb subdominis, components/pàgines dividits, SMTP settings redissenyat
 - **RBAC:** ✅ Complet — Roles + permissions matrix + can() + canSeePath() + PermissionGuard + SidebarNav filtrat per rol
 - **Team Management:** ✅ Complet — `/settings/team` amb invitacions, canvi de rol, activar/desactivar usuaris, última activitat

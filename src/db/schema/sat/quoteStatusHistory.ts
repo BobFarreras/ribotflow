@@ -17,7 +17,7 @@ export const quoteStatusHistory = pgTable(
       .notNull(),
     statusFrom: text("status_from"),
     statusTo: text("status_to").notNull(),
-    changedBy: uuid("changed_by").notNull(),
+    changedBy: uuid("changed_by"),
     reason: text("reason"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
   },

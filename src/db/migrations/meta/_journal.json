@@ -120,6 +120,20 @@
       "when": 1781177540685,
       "tag": "0016_groovy_frightful_four",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1781260180541,
+      "tag": "0017_lucky_secret_warriors",
+      "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1781260448786,
+      "tag": "0018_careless_cyclops",
+      "breakpoints": true
     }
   ]
 }

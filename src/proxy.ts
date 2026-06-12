@@ -14,11 +14,16 @@ import type { Role } from "@/lib/auth/roles";
 
 const PUBLIC_ROUTES = ["/login", "/register", "/setup", "/api/health", "/accept-invitation"];
 
+// Public quote routes: /p/[token]
+function isPublicQuoteRoute(pathname: string): boolean {
+  return /^\/p\/[a-zA-Z0-9_-]+$/.test(pathname);
+}
+
 export const proxy = auth((req) => {
   const { pathname } = req.nextUrl;
 
   // Always allow public routes
-  if (PUBLIC_ROUTES.includes(pathname)) {
+  if (PUBLIC_ROUTES.includes(pathname) || isPublicQuoteRoute(pathname)) {
     return NextResponse.next();
   }
 

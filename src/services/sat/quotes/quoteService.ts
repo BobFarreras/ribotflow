@@ -340,6 +340,27 @@ export const quoteService = {
       .orderBy(desc(quoteStatusHistory.createdAt));
   },
 
+  async ensureShareToken(quoteId: string): Promise<string> {
+    const [existing] = await db
+      .select({ shareToken: quotes.shareToken })
+      .from(quotes)
+      .where(eq(quotes.id, quoteId))
+      .limit(1);
+
+    if (existing?.shareToken) return existing.shareToken;
+
+    const { generateShareToken, shareTokenExpiry } = await import("./tokens");
+    const token = generateShareToken();
+    const expiresAt = shareTokenExpiry();
+
+    await db
+      .update(quotes)
+      .set({ shareToken: token, shareTokenExpiresAt: expiresAt, updatedAt: new Date() })
+      .where(eq(quotes.id, quoteId));
+
+    return token;
+  },
+
   async getStats(companyId: string) {
     const total = await db
       .select({ count: count() })

@@ -50,6 +50,10 @@ export async function sendQuoteEmailAction(input: SendQuoteEmailInput) {
     clientName = client?.name ?? "";
   }
 
+  // Generate share token for public link
+  const shareToken = await quoteService.ensureShareToken(quote.id);
+  const shareUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"}/p/${shareToken}`;
+
   // Build email
   const subject = input.subject || `Pressupost ${quote.number} de ${companyName}`;
 
@@ -74,8 +78,14 @@ export async function sendQuoteEmailAction(input: SendQuoteEmailInput) {
           : ""
       }
 
+      <div style="text-align: center; margin: 24px 0;">
+        <a href="${shareUrl}" style="display: inline-block; background: #0d9488; color: #ffffff; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600;">
+          Veure i acceptar pressupost
+        </a>
+      </div>
+
       <p style="color: #6b7280; font-size: 13px;">
-        Trobareu el pressupost adjunt en format PDF. Per acceptar o rebutjar, si us plau contacteu amb nosaltres.
+        Trobareu el pressupost adjunt en format PDF. També podeu acceptar o rebutjar directament fent clic al botó de dalt.
       </p>
 
       <hr style="margin: 20px 0; border: none; border-top: 1px solid #e5e7eb;" />
